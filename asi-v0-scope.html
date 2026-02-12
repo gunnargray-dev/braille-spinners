@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASI v0 Scope — Wide Research</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    @property --ring-progress {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+    }
+    :root {
+      --bg: #0c0c0f;
+      --surface: #151518;
+      --surface-raised: #1c1c21;
+      --border: #2a2a32;
+      --border-subtle: #222228;
+      --text: #e0e0e6;
+      --text-secondary: #a4a4b0;
+      --text-muted: #6e6e80;
+      --green: #3dba72;
+      --green-text: #6dcea0;
+      --accent: #b8b8c0;
+      --font-body: 'PPLX Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'PPLX Mono', 'SF Mono', monospace;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      letter-spacing: -0.01em;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* --- Nav Bar --- */
+    .asi-topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.85rem 1.25rem;
+      background: rgba(12, 12, 15, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .menu-btn {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: 1px solid var(--border);
+      border-radius: 8px; cursor: pointer; padding: 0;
+      transition: border-color 0.15s ease;
+    }
+    .menu-btn:hover { border-color: var(--text-muted); }
+    .menu-btn svg {
+      width: 16px; height: 16px;
+      stroke: var(--text-muted); fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .menu-dropdown {
+      position: absolute;
+      top: calc(100% + 0.5rem); left: 0;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 0.35rem;
+      display: flex; flex-direction: column; min-width: 160px;
+      opacity: 0; transform: translateY(-4px); pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      z-index: 200;
+    }
+    .menu-dropdown.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .menu-dropdown a {
+      font-size: 0.78rem; font-weight: 500;
+      color: var(--text-secondary); text-decoration: none;
+      padding: 0.5rem 0.65rem; border-radius: 6px;
+      transition: background 0.12s ease, color 0.12s ease;
+    }
+    .menu-dropdown a:hover { background: var(--surface-raised); color: var(--text); }
+
+    /* View toggle */
+    .view-toggle {
+      display: flex;
+      gap: 0.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.2rem;
+    }
+    .view-toggle a {
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+    .view-toggle a:hover {
+      color: var(--text-secondary);
+    }
+    .view-toggle a.active {
+      background: var(--surface-raised);
+      color: var(--text);
+    }
+
+    /* --- Layout --- */
+    .asi-container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 6rem 2rem 12rem;
+    }
+
+    /* --- Phase visibility --- */
+    .phase {
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      pointer-events: none;
+    }
+    .phase.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .phase + .phase {
+      margin-top: 1.75rem;
+    }
+
+    /* --- Phase 1: Query (chat bubble) --- */
+    .chat-bubble-row {
+      display: flex;
+      justify-content: flex-end;
+    }
+    .chat-bubble {
+      background: var(--surface-raised);
+      border: 1px solid var(--border);
+      border-radius: 18px 18px 4px 18px;
+      padding: 0.65rem 1rem;
+      max-width: 80%;
+      font-size: 0.88rem;
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    /* --- Phase 2: Orchestrator --- */
+    .orch-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      padding: 0.3rem 0;
+    }
+    .orch-spinner {
+      background: linear-gradient(90deg,
+        var(--text-muted) 0%, var(--text-muted) 35%,
+        var(--text) 50%,
+        var(--text-muted) 65%, var(--text-muted) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .orch-label { font-weight: 500; }
+    .orch-plan {
+      margin-top: 0.5rem;
+      margin-left: 7px;
+      padding-left: 1rem;
+      border-left: 1px solid var(--border);
+    }
+    .orch-plan-step {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      padding: 0.2rem 0;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .orch-plan-step.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* --- Phase 2b: Plan Steps (todo-list style) --- */
+    .plan-steps {
+      margin-top: 0.5rem;
+      margin-left: 7px;
+      padding-left: 1rem;
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .plan-step {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.22rem 0;
+      font-size: 0.78rem;
+    }
+    .plan-step-circle {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.35s ease, background 0.35s ease;
+    }
+    .plan-step-circle svg {
+      width: 10px;
+      height: 10px;
+      stroke: var(--green);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .plan-step.completed .plan-step-circle {
+      border-color: var(--green);
+    }
+    .plan-step.completed .plan-step-circle svg {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .plan-step-text {
+      color: var(--text-secondary);
+      font-weight: 400;
+      transition: color 0.35s ease;
+    }
+    .plan-step.completed .plan-step-text {
+      color: var(--text-muted);
+    }
+
+    /* --- Phase 3: Research Grid (3-col, 50 cards) --- */
+    .agent-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.5rem;
+    }
+    .agent-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.7rem 0.85rem;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .agent-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .agent-card.completed {
+      opacity: 0.4;
+      transition: opacity 0.6s ease;
+    }
+    /* Left: step number + spinner ring */
+    .agent-card-num {
+      position: relative;
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .agent-card-num-text {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      z-index: 1;
+    }
+    .agent-card.active .agent-card-num-text {
+      color: var(--text-secondary);
+    }
+    .agent-card.completed .agent-card-num-text {
+      opacity: 0;
+    }
+    .agent-card-num-check {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--green);
+      font-weight: 600;
+      font-size: 0.85rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .agent-card.completed .agent-card-num-check { opacity: 1; }
+    /* Progress ring around number */
+    .agent-card-ring {
+      position: absolute;
+      inset: 0;
+      border: 1.5px dashed var(--border);
+      border-radius: 50%;
+      transition: border-color 0.3s ease;
+    }
+    .agent-card.active .agent-card-ring {
+      border: none;
+      --ring-progress: 0deg;
+      background: conic-gradient(var(--text-muted) var(--ring-progress), transparent var(--ring-progress));
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #fff calc(100% - 2px));
+      mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #fff calc(100% - 2px));
+      animation: progressArc 6s ease-in-out forwards;
+    }
+    .agent-card.completed .agent-card-ring {
+      border: none;
+      --ring-progress: 360deg;
+      background: conic-gradient(var(--green) 360deg, transparent 360deg);
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #fff calc(100% - 2px));
+      mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #fff calc(100% - 2px));
+      animation: none;
+    }
+    @keyframes progressArc {
+      0%   { --ring-progress: 0deg; }
+      100% { --ring-progress: 270deg; }
+    }
+    /* Middle: title + status stacked */
+    .agent-card-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .agent-card-role {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .agent-card.active .agent-card-role {
+      background: linear-gradient(90deg,
+        var(--text) 0%, var(--text) 35%,
+        var(--text-muted) 50%,
+        var(--text) 65%, var(--text) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .agent-card.completed .agent-card-role {
+      background: none;
+      -webkit-text-fill-color: var(--text);
+      animation: none;
+    }
+    .agent-card-task {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+    .agent-card.active .agent-card-task {
+      background: linear-gradient(90deg,
+        var(--text-muted) 0%, var(--text-muted) 35%,
+        var(--text-secondary) 50%,
+        var(--text-muted) 65%, var(--text-muted) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .agent-card.completed .agent-card-task {
+      background: none;
+      -webkit-text-fill-color: var(--text-muted);
+      animation: none;
+      color: var(--text-muted);
+    }
+
+
+    /* --- View More Button --- */
+    .view-more-wrap {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .view-more-wrap.expanded {
+      grid-template-rows: 1fr;
+    }
+    .view-more-inner {
+      overflow: hidden;
+    }
+    .view-more-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.5rem;
+      padding-top: 0.5rem;
+    }
+    .view-more-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      margin-top: 0.5rem;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: color 0.15s ease, border-color 0.15s ease;
+      width: 100%;
+    }
+    .view-more-btn:hover {
+      color: var(--text-secondary);
+      border-color: var(--text-muted);
+    }
+    .view-more-btn.hidden { display: none; }
+    .view-more-btn svg {
+      width: 12px; height: 12px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.3s ease;
+    }
+    .view-more-btn.expanded svg { transform: rotate(180deg); }
+
+    /* --- Phase 4: Agent Chain-of-Thought (grouped) --- */
+    .cot-log {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .agent-group {
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .agent-group.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .agent-group.completed {
+      opacity: 0.45;
+      transition: opacity 0.5s ease;
+    }
+    .agent-group-header {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.5rem 0;
+      font-size: 0.82rem;
+      cursor: pointer;
+      position: relative;
+    }
+    .ag-spinner-wrap {
+      width: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: opacity 0.3s ease;
+    }
+    .ag-check {
+      color: var(--green);
+      font-weight: 600;
+      font-size: 0.78rem;
+      width: 16px;
+      text-align: center;
+      flex-shrink: 0;
+      opacity: 0;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      transition: opacity 0.3s ease;
+    }
+    .agent-group.completed .ag-check { opacity: 1; }
+    .agent-group.completed .ag-spinner-wrap { opacity: 0; }
+    .ag-label {
+      font-weight: 600;
+      color: var(--text);
+    }
+    .agent-group.visible:not(.completed) .ag-label {
+      background: linear-gradient(90deg,
+        var(--text) 0%, var(--text) 35%,
+        var(--text-muted) 50%,
+        var(--text) 65%, var(--text) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .agent-group.completed .ag-label {
+      background: none;
+      -webkit-text-fill-color: var(--text);
+      animation: none;
+    }
+    .ag-task {
+      color: var(--text-muted);
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .ag-chevron {
+      width: 12px; height: 12px;
+      stroke: var(--text-muted);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .agent-group.expanded .ag-chevron { transform: rotate(90deg); }
+
+    /* Substeps body */
+    .agent-group-body {
+      margin-left: 7px;
+      padding-left: 1rem;
+      border-left: 1px solid var(--border);
+      display: grid;
+      grid-template-rows: 0fr;
+      opacity: 0;
+      transition: grid-template-rows 0.4s ease, opacity 0.35s ease, padding 0.4s ease;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+    .agent-group-body-inner {
+      overflow: hidden;
+    }
+    .agent-group.expanded .agent-group-body {
+      grid-template-rows: 1fr;
+      opacity: 1;
+      padding-top: 0.15rem;
+      padding-bottom: 0.4rem;
+    }
+    .agent-group.completed .agent-group-body {
+      opacity: 0.6;
+    }
+    .ag-step {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.2rem 0;
+      font-size: 0.75rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      position: relative;
+    }
+    .ag-step.visible { opacity: 1; }
+    .ag-step.completed { opacity: 0.5; }
+    .ag-step-spinner-wrap {
+      width: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: opacity 0.3s ease;
+    }
+    .ag-step-check {
+      color: var(--green);
+      font-weight: 600;
+      font-size: 0.72rem;
+      width: 14px;
+      text-align: center;
+      flex-shrink: 0;
+      opacity: 0;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      transition: opacity 0.3s ease;
+    }
+    .ag-step.completed .ag-step-check { opacity: 1; }
+    .ag-step.completed .ag-step-spinner-wrap { opacity: 0; }
+    .ag-step-text {
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+    .ag-output {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 0.55rem 0.75rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      margin: 0.15rem 0 0.25rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .ag-output.visible { opacity: 1; }
+
+    /* --- Phase 5: Synthesis --- */
+    .synthesis-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .synthesis-label {
+      font-weight: 500;
+      background: linear-gradient(90deg,
+        var(--text-secondary) 0%, var(--text-secondary) 35%,
+        var(--text) 50%,
+        var(--text-secondary) 65%, var(--text-secondary) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+
+    /* --- Phase 6: Answer (markdown-style) --- */
+    .asi-answer {
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+    }
+    .answer-text {
+      font-size: 0.88rem;
+      line-height: 1.75;
+      color: var(--text-secondary);
+    }
+    .answer-text .word {
+      display: inline;
+      animation: wordReveal 0.25s ease-out forwards;
+    }
+    @keyframes wordReveal {
+      from { opacity: 0; filter: blur(4px); }
+      to   { opacity: 1; filter: blur(0); }
+    }
+    .answer-text h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin: 0 0 0.5rem;
+    }
+    .answer-text h3 {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 1.25rem 0 0.35rem;
+    }
+    .answer-text p {
+      margin: 0.5rem 0;
+    }
+    .answer-text ul {
+      margin: 0.4rem 0 0.75rem;
+      padding-left: 1.25rem;
+      list-style: none;
+    }
+    .answer-text li {
+      margin: 0.5rem 0;
+      color: var(--text-secondary);
+      padding-left: 0.25rem;
+      position: relative;
+    }
+    .answer-text li::before {
+      content: '\2022';
+      color: var(--text-muted);
+      position: absolute;
+      left: -1rem;
+    }
+    .answer-text code {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      background: var(--surface);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      color: var(--accent);
+      border: 1px solid var(--border-subtle);
+    }
+    .answer-text em {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+    .answer-text strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+    .answer-text hr {
+      border: none;
+      border-top: 1px solid var(--border-subtle);
+      margin: 1.25rem 0;
+    }
+    .answer-text blockquote {
+      margin: 1rem 0;
+      padding: 0.75rem 1rem;
+      border-left: 3px solid var(--accent);
+      background: color-mix(in srgb, var(--accent) 5%, transparent);
+      border-radius: 0 8px 8px 0;
+      font-size: 0.85rem;
+    }
+    .answer-text blockquote p { margin: 0; }
+    .answer-sources {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .answer-source {
+      font-size: 0.65rem;
+      font-weight: 500;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      background: var(--surface-raised);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    /* --- Phase 7: Document artifact --- */
+    .doc-artifact {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+      cursor: pointer;
+    }
+    .doc-artifact:hover {
+      border-color: var(--text-muted);
+    }
+    .doc-artifact-header {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .doc-artifact-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: #2b579a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .doc-artifact-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: #fff;
+    }
+    .doc-artifact-meta {
+      flex: 1;
+      min-width: 0;
+    }
+    .doc-artifact-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .doc-artifact-subtitle {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin-top: 0.1rem;
+    }
+    .doc-artifact-open {
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      padding: 0.3rem 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: transparent;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: color 0.15s ease, border-color 0.15s ease;
+    }
+    .doc-artifact-open:hover {
+      color: var(--text-secondary);
+      border-color: var(--text-muted);
+    }
+    .doc-artifact-preview {
+      padding: 1rem 1.15rem 1.15rem;
+      max-height: 260px;
+      overflow: hidden;
+      position: relative;
+    }
+    .doc-artifact-preview::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: linear-gradient(to top, var(--surface) 10%, transparent);
+      pointer-events: none;
+    }
+    .doc-preview-content {
+      font-size: 0.75rem;
+      line-height: 1.7;
+      color: var(--text-secondary);
+    }
+    .doc-preview-content h4 {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 0.35rem;
+    }
+    .doc-preview-content p {
+      margin: 0.35rem 0;
+    }
+    .doc-preview-content .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.5rem 0;
+      font-size: 0.7rem;
+    }
+    .doc-preview-content .doc-table th {
+      text-align: left;
+      font-weight: 600;
+      color: var(--text);
+      padding: 0.35rem 0.5rem;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .doc-preview-content .doc-table td {
+      padding: 0.3rem 0.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+    }
+    .doc-preview-content .doc-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* --- Bottom Search Bar --- */
+    .search-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 0.75rem 1.25rem 1.25rem;
+      background: linear-gradient(to top, var(--bg) 60%, transparent);
+      display: flex;
+      justify-content: center;
+    }
+    .search-bar-inner {
+      width: 100%;
+      max-width: 640px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 -4px 24px rgba(0,0,0,0.3);
+    }
+    .search-bar-input {
+      flex: 1;
+      padding: 0.9rem 1.1rem 0.5rem;
+    }
+    .search-bar-input input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      font-family: var(--font-body);
+      font-size: 0.92rem;
+      color: var(--text);
+      outline: none;
+      letter-spacing: -0.01em;
+    }
+    .search-bar-input input::placeholder { color: var(--text-muted); }
+    .search-bar-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.45rem 0.6rem 0.6rem 1rem;
+    }
+    .search-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .search-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .sb-icon-btn {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      border: none; background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 50%;
+      padding: 0;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+    .sb-icon-btn svg {
+      width: 16px; height: 16px;
+      stroke: currentColor; fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .sb-icon-btn:hover {
+      color: var(--text-secondary);
+      background: var(--surface-raised);
+    }
+    .sb-model {
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      cursor: pointer;
+    }
+    .sb-submit {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+      flex-shrink: 0;
+    }
+    .sb-submit svg {
+      width: 16px; height: 16px;
+      stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .sb-submit:hover { opacity: 0.8; }
+
+    /* --- Footer --- */
+    .asi-footer {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+    }
+
+    @keyframes textShimmer {
+      0% { background-position: 200% 50%; }
+      100% { background-position: -100% 50%; }
+    }
+
+    @media (max-width: 640px) {
+      .asi-container { padding: 4rem 1.25rem 6rem; }
+      .chat-bubble { font-size: 0.82rem; max-width: 90%; }
+      .agent-grid { grid-template-columns: 1fr; }
+      .view-more-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="asi-topbar">
+    <div style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%);">
+      <button class="menu-btn" id="menu-btn" aria-label="Menu">
+        <svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      </button>
+      <div class="menu-dropdown" id="menu-dropdown">
+        <a href="components.html">Components</a>
+        <a href="asi-v0-scope.html">ASI Experience</a>
+      </div>
+    </div>
+    <div class="view-toggle">
+      <a href="asi-v0-scope.html" class="active">Wide Research</a>
+      <a href="asi-v0-rows.html">Wide Research - Rows</a>
+      <a href="asi.html">Subagents - List</a>
+      <a href="asi-mega.html">Subagents - Grid</a>
+      <a href="asi-async.html">Async Agents</a>
+    </div>
+  </nav>
+
+  <div class="asi-container">
+
+    <!-- Phase 1: Query (chat bubble) -->
+    <div class="phase" id="phase-query">
+      <div class="chat-bubble-row">
+        <div class="chat-bubble">Research 50 marathons across the US, one in every state. Include the race name, location, typical date, and a brief description.</div>
+      </div>
+    </div>
+
+    <!-- Phase 2: Orchestrator -->
+    <div class="phase" id="phase-orch">
+      <div class="orch-row">
+        <span class="orch-spinner loader text-spinner sm" data-spinner="braille" style="font-size:0.85rem; width:16px; height:16px;"></span>
+        <span class="orch-label">Thinking...</span>
+      </div>
+      <div class="orch-plan" id="orch-plan">
+        <div class="orch-plan-step" id="orch-step-1">Breaking down into 50 parallel research tasks</div>
+        <div class="orch-plan-step" id="orch-step-2">Assigning one subtask per US state — researching marathons, browsing race sites, collecting details</div>
+      </div>
+    </div>
+
+    <!-- Phase 2b: Plan Steps (unchecked todo list) -->
+    <div class="phase" id="phase-plan">
+      <div class="plan-steps">
+        <div class="plan-step" id="plan-1">
+          <span class="plan-step-circle"><svg viewBox="0 0 12 12"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg></span>
+          <span class="plan-step-text">Identify one premier marathon per state</span>
+        </div>
+        <div class="plan-step" id="plan-2">
+          <span class="plan-step-circle"><svg viewBox="0 0 12 12"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg></span>
+          <span class="plan-step-text">Search race databases and official websites</span>
+        </div>
+        <div class="plan-step" id="plan-3">
+          <span class="plan-step-circle"><svg viewBox="0 0 12 12"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg></span>
+          <span class="plan-step-text">Collect race name, date, location, and course details</span>
+        </div>
+        <div class="plan-step" id="plan-4">
+          <span class="plan-step-circle"><svg viewBox="0 0 12 12"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg></span>
+          <span class="plan-step-text">Compile into a structured 50-state guide</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 3: Research Grid (50 state cards) -->
+    <div class="phase" id="phase-grid">
+      <div class="agent-grid" id="visible-grid">
+        <!-- Cards 1-12 (visible: Alabama - Idaho) -->
+        <div class="agent-card" id="card-1"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">1</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Alabama</div><div class="agent-card-task">Waiting</div></div></div>
+        <div class="agent-card" id="card-2"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">2</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Alaska</div><div class="agent-card-task">Waiting</div></div></div>
+        <div class="agent-card" id="card-3"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">3</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Arizona</div><div class="agent-card-task">Waiting</div></div></div>
+        <div class="agent-card" id="card-4"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">4</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Arkansas</div><div class="agent-card-task">Waiting</div></div></div>
+        <div class="agent-card" id="card-5"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">5</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">California</div><div class="agent-card-task">Waiting</div></div></div>
+        <div class="agent-card" id="card-6"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">6</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Colorado</div><div class="agent-card-task">Waiting</div></div></div>
+        <div class="agent-card" id="card-7"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">7</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Connecticut</div><div class="agent-card-task">Waiting</div></div></div>
+        <div class="agent-card" id="card-8"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">8</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Delaware</div><div class="agent-card-task">Waiting</div></div></div>
+        <div class="agent-card" id="card-9"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">9</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Florida</div><div class="agent-card-task">Waiting</div></div></div>
+        <div class="agent-card" id="card-10"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">10</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Georgia</div><div class="agent-card-task">Waiting</div></div></div>
+        <div class="agent-card" id="card-11"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">11</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Hawaii</div><div class="agent-card-task">Waiting</div></div></div>
+        <div class="agent-card" id="card-12"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">12</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Idaho</div><div class="agent-card-task">Waiting</div></div></div>
+      </div>
+
+      <div class="view-more-wrap" id="view-more-wrap">
+        <div class="view-more-inner">
+          <div class="view-more-grid">
+            <!-- Cards 13-50 (hidden: Illinois - Wyoming) -->
+            <div class="agent-card" id="card-13"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">13</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Illinois</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-14"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">14</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Indiana</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-15"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">15</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Iowa</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-16"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">16</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Kansas</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-17"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">17</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Kentucky</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-18"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">18</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Louisiana</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-19"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">19</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Maine</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-20"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">20</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Maryland</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-21"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">21</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Massachusetts</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-22"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">22</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Michigan</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-23"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">23</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Minnesota</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-24"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">24</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Mississippi</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-25"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">25</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Missouri</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-26"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">26</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Montana</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-27"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">27</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Nebraska</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-28"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">28</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Nevada</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-29"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">29</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">New Hampshire</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-30"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">30</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">New Jersey</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-31"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">31</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">New Mexico</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-32"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">32</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">New York</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-33"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">33</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">North Carolina</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-34"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">34</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">North Dakota</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-35"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">35</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Ohio</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-36"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">36</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Oklahoma</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-37"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">37</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Oregon</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-38"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">38</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Pennsylvania</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-39"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">39</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Rhode Island</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-40"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">40</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">South Carolina</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-41"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">41</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">South Dakota</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-42"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">42</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Tennessee</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-43"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">43</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Texas</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-44"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">44</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Utah</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-45"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">45</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Vermont</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-46"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">46</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Virginia</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-47"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">47</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Washington</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-48"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">48</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">West Virginia</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-49"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">49</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Wisconsin</div><div class="agent-card-task">Waiting</div></div></div>
+            <div class="agent-card" id="card-50"><div class="agent-card-num"><span class="agent-card-ring"></span><span class="agent-card-num-text">50</span><span class="agent-card-num-check">&#x2713;</span></div><div class="agent-card-info"><div class="agent-card-role">Wyoming</div><div class="agent-card-task">Waiting</div></div></div>
+          </div>
+        </div>
+      </div>
+      <button class="view-more-btn" id="view-more-btn" onclick="toggleViewMore()">
+        <span id="view-more-label">See 38 more</span>
+        <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    </div>
+
+    <!-- Phase 4: Agent Chain-of-Thought (grouped) -->
+    <div class="phase" id="phase-log">
+      <div class="cot-log" id="cot-log">
+
+        <!-- AG 1: Delaware -->
+        <div class="agent-group" id="ag-1">
+          <div class="agent-group-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="ag-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; color: var(--text-muted); width:16px; height:16px;"></span></span>
+            <span class="ag-check">&#x2713;</span>
+            <span class="ag-label">Delaware</span>
+            <span class="ag-task">Research marathon events</span>
+            <svg class="ag-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+          </div>
+          <div class="agent-group-body"><div class="agent-group-body-inner">
+            <div class="ag-step" id="ag-1-s1"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Found 3 marathon events in Delaware</span></div>
+            <div class="ag-step" id="ag-1-s2"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Selected Delaware Marathon — Wilmington, DE</span></div>
+            <div class="ag-output" id="ag-1-out">Delaware Marathon — April 14, 2025 | Wilmington, DE
+USATF-certified course along the Brandywine Creek
+Registration: Open | Field limit: 3,000</div>
+          </div></div>
+        </div>
+
+        <!-- AG 2: California -->
+        <div class="agent-group" id="ag-2">
+          <div class="agent-group-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="ag-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; color: var(--text-muted); width:16px; height:16px;"></span></span>
+            <span class="ag-check">&#x2713;</span>
+            <span class="ag-label">California</span>
+            <span class="ag-task">Research marathon events</span>
+            <svg class="ag-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+          </div>
+          <div class="agent-group-body"><div class="agent-group-body-inner">
+            <div class="ag-step" id="ag-2-s1"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Found 12 marathon events across California</span></div>
+            <div class="ag-step" id="ag-2-s2"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Selected LA Marathon — "Stadium to the Sea" course</span></div>
+            <div class="ag-output" id="ag-2-out">LA Marathon — March 16, 2025 | Dodger Stadium → Santa Monica
+26.2mi point-to-point through Hollywood, Beverly Hills
+25,000+ runners, net downhill course</div>
+          </div></div>
+        </div>
+
+        <!-- AG 3: Ohio -->
+        <div class="agent-group" id="ag-3">
+          <div class="agent-group-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="ag-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; color: var(--text-muted); width:16px; height:16px;"></span></span>
+            <span class="ag-check">&#x2713;</span>
+            <span class="ag-label">Ohio</span>
+            <span class="ag-task">Research marathon events</span>
+            <svg class="ag-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+          </div>
+          <div class="agent-group-body"><div class="agent-group-body-inner">
+            <div class="ag-step" id="ag-3-s1"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Found Columbus Marathon — largest in Ohio, 15,000+ runners</span></div>
+            <div class="ag-step" id="ag-3-s2"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Confirmed dates and course details</span></div>
+          </div></div>
+        </div>
+
+        <!-- AG 4: New York -->
+        <div class="agent-group" id="ag-4">
+          <div class="agent-group-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="ag-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; color: var(--text-muted); width:16px; height:16px;"></span></span>
+            <span class="ag-check">&#x2713;</span>
+            <span class="ag-label">New York</span>
+            <span class="ag-task">Research marathon events</span>
+            <svg class="ag-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+          </div>
+          <div class="agent-group-body"><div class="agent-group-body-inner">
+            <div class="ag-step" id="ag-4-s1"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Found NYC Marathon — world's largest, 50,000+ runners</span></div>
+            <div class="ag-step" id="ag-4-s2"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Collecting five-borough course details</span></div>
+            <div class="ag-output" id="ag-4-out">NYC Marathon — November 2, 2025 | All five boroughs
+World's largest marathon, 50,000+ runners
+Point-to-point from Staten Island to Central Park</div>
+          </div></div>
+        </div>
+
+        <!-- AG 5: Texas -->
+        <div class="agent-group" id="ag-5">
+          <div class="agent-group-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="ag-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; color: var(--text-muted); width:16px; height:16px;"></span></span>
+            <span class="ag-check">&#x2713;</span>
+            <span class="ag-label">Texas</span>
+            <span class="ag-task">Research marathon events</span>
+            <svg class="ag-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+          </div>
+          <div class="agent-group-body"><div class="agent-group-body-inner">
+            <div class="ag-step" id="ag-5-s1"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Comparing Houston, Austin, Dallas marathons</span></div>
+            <div class="ag-step" id="ag-5-s2"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Selected Houston Marathon — fastest flat course, major BQ race</span></div>
+          </div></div>
+        </div>
+
+        <!-- AG 6: Massachusetts -->
+        <div class="agent-group" id="ag-6">
+          <div class="agent-group-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="ag-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; color: var(--text-muted); width:16px; height:16px;"></span></span>
+            <span class="ag-check">&#x2713;</span>
+            <span class="ag-label">Massachusetts</span>
+            <span class="ag-task">Research marathon events</span>
+            <svg class="ag-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+          </div>
+          <div class="agent-group-body"><div class="agent-group-body-inner">
+            <div class="ag-step" id="ag-6-s1"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Found Boston Marathon — world's oldest, est. 1897</span></div>
+            <div class="ag-step" id="ag-6-s2"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Reading qualifying times and registration details</span></div>
+            <div class="ag-output" id="ag-6-out">Boston Marathon — April 21, 2025 | Hopkinton → Boston, MA
+World's oldest annual marathon (est. 1897)
+Qualifying times required, 30,000 runners</div>
+          </div></div>
+        </div>
+
+        <!-- AG 7: Hawaii -->
+        <div class="agent-group" id="ag-7">
+          <div class="agent-group-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="ag-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; color: var(--text-muted); width:16px; height:16px;"></span></span>
+            <span class="ag-check">&#x2713;</span>
+            <span class="ag-label">Hawaii</span>
+            <span class="ag-task">Research marathon events</span>
+            <svg class="ag-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+          </div>
+          <div class="agent-group-body"><div class="agent-group-body-inner">
+            <div class="ag-step" id="ag-7-s1"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Found Honolulu Marathon — no time limit, scenic ocean course</span></div>
+            <div class="ag-step" id="ag-7-s2"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">25,000+ finishers, December race date confirmed</span></div>
+          </div></div>
+        </div>
+
+        <!-- AG 8: Illinois -->
+        <div class="agent-group" id="ag-8">
+          <div class="agent-group-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="ag-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; color: var(--text-muted); width:16px; height:16px;"></span></span>
+            <span class="ag-check">&#x2713;</span>
+            <span class="ag-label">Illinois</span>
+            <span class="ag-task">Research marathon events</span>
+            <svg class="ag-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+          </div>
+          <div class="agent-group-body"><div class="agent-group-body-inner">
+            <div class="ag-step" id="ag-8-s1"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Found Chicago Marathon — World Major, 45,000 runners</span></div>
+            <div class="ag-step" id="ag-8-s2"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Flat course through 29 neighborhoods, October date</span></div>
+            <div class="ag-output" id="ag-8-out">Chicago Marathon — October 12, 2025 | Chicago, IL
+World Major Marathon, flat fast course
+45,000 runners, iconic start/finish in Grant Park</div>
+          </div></div>
+        </div>
+
+        <!-- AG 9: Alaska -->
+        <div class="agent-group" id="ag-9">
+          <div class="agent-group-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="ag-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; color: var(--text-muted); width:16px; height:16px;"></span></span>
+            <span class="ag-check">&#x2713;</span>
+            <span class="ag-label">Alaska</span>
+            <span class="ag-task">Research marathon events</span>
+            <svg class="ag-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+          </div>
+          <div class="agent-group-body"><div class="agent-group-body-inner">
+            <div class="ag-step" id="ag-9-s1"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Found Mayor's Marathon — summer solstice race in Anchorage</span></div>
+            <div class="ag-step" id="ag-9-s2"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Scenic course past lakes and mountains, near 24hr daylight</span></div>
+          </div></div>
+        </div>
+
+        <!-- AG 10: Colorado -->
+        <div class="agent-group" id="ag-10">
+          <div class="agent-group-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="ag-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; color: var(--text-muted); width:16px; height:16px;"></span></span>
+            <span class="ag-check">&#x2713;</span>
+            <span class="ag-label">Colorado</span>
+            <span class="ag-task">Research marathon events</span>
+            <svg class="ag-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+          </div>
+          <div class="agent-group-body"><div class="agent-group-body-inner">
+            <div class="ag-step" id="ag-10-s1"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Selected Denver Colfax Marathon — point-to-point through City Park</span></div>
+            <div class="ag-step" id="ag-10-s2"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Collecting elevation profile and aid station details</span></div>
+          </div></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Phase 4b: Plan complete (rendered after COT, checks animate in) -->
+    <div class="phase" id="phase-plan-done">
+      <div class="plan-steps">
+        <div class="plan-step" id="pland-1">
+          <span class="plan-step-circle"><svg viewBox="0 0 12 12"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg></span>
+          <span class="plan-step-text">Identify one premier marathon per state</span>
+        </div>
+        <div class="plan-step" id="pland-2">
+          <span class="plan-step-circle"><svg viewBox="0 0 12 12"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg></span>
+          <span class="plan-step-text">Search race databases and official websites</span>
+        </div>
+        <div class="plan-step" id="pland-3">
+          <span class="plan-step-circle"><svg viewBox="0 0 12 12"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg></span>
+          <span class="plan-step-text">Collect race name, date, location, and course details</span>
+        </div>
+        <div class="plan-step" id="pland-4">
+          <span class="plan-step-circle"><svg viewBox="0 0 12 12"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg></span>
+          <span class="plan-step-text">Compile into a structured 50-state guide</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 5: Synthesis -->
+    <div class="phase" id="phase-synthesis">
+      <div class="synthesis-row">
+        <span class="orch-spinner loader text-spinner sm" data-spinner="braille" style="font-size:0.85rem; width:16px; height:16px;" id="synth-spinner"></span>
+        <span class="synthesis-label" id="synth-label">Synthesizing research across 50 states...</span>
+      </div>
+    </div>
+
+    <!-- Phase 6: Answer -->
+    <div class="phase" id="phase-answer">
+      <div class="asi-answer">
+        <div class="answer-text" id="answer-output"></div>
+      </div>
+    </div>
+
+    <!-- Phase 7: Document artifact -->
+    <div class="phase" id="phase-doc">
+      <div class="doc-artifact">
+        <div class="doc-artifact-header">
+          <div class="doc-artifact-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 2C4.9 2 4 2.9 4 4v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6H6zm7 1.5L18.5 9H13V3.5zM7 13h10v1.5H7V13zm0 3h10v1.5H7V16zm0 3h7v1.5H7V19zm0-9h4v1.5H7V10z"/></svg>
+          </div>
+          <div class="doc-artifact-meta">
+            <div class="doc-artifact-title">50 State Marathon Guide — Full Report</div>
+            <div class="doc-artifact-subtitle">Word Document &middot; 50 entries &middot; 12 pages</div>
+          </div>
+          <button class="doc-artifact-open">Open</button>
+        </div>
+        <div class="doc-artifact-preview">
+          <div class="doc-preview-content">
+            <h4>US Marathon Research — All 50 States</h4>
+            <p>Comprehensive guide to one premier marathon event in each US state, including race name, location, typical date, course description, and field size.</p>
+            <table class="doc-table">
+              <thead>
+                <tr><th>State</th><th>Marathon</th><th>Date</th><th>Location</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Alabama</td><td>Mercedes Marathon</td><td>February</td><td>Birmingham, AL</td></tr>
+                <tr><td>Alaska</td><td>Mayor's Marathon</td><td>June</td><td>Anchorage, AK</td></tr>
+                <tr><td>Arizona</td><td>Phoenix Marathon</td><td>February</td><td>Mesa, AZ</td></tr>
+                <tr><td>California</td><td>LA Marathon</td><td>March</td><td>Los Angeles, CA</td></tr>
+                <tr><td>Colorado</td><td>Denver Colfax Marathon</td><td>May</td><td>Denver, CO</td></tr>
+                <tr><td>Delaware</td><td>Delaware Marathon</td><td>April</td><td>Wilmington, DE</td></tr>
+                <tr><td>Florida</td><td>Space Coast Marathon</td><td>November</td><td>Cocoa, FL</td></tr>
+                <tr><td>Georgia</td><td>Atlanta Marathon</td><td>February</td><td>Atlanta, GA</td></tr>
+                <tr><td>Hawaii</td><td>Honolulu Marathon</td><td>December</td><td>Honolulu, HI</td></tr>
+                <tr><td>Illinois</td><td>Chicago Marathon</td><td>October</td><td>Chicago, IL</td></tr>
+                <tr><td>Massachusetts</td><td>Boston Marathon</td><td>April</td><td>Boston, MA</td></tr>
+                <tr><td>New York</td><td>NYC Marathon</td><td>November</td><td>New York, NY</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="search-bar">
+    <div class="search-bar-inner">
+      <div class="search-bar-input">
+        <input type="text" placeholder="Ask a follow-up...">
+      </div>
+      <div class="search-bar-footer">
+        <div class="search-bar-left">
+          <button class="sb-icon-btn" title="Attach">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <button class="sb-icon-btn" title="Search">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+          </button>
+        </div>
+        <div class="search-bar-right">
+          <span class="sb-model">Opus 4.5 <svg viewBox="0 0 24 24" style="width:12px; height:12px;"><polyline points="6 9 12 15 18 9"/></svg></span>
+          <button class="sb-submit">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="asi-footer">
+    ASI v0 Scope — Wide Research
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    // --- State names in card order ---
+    const STATES = [
+      'Alabama','Alaska','Arizona','Arkansas','California','Colorado',
+      'Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho',
+      'Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana',
+      'Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi',
+      'Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey',
+      'New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma',
+      'Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee',
+      'Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'
+    ];
+
+    // --- Timeline Engine ---
+    const timers = [];
+    function schedule(delay, fn) { timers.push(setTimeout(fn, delay)); }
+    function clearAll() { timers.forEach(t => clearTimeout(t)); timers.length = 0; }
+
+    // --- Smooth auto-scroll ---
+    let autoScroll = true;
+    let scrollRaf = null;
+    window.addEventListener('wheel', () => { autoScroll = false; if (scrollRaf) { cancelAnimationFrame(scrollRaf); scrollRaf = null; } }, { passive: true });
+    window.addEventListener('touchmove', () => { autoScroll = false; if (scrollRaf) { cancelAnimationFrame(scrollRaf); scrollRaf = null; } }, { passive: true });
+
+    function scrollIntoView(el) {
+      if (!autoScroll || !el) return;
+      const rect = el.getBoundingClientRect();
+      const targetY = window.scrollY + rect.top - window.innerHeight * 0.45;
+      const startY = window.scrollY;
+      const diff = targetY - startY;
+      if (Math.abs(diff) < 2) return;
+      const duration = Math.min(1200, Math.max(600, Math.abs(diff) * 0.8));
+      const startTime = performance.now();
+      function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+      function step(now) {
+        if (!autoScroll) return;
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        window.scrollTo(0, startY + diff * ease(progress));
+        if (progress < 1) { scrollRaf = requestAnimationFrame(step); }
+        else { scrollRaf = null; }
+      }
+      if (scrollRaf) cancelAnimationFrame(scrollRaf);
+      scrollRaf = requestAnimationFrame(step);
+    }
+
+    function show(id) {
+      const el = document.getElementById(id);
+      if (el) { el.classList.add('visible'); scrollIntoView(el); }
+    }
+
+    function showCard(id) {
+      const el = document.getElementById(id);
+      if (el) { el.classList.add('visible', 'active'); }
+    }
+
+    function completeCard(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.add('completed');
+        el.classList.remove('active');
+        const task = el.querySelector('.agent-card-task');
+        if (task) task.textContent = 'Complete';
+      }
+    }
+
+    function updateCardStatus(id, text) {
+      const el = document.getElementById(id);
+      if (el) {
+        const task = el.querySelector('.agent-card-task');
+        if (task) task.textContent = text;
+      }
+    }
+
+    function showGroup(id) {
+      const el = document.getElementById(id);
+      if (el) { el.classList.add('visible', 'expanded'); scrollIntoView(el); }
+    }
+
+    function completeGroup(id) {
+      const el = document.getElementById(id);
+      if (el) { el.classList.add('completed'); }
+    }
+
+    function showStep(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('visible');
+    }
+
+    function completeStep(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('completed');
+    }
+
+    function showOutput(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('visible');
+    }
+
+    // --- View More toggle ---
+    function toggleViewMore() {
+      const wrap = document.getElementById('view-more-wrap');
+      const btn = document.getElementById('view-more-btn');
+      const label = document.getElementById('view-more-label');
+      const expanded = wrap.classList.toggle('expanded');
+      btn.classList.toggle('expanded', expanded);
+      label.textContent = expanded ? 'Show fewer' : 'See 38 more';
+      if (expanded) {
+        for (let i = 13; i <= 50; i++) {
+          const el = document.getElementById('card-' + i);
+          if (el) el.classList.add('visible');
+        }
+      }
+    }
+
+    // --- Blur-reveal word streamer ---
+    function streamWords(elId, html, delay, callback) {
+      const el = document.getElementById(elId);
+      el.innerHTML = html;
+
+      const wordSpans = [];
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+      const textNodes = [];
+      while (walker.nextNode()) textNodes.push(walker.currentNode);
+
+      textNodes.forEach(node => {
+        const words = node.textContent.split(/(\s+)/);
+        if (words.length <= 1 && !node.textContent.trim()) return;
+        const frag = document.createDocumentFragment();
+        words.forEach(w => {
+          if (!w) return;
+          if (/^\s+$/.test(w)) {
+            frag.appendChild(document.createTextNode(w));
+          } else {
+            const span = document.createElement('span');
+            span.className = 'word';
+            span.style.opacity = '0';
+            span.textContent = w;
+            frag.appendChild(span);
+            wordSpans.push(span);
+          }
+        });
+        node.parentNode.replaceChild(frag, node);
+      });
+
+      let i = 0;
+      function tick() {
+        if (i >= wordSpans.length) { if (callback) callback(); return; }
+        wordSpans[i].style.opacity = '';
+        wordSpans[i].style.animation = 'wordReveal 0.25s ease-out forwards';
+        i++;
+        schedule(delay, tick);
+      }
+      tick();
+    }
+
+    // --- Answer content ---
+    const ANSWER_HTML = `<h2>50 State Marathon Guide</h2>
+<p>Research across all 50 US states identified one premier marathon in each state. Here are the highlights:</p>
+<h3>Notable Races</h3>
+<ul>
+<li><strong>Boston Marathon</strong> (Massachusetts) — The world's oldest annual marathon, est. 1897. Point-to-point from Hopkinton to Boston. <em>April, qualifying times required.</em></li>
+<li><strong>NYC Marathon</strong> (New York) — World's largest marathon with 50,000+ runners through all five boroughs. <em>First Sunday in November.</em></li>
+<li><strong>Chicago Marathon</strong> (Illinois) — World Major, flat fast course through 29 neighborhoods. <em>October, 45,000 runners.</em></li>
+<li><strong>Honolulu Marathon</strong> (Hawaii) — No time limit, scenic oceanfront course. <em>December, 25,000+ finishers.</em></li>
+<li><strong>LA Marathon</strong> (California) — "Stadium to the Sea" point-to-point through Hollywood. <em>March, 25,000 runners.</em></li>
+</ul>
+<h3>Best for Boston Qualifying</h3>
+<ul>
+<li><strong>Houston Marathon</strong> (Texas) — January, flat and fast, one of the top BQ courses in the country.</li>
+<li><strong>Columbus Marathon</strong> (Ohio) — October, flat course through German Village with strong pacer program.</li>
+<li><strong>Space Coast Marathon</strong> (Florida) — November, dead-flat along the Indian River in ideal winter temps.</li>
+</ul>
+<h3>Most Scenic</h3>
+<ul>
+<li><strong>Mayor's Marathon</strong> (Alaska) — Summer solstice race with mountain and lake views in near-24hr daylight.</li>
+<li><strong>Missoula Marathon</strong> (Montana) — Point-to-point through the Bitterroot Valley with mountain backdrops.</li>
+<li><strong>Vermont City Marathon</strong> (Vermont) — Lakefront course with Adirondack and Lake Champlain panoramas.</li>
+</ul>`;
+
+    // --- Run the experience ---
+    function run() {
+      // Reset
+      clearAll();
+      autoScroll = true;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.querySelectorAll('.phase').forEach(el => {
+        el.classList.remove('visible');
+        el.style.opacity = '';
+        el.style.transform = '';
+      });
+      document.querySelectorAll('#phase-plan-done .plan-step').forEach(el => {
+        el.classList.remove('completed');
+      });
+      document.querySelectorAll('.agent-card').forEach(el => {
+        el.classList.remove('visible', 'completed', 'active');
+        const task = el.querySelector('.agent-card-task');
+        if (task) task.textContent = 'Waiting';
+      });
+      document.querySelectorAll('.agent-group').forEach(el => {
+        el.classList.remove('visible', 'completed', 'expanded');
+      });
+      document.querySelectorAll('.ag-step').forEach(el => {
+        el.classList.remove('visible', 'completed');
+      });
+      document.querySelectorAll('.ag-output').forEach(el => {
+        el.classList.remove('visible');
+      });
+      document.querySelectorAll('.orch-plan-step').forEach(el => {
+        el.classList.remove('visible');
+      });
+      document.querySelectorAll('.plan-step').forEach(el => {
+        el.classList.remove('completed');
+      });
+      // Reset view-more
+      const vmWrap = document.getElementById('view-more-wrap');
+      const vmBtn = document.getElementById('view-more-btn');
+      const vmLabel = document.getElementById('view-more-label');
+      vmWrap.classList.remove('expanded');
+      vmBtn.classList.remove('expanded', 'hidden');
+      vmLabel.textContent = 'See 38 more';
+
+      const answerEl = document.getElementById('answer-output');
+      answerEl.innerHTML = '';
+      const synthSpinner = document.getElementById('synth-spinner');
+      synthSpinner.style.display = '';
+      const synthLabel = document.getElementById('synth-label');
+      synthLabel.textContent = 'Synthesizing research across 50 states...';
+      synthLabel.style.background = '';
+      synthLabel.style.webkitBackgroundClip = '';
+      synthLabel.style.backgroundClip = '';
+      synthLabel.style.webkitTextFillColor = '';
+      synthLabel.style.animation = '';
+      synthLabel.className = 'synthesis-label';
+
+      // ========== PHASE 1: Query (instant) ==========
+      show('phase-query');
+
+      // ========== PHASE 2: Orchestrator (instant) ==========
+      show('phase-orch');
+      show('orch-step-1');
+      show('orch-step-2');
+
+      // ========== PHASE 2b: Plan (unchecked todo list) ==========
+      schedule(1200, () => show('phase-plan'));
+
+      // ========== PHASE 3: Research Grid (first 12 cards at once) ==========
+      schedule(3000, () => {
+        show('phase-grid');
+        for (let i = 1; i <= 12; i++) showCard('card-' + i);
+      });
+
+      // --- Update card status text in waves ---
+      schedule(3000, () => {
+        for (let i = 1; i <= 12; i++) updateCardStatus('card-' + i, 'Researching');
+        for (let i = 13; i <= 50; i++) {
+          const el = document.getElementById('card-' + i);
+          if (el) el.classList.add('active');
+          updateCardStatus('card-' + i, 'Researching');
+        }
+      });
+      schedule(9000, () => {
+        for (let i = 1; i <= 25; i++) updateCardStatus('card-' + i, 'Searching');
+      });
+      schedule(11000, () => {
+        for (let i = 26; i <= 50; i++) updateCardStatus('card-' + i, 'Searching');
+      });
+
+      // ========== PHASE 4: Agent Chain-of-Thought (grouped, slow stream) ==========
+      // AG 1: Delaware
+      schedule(7000, () => { show('phase-log'); showGroup('ag-1'); showStep('ag-1-s1'); });
+      schedule(8700, () => { completeStep('ag-1-s1'); showStep('ag-1-s2'); });
+      schedule(10500, () => { completeStep('ag-1-s2'); showOutput('ag-1-out'); });
+
+      // AG 2: California (overlaps)
+      schedule(9500, () => { showGroup('ag-2'); showStep('ag-2-s1'); });
+      schedule(11700, () => { completeStep('ag-2-s1'); showStep('ag-2-s2'); });
+      schedule(13900, () => { completeStep('ag-2-s2'); showOutput('ag-2-out'); });
+
+      // AG 3: Ohio
+      schedule(12000, () => { showGroup('ag-3'); showStep('ag-3-s1'); });
+      schedule(14500, () => { completeStep('ag-3-s1'); showStep('ag-3-s2'); });
+      schedule(16500, () => { completeStep('ag-3-s2'); });
+
+      // Complete AG 1 (Delaware)
+      schedule(13500, () => { completeGroup('ag-1'); completeCard('card-8'); });
+
+      // AG 4: New York
+      schedule(15000, () => { showGroup('ag-4'); showStep('ag-4-s1'); });
+      schedule(17300, () => { completeStep('ag-4-s1'); showStep('ag-4-s2'); });
+      schedule(19300, () => { completeStep('ag-4-s2'); showOutput('ag-4-out'); });
+
+      // Complete AG 2 (California)
+      schedule(16500, () => { completeGroup('ag-2'); completeCard('card-5'); });
+
+      // AG 5: Texas
+      schedule(17500, () => { showGroup('ag-5'); showStep('ag-5-s1'); });
+      schedule(20000, () => { completeStep('ag-5-s1'); showStep('ag-5-s2'); });
+      schedule(22000, () => { completeStep('ag-5-s2'); });
+
+      // Complete AG 3 (Ohio)
+      schedule(19000, () => { completeGroup('ag-3'); completeCard('card-35'); });
+
+      // AG 6: Massachusetts
+      schedule(20300, () => { showGroup('ag-6'); showStep('ag-6-s1'); });
+      schedule(22500, () => { completeStep('ag-6-s1'); showStep('ag-6-s2'); });
+      schedule(24500, () => { completeStep('ag-6-s2'); showOutput('ag-6-out'); });
+
+      // Complete AG 4 (New York)
+      schedule(21500, () => { completeGroup('ag-4'); completeCard('card-32'); });
+
+      // AG 7: Hawaii
+      schedule(23000, () => { showGroup('ag-7'); showStep('ag-7-s1'); });
+      schedule(25300, () => { completeStep('ag-7-s1'); showStep('ag-7-s2'); });
+      schedule(27000, () => { completeStep('ag-7-s2'); });
+
+      // Complete AG 5 (Texas)
+      schedule(24000, () => { completeGroup('ag-5'); completeCard('card-43'); });
+
+      // AG 8: Illinois
+      schedule(25500, () => { showGroup('ag-8'); showStep('ag-8-s1'); });
+      schedule(27700, () => { completeStep('ag-8-s1'); showStep('ag-8-s2'); });
+      schedule(29500, () => { completeStep('ag-8-s2'); showOutput('ag-8-out'); });
+
+      // Complete AG 6 (Massachusetts)
+      schedule(27000, () => { completeGroup('ag-6'); completeCard('card-21'); });
+
+      // AG 9: Alaska
+      schedule(28000, () => { showGroup('ag-9'); showStep('ag-9-s1'); });
+      schedule(30300, () => { completeStep('ag-9-s1'); showStep('ag-9-s2'); });
+      schedule(32000, () => { completeStep('ag-9-s2'); });
+
+      // Complete AG 7 (Hawaii)
+      schedule(29500, () => { completeGroup('ag-7'); completeCard('card-11'); });
+
+      // AG 10: Colorado
+      schedule(30500, () => { showGroup('ag-10'); showStep('ag-10-s1'); });
+      schedule(32700, () => { completeStep('ag-10-s1'); showStep('ag-10-s2'); });
+      schedule(34500, () => { completeStep('ag-10-s2'); });
+
+      // Complete AG 8 (Illinois)
+      schedule(32000, () => { completeGroup('ag-8'); completeCard('card-13'); });
+      // Complete AG 9 (Alaska)
+      schedule(33500, () => { completeGroup('ag-9'); completeCard('card-2'); });
+      // Complete AG 10 (Colorado)
+      schedule(35500, () => { completeGroup('ag-10'); completeCard('card-6'); });
+
+      // Complete remaining cards in rapid succession
+      const remainingCards = [1,3,4,7,9,10,12,14,15,16,17,18,19,20,22,23,24,25,26,27,28,29,30,31,33,34,36,37,38,39,40,41,42,44,45,46,47,48,49,50];
+      remainingCards.forEach((n, i) => {
+        schedule(36000 + (i * 120), () => completeCard('card-' + n));
+      });
+
+      // ========== PHASE 5: Completed plan (animate checks) + synthesis + answer + doc ==========
+      function checkPlanDone(id) {
+        const el = document.getElementById(id);
+        if (el) { el.classList.add('completed'); scrollIntoView(el); }
+      }
+      schedule(36500, () => show('phase-plan-done'));
+      schedule(36800, () => checkPlanDone('pland-1'));
+      schedule(37100, () => checkPlanDone('pland-2'));
+      schedule(37400, () => checkPlanDone('pland-3'));
+      schedule(37700, () => {
+        checkPlanDone('pland-4');
+        show('phase-synthesis');
+        synthSpinner.style.display = 'none';
+        synthLabel.textContent = 'Synthesis complete — 50 states, 50 marathons identified';
+        synthLabel.style.background = 'none';
+        synthLabel.style.webkitTextFillColor = 'var(--green-text)';
+        synthLabel.style.animation = 'none';
+      });
+      schedule(38000, () => {
+        show('phase-answer');
+        streamWords('answer-output', ANSWER_HTML, 20, () => {});
+      });
+      schedule(38200, () => show('phase-doc'));
+
+      // ========== REPLAY ==========
+      schedule(75000, () => run());
+    }
+
+    run();
+
+    // --- Menu toggle ---
+    const menuBtn = document.getElementById('menu-btn');
+    const menuDropdown = document.getElementById('menu-dropdown');
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menuDropdown.classList.toggle('open');
+    });
+    document.addEventListener('click', () => {
+      menuDropdown.classList.remove('open');
+    });
+  </script>
+</body>
+</html>

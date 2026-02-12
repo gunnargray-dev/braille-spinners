@@ -1,0 +1,2640 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perplexity UI</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* ==========================================
+       Theme System
+       ========================================== */
+    :root {
+      --c-bg: #f7f7fa;
+      --c-surface-0: #f0f0f4;
+      --c-surface: #ffffff;
+      --c-surface-raised: #fbfbfc;
+      --c-surface-overlay: #ffffff;
+      --c-border: #e8e8ec;
+      --c-border-subtle: #ededf1;
+      --c-text: #2c2c3a;
+      --c-text-secondary: #6b6b7b;
+      --c-text-muted: #9d9daa;
+      --c-accent: #b8b8c0;
+      --c-accent-hover: #9898a4;
+      --c-green: #2a9d5c;
+      --c-green-bg: #f0fdf6;
+      --c-green-text: #1a7a3c;
+      --c-red: #f08080;
+      --c-red-bg: #fef4f4;
+      --c-red-text: #a82a2a;
+      --c-yellow: #f5c542;
+      --c-panel-inset: #f0f0f4;
+      --c-code-bg: #f0f0f4;
+      --c-shimmer-base: #8888a0;
+      --c-shimmer-peak: #2c2c3a;
+      --c-spinner: #6b6b7b;
+      --c-btn-primary: #2c2c3a;
+      --c-btn-primary-hover: #3a3a4a;
+      --font-body: 'PPLX Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'PPLX Mono', 'SF Mono', monospace;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.025);
+      --shadow-md: 0 2px 10px rgba(0,0,0,0.035);
+      --shadow-lg: 0 6px 24px rgba(0,0,0,0.05);
+    }
+
+    [data-theme="dark"] {
+      --c-bg: #131316;
+      --c-surface-0: #19191d;
+      --c-surface: #1e1e23;
+      --c-surface-raised: #262630;
+      --c-surface-overlay: #2c2c34;
+      --c-border: #2e2e36;
+      --c-border-subtle: #242430;
+      --c-text: #d8d8df;
+      --c-text-secondary: #a4a4b0;
+      --c-text-muted: #6e6e80;
+      --c-accent: #b8b8c0;
+      --c-accent-hover: #d8d8df;
+      --c-green: #3dba72;
+      --c-green-bg: #0a2416;
+      --c-green-text: #6dcea0;
+      --c-red: #f08080;
+      --c-red-bg: #2a0e0e;
+      --c-red-text: #f0a8a8;
+      --c-yellow: #f5c542;
+      --c-panel-inset: #161619;
+      --c-code-bg: #262630;
+      --c-shimmer-base: #a4a4b0;
+      --c-shimmer-peak: #f0f0f4;
+      --c-spinner: #a4a4b0;
+      --c-btn-primary: #d8d8df;
+      --c-btn-primary-hover: #c4c4cc;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+      --shadow-md: 0 2px 10px rgba(0,0,0,0.18);
+      --shadow-lg: 0 6px 24px rgba(0,0,0,0.25);
+    }
+
+    /* ==========================================
+       Base
+       ========================================== */
+    body.comp-page {
+      font-family: var(--font-body);
+      letter-spacing: -0.01em;
+      background: var(--c-bg);
+      color: var(--c-text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      margin: 0;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    /* ==========================================
+       Hamburger Menu
+       ========================================== */
+    .menu-btn {
+      position: fixed;
+      top: 1.25rem;
+      left: 1.5rem;
+      z-index: 100;
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--c-surface); border: 1px solid var(--c-border);
+      border-radius: 8px; cursor: pointer; padding: 0;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.15s ease;
+    }
+    .menu-btn:hover { border-color: var(--c-accent); }
+    .menu-btn svg {
+      width: 16px; height: 16px;
+      stroke: var(--c-text-muted); fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .menu-dropdown {
+      position: fixed;
+      top: 3.75rem;
+      left: 1.5rem;
+      z-index: 200;
+      background: var(--c-surface); border: 1px solid var(--c-border);
+      border-radius: 10px; padding: 0.35rem;
+      display: flex; flex-direction: column; min-width: 160px;
+      opacity: 0; transform: translateY(-4px); pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      box-shadow: var(--shadow-lg);
+    }
+    .menu-dropdown.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .menu-dropdown a {
+      font-size: 0.78rem; font-weight: 500;
+      color: var(--c-text-secondary); text-decoration: none;
+      padding: 0.5rem 0.65rem; border-radius: 6px;
+      transition: background 0.12s ease, color 0.12s ease;
+    }
+    .menu-dropdown a:hover { background: var(--c-surface-raised); color: var(--c-text); }
+
+    /* ==========================================
+       Theme Toggle
+       ========================================== */
+    .theme-toggle {
+      position: fixed;
+      top: 1.25rem;
+      right: 1.5rem;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 10px;
+      padding: 0.4rem 0.75rem;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--c-text-secondary);
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+    .theme-toggle:hover {
+      border-color: var(--c-accent);
+      color: var(--c-accent);
+    }
+    .theme-toggle .toggle-icon { font-size: 0.9rem; }
+
+    /* ==========================================
+       Header
+       ========================================== */
+    .comp-header {
+      text-align: center;
+      padding: 5rem 2rem 3rem;
+    }
+    .comp-header h1 {
+      font-size: 2.4rem;
+      font-weight: 600;
+      letter-spacing: -0.04em;
+      color: var(--c-text);
+    }
+    .comp-header .subtitle {
+      margin-top: 0.5rem;
+      color: var(--c-text-muted);
+      font-size: 1rem;
+    }
+    .comp-header .back-link {
+      display: inline-block;
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      color: var(--c-accent);
+      text-decoration: none;
+    }
+    .comp-header .back-link:hover { text-decoration: underline; }
+
+    /* ==========================================
+       Layout
+       ========================================== */
+    .comp-main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 2rem 6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 4rem;
+    }
+
+    .comp-section {}
+    .comp-section-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--c-text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    /* ==========================================
+       Type Scale
+       ========================================== */
+    .type-scale {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .type-row {
+      display: flex;
+      align-items: baseline;
+      gap: 1.25rem;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--c-border-subtle);
+    }
+    .type-row:last-child { border-bottom: none; }
+    .type-meta {
+      flex-shrink: 0;
+      width: 100px;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--c-text-muted);
+      text-align: right;
+    }
+    .type-sample {
+      font-family: var(--font-body);
+      color: var(--c-text);
+    }
+    .ts-display { font-size: 3rem; font-weight: 700; letter-spacing: -0.04em; line-height: 1.1; }
+    .ts-h1 { font-size: 2rem; font-weight: 600; letter-spacing: -0.03em; line-height: 1.2; }
+    .ts-h2 { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.3; }
+    .ts-h3 { font-size: 1.125rem; font-weight: 600; letter-spacing: -0.01em; }
+    .ts-body { font-size: 1rem; font-weight: 400; }
+    .ts-body-sm { font-size: 0.875rem; font-weight: 400; color: var(--c-text-secondary); }
+    .ts-caption { font-size: 0.75rem; font-weight: 500; color: var(--c-text-muted); }
+    .ts-mono { font-family: var(--font-mono); font-size: 0.8rem; color: var(--c-text-secondary); }
+    .ts-overline { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--c-text-muted); }
+
+    /* ==========================================
+       Surfaces
+       ========================================== */
+    .surface-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .surface-row {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      gap: 1rem;
+      align-items: center;
+    }
+    .surface-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--c-text-muted);
+      text-align: right;
+      line-height: 1.3;
+    }
+    .surface-label .surface-var {
+      display: block;
+      opacity: 0.6;
+      margin-top: 0.1rem;
+    }
+    .surface-swatch {
+      height: 56px;
+      border-radius: 10px;
+      border: 1px solid var(--c-border);
+      transition: background 0.3s ease;
+    }
+
+    .surface-example {
+      margin-top: 1.5rem;
+      padding: 2rem;
+      background: var(--c-bg);
+      border-radius: 16px;
+      border: 1px solid var(--c-border);
+    }
+    .surface-example-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--c-text-muted);
+      margin-bottom: 1rem;
+    }
+    .surface-nested {
+      background: var(--c-surface-0);
+      border-radius: 14px;
+      padding: 1.25rem;
+      border: 1px solid var(--c-border-subtle);
+    }
+    .surface-nested-card {
+      background: var(--c-surface);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--c-border);
+      box-shadow: var(--shadow-sm);
+    }
+    .surface-nested-card + .surface-nested-card {
+      margin-top: 0.6rem;
+    }
+    .surface-nested-card-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--c-text);
+      margin-bottom: 0.25rem;
+    }
+    .surface-nested-card-text {
+      font-size: 0.75rem;
+      color: var(--c-text-secondary);
+      line-height: 1.5;
+    }
+    .surface-nested-card .surface-raised-pill {
+      display: inline-block;
+      margin-top: 0.5rem;
+      background: var(--c-surface-raised);
+      border: 1px solid var(--c-border-subtle);
+      border-radius: 8px;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.65rem;
+      font-weight: 500;
+      color: var(--c-text-muted);
+    }
+    .surface-overlay-bar {
+      margin-top: 0.75rem;
+      background: var(--c-surface-overlay);
+      border: 1px solid var(--c-border);
+      border-radius: 10px;
+      padding: 0.6rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-md);
+    }
+    .surface-overlay-bar span {
+      font-size: 0.72rem;
+      color: var(--c-text-secondary);
+    }
+    .surface-overlay-bar .overlay-action {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--c-accent);
+    }
+
+    /* ==========================================
+       Buttons
+       ========================================== */
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+    }
+    .btn-row-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--c-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.5rem;
+    }
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    /* Shared base */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      padding: 0.55rem 1.15rem;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      line-height: 1.3;
+      white-space: nowrap;
+    }
+    .btn.sm {
+      font-size: 0.78rem;
+      padding: 0.4rem 0.85rem;
+      border-radius: 999px;
+    }
+    .btn.lg {
+      font-size: 0.95rem;
+      padding: 0.7rem 1.5rem;
+      border-radius: 999px;
+    }
+
+    /* Primary */
+    .btn-primary {
+      background: var(--c-btn-primary);
+      color: var(--c-bg);
+    }
+    .btn-primary:hover {
+      background: var(--c-btn-primary-hover);
+    }
+    .btn-primary:active {
+      transform: scale(0.97);
+    }
+
+    /* Secondary */
+    .btn-secondary {
+      background: transparent;
+      color: var(--c-text);
+      border: 1px solid var(--c-border);
+    }
+    .btn-secondary:hover {
+      background: var(--c-surface-0);
+      border-color: var(--c-accent);
+    }
+    .btn-secondary:active {
+      transform: scale(0.97);
+    }
+
+    /* Ghost */
+    .btn-ghost {
+      background: transparent;
+      color: var(--c-text-secondary);
+    }
+    .btn-ghost:hover {
+      background: var(--c-surface-0);
+      color: var(--c-text);
+    }
+    .btn-ghost:active {
+      transform: scale(0.97);
+    }
+
+    /* Glass */
+    .btn-glass {
+      color: var(--c-text);
+      backdrop-filter: blur(16px) saturate(140%);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      position: relative;
+    }
+    [data-theme="light"] .btn-glass {
+      background: rgba(255,255,255,0.45);
+      border: 1px solid rgba(255,255,255,0.6);
+      box-shadow:
+        0 0 0 0.5px rgba(0,0,0,0.04),
+        0 1px 3px rgba(0,0,0,0.06),
+        0 4px 12px rgba(0,0,0,0.03),
+        inset 0 1px 0 rgba(255,255,255,0.7),
+        inset 0 -0.5px 0 rgba(0,0,0,0.04);
+    }
+    [data-theme="light"] .btn-glass:hover {
+      background: rgba(255,255,255,0.6);
+      box-shadow:
+        0 0 0 0.5px rgba(0,0,0,0.05),
+        0 2px 6px rgba(0,0,0,0.08),
+        0 6px 16px rgba(0,0,0,0.04),
+        inset 0 1px 0 rgba(255,255,255,0.8),
+        inset 0 -0.5px 0 rgba(0,0,0,0.04);
+    }
+    [data-theme="dark"] .btn-glass {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow:
+        0 0 0 0.5px rgba(255,255,255,0.03),
+        0 1px 3px rgba(0,0,0,0.25),
+        0 4px 12px rgba(0,0,0,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.06),
+        inset 0 -0.5px 0 rgba(0,0,0,0.2);
+    }
+    [data-theme="dark"] .btn-glass:hover {
+      background: rgba(255,255,255,0.09);
+      box-shadow:
+        0 0 0 0.5px rgba(255,255,255,0.05),
+        0 2px 6px rgba(0,0,0,0.3),
+        0 6px 16px rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        inset 0 -0.5px 0 rgba(0,0,0,0.2);
+    }
+    .btn-glass:active {
+      transform: scale(0.97);
+    }
+
+    /* Glass showcase background */
+    .glass-showcase {
+      padding: 1.5rem;
+      border-radius: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      background: var(--c-bg);
+    }
+
+    /* ==========================================
+       Chat Input
+       ========================================== */
+    .search-wrapper {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 20px;
+      padding: 0;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .search-wrapper:focus-within {
+      border-color: var(--c-accent);
+      box-shadow: var(--shadow-md), 0 0 0 3px rgba(176,176,184,0.1);
+    }
+    .search-input-area {
+      flex: 1;
+      padding: 1.25rem 1.5rem 0.75rem;
+    }
+    .search-input-area input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      font-family: var(--font-body);
+      font-size: 1.05rem;
+      color: var(--c-text);
+      outline: none;
+      letter-spacing: -0.01em;
+    }
+    .search-input-area input::placeholder { color: var(--c-text-muted); }
+    .search-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 0.75rem 0.75rem 1.25rem;
+    }
+    .search-footer-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .search-footer-right {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+    .search-icon-btn {
+      width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      border: none; background: transparent;
+      color: var(--c-text-muted);
+      cursor: pointer;
+      border-radius: 50%;
+      transition: color 0.15s ease, background 0.15s ease;
+      padding: 0;
+    }
+    .search-icon-btn svg {
+      width: 18px; height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .search-icon-btn:hover {
+      color: var(--c-text-secondary);
+      background: var(--c-surface-0);
+    }
+    .model-selector {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--c-text);
+      cursor: pointer;
+      padding: 0;
+      border: none;
+      background: transparent;
+      letter-spacing: -0.01em;
+      transition: color 0.15s ease;
+    }
+    .model-selector:hover { color: var(--c-text-secondary); }
+    .model-selector .chevron {
+      font-size: 0.7rem;
+      color: var(--c-text-muted);
+      margin-left: 0.1rem;
+    }
+    .search-submit {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--c-btn-primary); color: var(--c-bg); border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      flex-shrink: 0;
+    }
+    .search-submit svg {
+      width: 18px; height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .search-submit:hover { background: var(--c-btn-primary-hover); }
+
+    /* ==========================================
+       Answer Card
+       ========================================== */
+    .answer-card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .answer-overline {
+      font-size: 0.65rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--c-accent); margin-bottom: 0.75rem;
+    }
+    .answer-title {
+      font-size: 1.5rem; font-weight: 600;
+      letter-spacing: -0.02em; line-height: 1.3;
+      margin-bottom: 0.35rem;
+    }
+    .answer-subtitle {
+      font-size: 0.9rem; color: var(--c-text-secondary);
+      margin-bottom: 1.25rem;
+    }
+    .answer-body {
+      font-size: 0.9rem; line-height: 1.7;
+      color: var(--c-text-secondary);
+    }
+    .answer-body p + p { margin-top: 0.75rem; }
+    .answer-body code {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      background: var(--c-code-bg);
+      padding: 0.15rem 0.4rem;
+      border-radius: 6px;
+    }
+    .answer-sources {
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--c-border-subtle);
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .source-chip {
+      font-size: 0.68rem; font-weight: 500;
+      padding: 0.25rem 0.6rem; border-radius: 8px;
+      background: var(--c-panel-inset);
+      border: 1px solid var(--c-border);
+      color: var(--c-text-secondary);
+    }
+
+    /* ==========================================
+       Financial Dashboard
+       ========================================== */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 640px) { .dash-grid { grid-template-columns: 1fr; } }
+
+    .dash-card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .dash-card.full { grid-column: 1 / -1; }
+
+    .dash-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+    .dash-card-title {
+      font-size: 0.72rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--c-text-muted);
+    }
+    .dash-badge {
+      font-size: 0.65rem; font-weight: 600;
+      padding: 0.15rem 0.45rem; border-radius: 6px;
+    }
+    .dash-badge.up { background: var(--c-green-bg); color: var(--c-green-text); }
+    .dash-badge.down { background: var(--c-red-bg); color: var(--c-red-text); }
+
+    .dash-value {
+      font-size: 1.75rem; font-weight: 700;
+      letter-spacing: -0.03em; line-height: 1.2;
+    }
+    .dash-sub {
+      font-size: 0.75rem; color: var(--c-text-muted);
+      margin-top: 0.2rem;
+    }
+
+    /* Sparkline */
+    .sparkline {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 40px;
+      margin-top: 0.75rem;
+    }
+    .spark-bar {
+      flex: 1;
+      border-radius: 3px 3px 0 0;
+      background: var(--c-accent);
+      opacity: 0.6;
+      transition: opacity 0.15s ease;
+    }
+    .spark-bar:last-child { opacity: 1; }
+
+    /* News list */
+    .news-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .news-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      font-size: 0.8rem;
+      line-height: 1.45;
+    }
+    .news-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      flex-shrink: 0; margin-top: 0.4rem;
+    }
+    .news-dot.green { background: var(--c-green); }
+    .news-dot.red { background: var(--c-red); }
+    .news-dot.yellow { background: var(--c-yellow); }
+    .news-text { color: var(--c-text-secondary); }
+    .news-time { color: var(--c-text-muted); font-size: 0.7rem; }
+
+    /* Holdings table */
+    .holdings-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+    .holdings-table th {
+      text-align: left;
+      font-weight: 500;
+      color: var(--c-text-muted);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0 0 0.6rem;
+      border-bottom: 1px solid var(--c-border);
+    }
+    .holdings-table th:last-child,
+    .holdings-table td:last-child { text-align: right; }
+    .holdings-table td {
+      padding: 0.55rem 0;
+      border-bottom: 1px solid var(--c-border-subtle);
+      color: var(--c-text-secondary);
+    }
+    .holdings-table .ticker {
+      font-family: var(--font-mono);
+      font-weight: 500;
+      color: var(--c-text);
+      font-size: 0.75rem;
+    }
+
+    /* ==========================================
+       Chain of Thought
+       ========================================== */
+    .cot-container {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .cot-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--c-border);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--c-text-secondary);
+    }
+    .cot-header .cot-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--c-accent);
+      animation: cotPulse 2s ease-in-out infinite;
+    }
+    @keyframes cotPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .cot-body {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .cot-step {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.3rem 0;
+      font-size: 0.85rem;
+    }
+    .cot-step.child {
+      padding-left: 1.75rem;
+      font-size: 0.8rem;
+    }
+    .cot-step .cot-type {
+      font-size: 0.8rem;
+      color: var(--c-text-muted);
+    }
+    .cot-step .cot-label { color: var(--c-text-secondary); }
+    .cot-step.child .cot-label { color: var(--c-text-muted); }
+    .cot-step.completed .cot-label { color: var(--c-text-muted); }
+    .cot-step .cot-icon {
+      font-size: 0.8rem; width: 16px;
+      text-align: center; flex-shrink: 0;
+      color: var(--c-text-muted);
+    }
+    .cot-step .cot-icon.check { color: var(--c-green); font-weight: 600; }
+    .cot-step .cot-spinner {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      color: var(--c-spinner);
+      flex-shrink: 0;
+    }
+
+    /* Shimmer on COT active steps */
+    .cot-step.active .cot-spinner {
+      background: linear-gradient(90deg,
+        var(--c-shimmer-base) 0%, var(--c-shimmer-base) 35%,
+        var(--c-shimmer-peak) 50%,
+        var(--c-shimmer-base) 65%, var(--c-shimmer-base) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .cot-step.active .cot-type {
+      background: linear-gradient(90deg,
+        var(--c-text-muted) 0%, var(--c-text-muted) 35%,
+        var(--c-text-secondary) 50%,
+        var(--c-text-muted) 65%, var(--c-text-muted) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+
+    .cot-stream {
+      margin-top: 1rem;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--c-border);
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: var(--c-text-secondary);
+    }
+    .cot-stream .stream-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: var(--c-accent);
+      vertical-align: text-bottom;
+      animation: cursorBlink 1s step-end infinite;
+    }
+    @keyframes cursorBlink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    /* ==========================================
+       Loaders
+       ========================================== */
+    .loader-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 640px) { .loader-pair { grid-template-columns: 1fr; } }
+    .loader-panel {
+      border-radius: 16px;
+      padding: 1.5rem 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+    .loader-panel.dark-panel {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+    }
+    .loader-panel.light-panel {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+    }
+    /* Force dark/light regardless of theme */
+    [data-theme="light"] .loader-panel.dark-panel {
+      background: #1e1e23;
+      border-color: #2e2e36;
+    }
+    [data-theme="light"] .loader-panel.dark-panel .loader-step-type { color: #6e6e80; }
+    [data-theme="light"] .loader-panel.dark-panel .loader-step-label { color: #d8d8df; }
+    [data-theme="light"] .loader-panel.dark-panel .loader.text-spinner { color: #a4a4b0; }
+    [data-theme="light"] .loader-panel.light-panel {
+      background: #ffffff;
+      border-color: #e8e8ec;
+    }
+    [data-theme="light"] .loader-panel.light-panel .loader-step-type { color: #9d9daa; }
+    [data-theme="light"] .loader-panel.light-panel .loader-step-label { color: #2c2c3a; }
+    [data-theme="light"] .loader-panel.light-panel .loader.text-spinner { color: #6b6b7b; }
+
+    [data-theme="dark"] .loader-panel.dark-panel {
+      background: #1e1e23;
+      border-color: #2e2e36;
+    }
+    [data-theme="dark"] .loader-panel.dark-panel .loader-step-type { color: #6e6e80; }
+    [data-theme="dark"] .loader-panel.dark-panel .loader-step-label { color: #d8d8df; }
+    [data-theme="dark"] .loader-panel.dark-panel .loader.text-spinner { color: #a4a4b0; }
+    [data-theme="dark"] .loader-panel.light-panel {
+      background: #ffffff;
+      border-color: #e8e8ec;
+    }
+    [data-theme="dark"] .loader-panel.light-panel .loader-step-type { color: #9d9daa; }
+    [data-theme="dark"] .loader-panel.light-panel .loader-step-label { color: #2c2c3a; }
+    [data-theme="dark"] .loader-panel.light-panel .loader.text-spinner { color: #6b6b7b; }
+
+    .loader-step {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.35rem 0;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      letter-spacing: -0.01em;
+    }
+    .loader-step .loader.text-spinner {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      min-height: 24px;
+      flex-shrink: 0;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      line-height: 1;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .loader-step-type {
+      font-size: 0.85rem;
+    }
+    .loader-step-label {
+      font-weight: 500;
+    }
+
+    /* Shimmer on dark loader panel */
+    .loader-panel.dark-panel .loader-step .loader.text-spinner {
+      background: linear-gradient(
+        90deg,
+        #a4a4b0 0%, #a4a4b0 35%, #f0f0f4 50%, #a4a4b0 65%, #a4a4b0 100%
+      );
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .loader-panel.dark-panel .loader-step .loader-step-type {
+      background: linear-gradient(
+        90deg,
+        #6e6e80 0%, #6e6e80 35%, #d8d8df 50%, #6e6e80 65%, #6e6e80 100%
+      );
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+
+    /* Shimmer on light loader panel */
+    .loader-panel.light-panel .loader-step .loader.text-spinner {
+      background: linear-gradient(
+        90deg,
+        #6b6b7b 0%, #6b6b7b 35%, #2c2c3a 50%, #6b6b7b 65%, #6b6b7b 100%
+      );
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .loader-panel.light-panel .loader-step .loader-step-type {
+      background: linear-gradient(
+        90deg,
+        #9d9daa 0%, #9d9daa 35%, #3f3f46 50%, #9d9daa 65%, #9d9daa 100%
+      );
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+
+    /* ==========================================
+       Agent Swarm
+       ========================================== */
+    .swarm-coordinator {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 14px;
+      padding: 0.85rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--c-text-secondary);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1rem;
+    }
+    .swarm-coordinator .cot-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--c-accent);
+      animation: cotPulse 2s ease-in-out infinite;
+    }
+    .swarm-coordinator .swarm-task {
+      color: var(--c-text);
+      font-weight: 600;
+    }
+    .swarm-coordinator .swarm-count {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--c-text-muted);
+    }
+    .swarm-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 640px) { .swarm-grid { grid-template-columns: 1fr; } }
+    .swarm-grid .cot-container {
+      box-shadow: var(--shadow-sm);
+    }
+    .swarm-grid .cot-header {
+      padding: 0.75rem 1.15rem;
+      font-size: 0.75rem;
+    }
+    .swarm-grid .cot-header .cot-dot {
+      width: 7px; height: 7px;
+    }
+    .swarm-grid .cot-body {
+      padding: 1rem 1.15rem;
+      gap: 0.1rem;
+    }
+    .swarm-grid .cot-step {
+      font-size: 0.8rem;
+      padding: 0.25rem 0;
+    }
+    .swarm-grid .cot-step.child {
+      padding-left: 1.5rem;
+      font-size: 0.75rem;
+    }
+    .swarm-grid .cot-step .cot-spinner {
+      font-size: 0.85rem;
+    }
+    .swarm-grid .cot-step .cot-type {
+      font-size: 0.72rem;
+    }
+    .swarm-grid .cot-step .cot-icon {
+      font-size: 0.75rem;
+      width: 14px;
+    }
+
+    /* ==========================================
+       Compact Swarm
+       ========================================== */
+    .compact-swarm {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 14px;
+      padding: 1.5rem 1.75rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .compact-swarm-intro {
+      font-size: 0.88rem;
+      color: var(--c-text-secondary);
+      margin-bottom: 1.25rem;
+      line-height: 1.6;
+    }
+    .compact-agent {
+      padding: 0.35rem 0;
+    }
+    .compact-agent + .compact-agent {
+      margin-top: 0.25rem;
+    }
+    .compact-agent-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      font-size: 0.88rem;
+      line-height: 1.4;
+      transition: color 0.1s ease;
+    }
+    .compact-agent-header:hover {
+      color: var(--c-text);
+    }
+    .compact-agent-icon {
+      width: 16px; height: 16px;
+      flex-shrink: 0;
+      color: var(--c-text-muted);
+    }
+    .compact-agent-icon svg {
+      width: 16px; height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .compact-agent-role {
+      font-weight: 600;
+      color: var(--c-text);
+    }
+    .compact-agent-task {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--c-text-muted);
+    }
+    /* Shimmer on compact agent header text */
+    .compact-agent-header .compact-agent-role {
+      background: linear-gradient(90deg,
+        var(--c-text) 0%, var(--c-text) 35%,
+        var(--c-text-muted) 50%,
+        var(--c-text) 65%, var(--c-text) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .compact-agent-header .compact-agent-task {
+      background: linear-gradient(90deg,
+        var(--c-text-muted) 0%, var(--c-text-muted) 35%,
+        var(--c-text-secondary) 50%,
+        var(--c-text-muted) 65%, var(--c-text-muted) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .compact-agent-header .compact-agent-icon {
+      background: linear-gradient(90deg,
+        var(--c-text-muted) 0%, var(--c-text-muted) 35%,
+        var(--c-text-secondary) 50%,
+        var(--c-text-muted) 65%, var(--c-text-muted) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .compact-agent-header .compact-agent-icon svg {
+      stroke: var(--c-text-muted);
+    }
+    .compact-agent-header .loader.text-spinner {
+      background: linear-gradient(90deg,
+        var(--c-text-muted) 0%, var(--c-text-muted) 35%,
+        var(--c-text) 50%,
+        var(--c-text-muted) 65%, var(--c-text-muted) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .compact-agent-body {
+      margin-left: 20px;
+      padding: 0.5rem 0 0.35rem 1rem;
+      border-left: 2px solid var(--c-border);
+      display: none;
+    }
+    .compact-agent.expanded .compact-agent-body {
+      display: block;
+    }
+    .compact-agent-body .agent-sub-step {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.2rem 0;
+      font-size: 0.8rem;
+      color: var(--c-text-muted);
+    }
+    .compact-agent-body .agent-sub-step .sub-icon {
+      width: 14px; height: 14px;
+      flex-shrink: 0;
+    }
+    .compact-agent-body .agent-sub-step .sub-icon svg {
+      width: 14px; height: 14px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .compact-agent-body .agent-sub-label {
+      font-weight: 500;
+      color: var(--c-text-secondary);
+    }
+    .compact-agent-body .agent-output {
+      margin-top: 0.35rem;
+      font-size: 0.78rem;
+      line-height: 1.65;
+      color: var(--c-text-muted);
+    }
+    .compact-agent-body .agent-output p + p {
+      margin-top: 0.25rem;
+    }
+    .compact-agent-body .agent-output code {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+    }
+    .compact-agent-chevron {
+      width: 12px; height: 12px;
+      stroke: var(--c-text-muted);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+      transition: transform 0.15s ease;
+    }
+    .compact-agent.expanded .compact-agent-chevron {
+      transform: rotate(90deg);
+    }
+
+    /* ==========================================
+       Streaming Text
+       ========================================== */
+    .stream-card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 14px;
+      padding: 1.5rem 1.75rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .stream-output {
+      font-size: 0.9rem;
+      line-height: 1.75;
+      color: var(--c-text-secondary);
+      min-height: 4rem;
+    }
+    .stream-output .stream-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: var(--c-accent);
+      vertical-align: text-bottom;
+      animation: cursorBlink 1s step-end infinite;
+    }
+    .stream-word {
+      display: inline;
+      animation: wordReveal 0.25s ease-out forwards;
+    }
+    @keyframes wordReveal {
+      from { opacity: 0; filter: blur(4px); }
+      to   { opacity: 1; filter: blur(0); }
+    }
+
+    /* ==========================================
+       Tool Use Cards
+       ========================================== */
+    .tool-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .tool-card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border-subtle);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .tool-card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .tool-card-header:hover {
+      background: var(--c-surface-raised);
+    }
+    .tool-card-icon {
+      width: 26px; height: 26px;
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      background: var(--c-surface-raised);
+      border: 1px solid var(--c-border-subtle);
+    }
+    .tool-card-icon svg {
+      width: 14px; height: 14px;
+      stroke: var(--c-text-muted);
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .tool-card-name {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--c-text);
+    }
+    .tool-card-status {
+      margin-left: auto;
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 0.15rem 0.45rem;
+      border-radius: 6px;
+    }
+    .tool-card-status.done {
+      background: var(--c-green-bg);
+      color: var(--c-green-text);
+    }
+    .tool-card-status.running {
+      background: var(--c-surface-0);
+      color: var(--c-text-muted);
+    }
+    .tool-card-body {
+      padding: 0 1rem 0.85rem;
+      border-top: 1px solid var(--c-border-subtle);
+    }
+    .tool-card-body pre {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      line-height: 1.6;
+      color: var(--c-text-muted);
+      background: var(--c-surface-0);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-top: 0.65rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+    .tool-card.collapsed .tool-card-body {
+      display: none;
+    }
+    .tool-card-chevron {
+      width: 14px; height: 14px;
+      stroke: var(--c-text-muted);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+    }
+    .tool-card.collapsed .tool-card-chevron {
+      transform: rotate(-90deg);
+    }
+
+    /* ==========================================
+       Skeleton Loaders
+       ========================================== */
+    .skel-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 640px) { .skel-grid { grid-template-columns: 1fr; } }
+    .skel-card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .skel-card-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--c-text-muted);
+      margin-bottom: 1rem;
+    }
+    .skel-line {
+      height: 10px;
+      border-radius: 5px;
+      background: var(--c-surface-0);
+      margin-bottom: 0.6rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .skel-line::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, var(--c-border) 50%, transparent 100%);
+      background-size: 200% 100%;
+      animation: skelShimmer 1.8s ease-in-out infinite;
+    }
+    @keyframes skelShimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .skel-line.w100 { width: 100%; }
+    .skel-line.w80 { width: 80%; }
+    .skel-line.w60 { width: 60%; }
+    .skel-line.w40 { width: 40%; }
+    .skel-circle {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--c-surface-0);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 0.6rem;
+    }
+    .skel-circle::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent 0%, var(--c-border) 50%, transparent 100%);
+      background-size: 200% 100%;
+      animation: skelShimmer 1.8s ease-in-out infinite;
+    }
+    .skel-pill {
+      display: inline-block;
+      width: 80px; height: 30px;
+      border-radius: 999px;
+      background: var(--c-surface-0);
+      position: relative;
+      overflow: hidden;
+      margin-right: 0.5rem;
+    }
+    .skel-pill::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent 0%, var(--c-border) 50%, transparent 100%);
+      background-size: 200% 100%;
+      animation: skelShimmer 1.8s ease-in-out infinite;
+    }
+    .skel-card-outline {
+      height: 80px;
+      border-radius: 10px;
+      background: var(--c-surface-0);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 0.6rem;
+    }
+    .skel-card-outline::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent 0%, var(--c-border) 50%, transparent 100%);
+      background-size: 200% 100%;
+      animation: skelShimmer 1.8s ease-in-out infinite;
+    }
+    .skel-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.6rem;
+    }
+
+    /* ==========================================
+       Command Palette
+       ========================================== */
+    .cmd-palette {
+      background: var(--c-surface-overlay);
+      border: 1px solid var(--c-border);
+      border-radius: 14px;
+      box-shadow: var(--shadow-lg);
+      max-width: 480px;
+      overflow: hidden;
+    }
+    .cmd-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--c-border);
+    }
+    .cmd-prefix {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--c-text-muted);
+      flex-shrink: 0;
+    }
+    .cmd-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-family: var(--font-body);
+      font-size: 0.88rem;
+      color: var(--c-text);
+      outline: none;
+    }
+    .cmd-input::placeholder { color: var(--c-text-muted); }
+    .cmd-list {
+      padding: 0.35rem 0.4rem;
+    }
+    .cmd-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.55rem 0.75rem;
+      font-size: 0.82rem;
+      color: var(--c-text-secondary);
+      cursor: pointer;
+      transition: background 0.1s ease;
+      border-radius: 8px;
+    }
+    .cmd-item:hover { background: var(--c-surface-0); }
+    .cmd-item.active {
+      background: var(--c-surface-0);
+      color: var(--c-text);
+    }
+    .cmd-item-icon {
+      width: 20px; height: 20px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .cmd-item-icon svg {
+      width: 16px; height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .cmd-item-label { flex: 1; }
+    .cmd-item-shortcut {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--c-text-muted);
+      display: flex;
+      gap: 0.2rem;
+    }
+    .cmd-item-shortcut kbd {
+      background: var(--c-surface-0);
+      border: 1px solid var(--c-border);
+      border-radius: 4px;
+      padding: 0.1rem 0.3rem;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+    }
+
+    /* ==========================================
+       Model Selector
+       ========================================== */
+    .model-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+    @media (max-width: 640px) { .model-grid { grid-template-columns: 1fr; } }
+    .model-card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+    .model-card:hover {
+      border-color: var(--c-accent);
+      box-shadow: var(--shadow-md);
+    }
+    .model-card.selected {
+      border-color: var(--c-text);
+      box-shadow: 0 0 0 1px var(--c-text);
+    }
+    .model-card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.55rem;
+    }
+    .model-card-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: var(--c-surface-0);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.85rem;
+      color: var(--c-text-muted);
+    }
+    .model-card.selected .model-card-icon {
+      background: var(--c-text);
+      color: var(--c-bg);
+    }
+    .model-card-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--c-text);
+    }
+    .model-card-id {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--c-text-muted);
+      margin-top: 0.05rem;
+    }
+    .model-card-check {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 1.5px solid var(--c-border);
+      display: flex; align-items: center; justify-content: center;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+    .model-card.selected .model-card-check {
+      background: var(--c-text);
+      border-color: var(--c-text);
+      color: var(--c-bg);
+    }
+    .model-card-check svg {
+      width: 11px; height: 11px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0;
+    }
+    .model-card.selected .model-card-check svg { opacity: 1; }
+    .model-card-desc {
+      font-size: 0.78rem;
+      color: var(--c-text-muted);
+      line-height: 1.5;
+      margin-bottom: 0.85rem;
+    }
+    .model-card-meter {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .model-meter-label {
+      font-size: 0.62rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--c-text-muted);
+      width: 52px;
+      flex-shrink: 0;
+    }
+    .model-meter-bar {
+      flex: 1;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--c-surface-0);
+      overflow: hidden;
+    }
+    .model-meter-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--c-accent);
+      transition: width 0.3s ease;
+    }
+    .model-card.selected .model-meter-fill {
+      background: var(--c-text);
+    }
+    .model-card-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+    .model-badge {
+      font-size: 0.62rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.18rem 0.45rem;
+      border-radius: 6px;
+      background: var(--c-surface-0);
+      color: var(--c-text-muted);
+      border: 1px solid var(--c-border-subtle);
+    }
+
+    /* ==========================================
+       Color Palette
+       ========================================== */
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 0.75rem;
+    }
+    .swatch {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--c-border);
+      background: var(--c-surface);
+    }
+    .swatch-color {
+      height: 64px;
+      transition: background 0.3s ease;
+    }
+    .swatch-info {
+      padding: 0.55rem 0.65rem;
+    }
+    .swatch-name {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--c-text);
+    }
+    .swatch-value {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--c-text-muted);
+      margin-top: 0.1rem;
+    }
+
+    /* ==========================================
+       Footer
+       ========================================== */
+    .comp-footer {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: var(--c-text-muted);
+      font-size: 0.78rem;
+    }
+
+    /* ==========================================
+       Responsive
+       ========================================== */
+    @media (max-width: 640px) {
+      .comp-header { padding: 3rem 1.5rem 2rem; }
+      .comp-header h1 { font-size: 1.8rem; }
+      .comp-main { padding: 0 1rem 4rem; gap: 3rem; }
+      .type-meta { width: 70px; font-size: 0.6rem; }
+    }
+  </style>
+</head>
+<body class="comp-page">
+
+  <!-- Hamburger Menu -->
+  <button class="menu-btn" id="menu-btn" aria-label="Menu">
+    <svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+  </button>
+  <div class="menu-dropdown" id="menu-dropdown">
+    <a href="components.html">Components</a>
+    <a href="asi-v0-scope.html">ASI Experience</a>
+  </div>
+
+  <!-- Theme Toggle -->
+  <button class="theme-toggle" id="themeToggle">
+    <span class="toggle-icon" id="toggleIcon">&#x263E;</span>
+    <span id="toggleLabel">Dark</span>
+  </button>
+
+  <!-- Header -->
+  <header class="comp-header">
+    <h1>Perplexity UI</h1>
+  </header>
+
+  <main class="comp-main">
+
+    <!-- ===================== TYPE SCALE ===================== -->
+    <section class="comp-section">
+      <div class="comp-section-label">Type Scale</div>
+      <div class="type-scale">
+        <div class="type-row">
+          <div class="type-meta">48 / 700</div>
+          <div class="type-sample ts-display">Agent UI</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">32 / 600</div>
+          <div class="type-sample ts-h1">Page Heading</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">24 / 600</div>
+          <div class="type-sample ts-h2">Section Title</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">18 / 600</div>
+          <div class="type-sample ts-h3">Card Heading</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">16 / 400</div>
+          <div class="type-sample ts-body">Body text for paragraphs and descriptions across the interface.</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">14 / 400</div>
+          <div class="type-sample ts-body-sm">Secondary body text for supporting information and metadata.</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">12 / 500</div>
+          <div class="type-sample ts-caption">Caption &middot; Timestamps &middot; Labels</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">13 / mono</div>
+          <div class="type-sample ts-mono">const agent = new Agent({ model: 'claude-4' })</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">10 / 600</div>
+          <div class="type-sample ts-overline">Overline &middot; Section Label</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== SURFACES ===================== -->
+    <section class="comp-section">
+      <div class="comp-section-label">Surfaces</div>
+      <div class="surface-stack">
+        <div class="surface-row">
+          <div class="surface-label">Background<span class="surface-var">--c-bg</span></div>
+          <div class="surface-swatch" style="background: var(--c-bg);"></div>
+        </div>
+        <div class="surface-row">
+          <div class="surface-label">Inset<span class="surface-var">--c-surface-0</span></div>
+          <div class="surface-swatch" style="background: var(--c-surface-0);"></div>
+        </div>
+        <div class="surface-row">
+          <div class="surface-label">Surface<span class="surface-var">--c-surface</span></div>
+          <div class="surface-swatch" style="background: var(--c-surface);"></div>
+        </div>
+        <div class="surface-row">
+          <div class="surface-label">Raised<span class="surface-var">--c-surface-raised</span></div>
+          <div class="surface-swatch" style="background: var(--c-surface-raised);"></div>
+        </div>
+        <div class="surface-row">
+          <div class="surface-label">Overlay<span class="surface-var">--c-surface-overlay</span></div>
+          <div class="surface-swatch" style="background: var(--c-surface-overlay); box-shadow: var(--shadow-md);"></div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ===================== BUTTONS ===================== -->
+    <section class="comp-section">
+      <div class="comp-section-label">Buttons</div>
+      <div class="btn-group">
+
+        <!-- Primary -->
+        <div>
+          <div class="btn-row-label">Primary</div>
+          <div class="btn-row">
+            <button class="btn btn-primary sm">Small</button>
+            <button class="btn btn-primary">Submit</button>
+            <button class="btn btn-primary lg">Get Started</button>
+            <button class="btn btn-primary">
+              <span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.85rem; color: var(--c-bg); width:16px; height:16px;"></span>
+              Processing
+            </button>
+          </div>
+        </div>
+
+        <!-- Secondary -->
+        <div>
+          <div class="btn-row-label">Secondary</div>
+          <div class="btn-row">
+            <button class="btn btn-secondary sm">Cancel</button>
+            <button class="btn btn-secondary">View Details</button>
+            <button class="btn btn-secondary lg">Learn More</button>
+            <button class="btn btn-ghost">Skip</button>
+            <button class="btn btn-ghost sm">Dismiss</button>
+          </div>
+        </div>
+
+        <!-- Glass -->
+        <div>
+          <div class="btn-row-label">Glass</div>
+          <div class="glass-showcase">
+            <button class="btn btn-glass sm">Filter</button>
+            <button class="btn btn-glass">Apply Effect</button>
+            <button class="btn btn-glass lg">Open Dashboard</button>
+            <button class="btn btn-glass">
+              <span class="loader text-spinner sm" data-spinner="orbit" style="font-size:0.85rem; width:16px; height:16px;"></span>
+              Loading
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================== SEARCH INPUT ===================== -->
+    <section class="comp-section">
+      <div class="comp-section-label">Search</div>
+      <div class="search-wrapper">
+        <div class="search-input-area">
+          <input type="text" placeholder="Type / for commands">
+        </div>
+        <div class="search-footer">
+          <div class="search-footer-left">
+            <button class="search-icon-btn" title="Attach">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="search-icon-btn" title="History">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
+            </button>
+          </div>
+          <div class="search-footer-right">
+            <div class="model-selector">
+              Opus 4.5
+              <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:var(--c-text-muted); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <button class="search-submit">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== ANSWER ===================== -->
+    <section class="comp-section">
+      <div class="comp-section-label">Answer</div>
+      <div class="answer-card">
+        <div class="answer-overline">Answer</div>
+        <div class="answer-title">Implementing Streaming Responses with Tool Use</div>
+        <div class="answer-subtitle">A guide to real-time agent output with interleaved tool calls</div>
+        <div class="answer-body">
+          <p>Streaming responses with tool use requires handling two concurrent data flows: the text generation stream and the tool call/result cycle. The agent emits text tokens incrementally while pausing to execute tools when needed.</p>
+          <p>Begin by establishing a streaming connection using <code>stream: true</code> in your API request. When the model decides to use a tool, it emits a <code>tool_use</code> content block. Your client should execute the tool, then send the result back as a <code>tool_result</code> to continue generation.</p>
+          <p>The key pattern is an event loop that processes both <code>content_block_delta</code> events for text and <code>content_block_stop</code> events that signal tool use boundaries. This allows the UI to render text as it arrives while showing loading states during tool execution.</p>
+        </div>
+        <div class="answer-sources">
+          <span class="source-chip">Anthropic Docs</span>
+          <span class="source-chip">API Reference</span>
+          <span class="source-chip">GitHub Examples</span>
+          <span class="source-chip">SDK Guide</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== CHAIN OF THOUGHT ===================== -->
+    <section class="comp-section">
+      <div class="comp-section-label">Chain of Thought</div>
+      <div class="cot-container">
+        <div class="cot-header">
+          <span class="cot-dot"></span>
+          Thinking...
+        </div>
+        <div class="cot-body" id="cot-steps">
+          <div class="cot-step active">
+            <span class="cot-spinner loader text-spinner wide" data-spinner="braille"></span>
+            <span class="cot-type">Agent</span>
+            <span class="cot-label">Analyze streaming implementation patterns</span>
+          </div>
+          <div class="cot-step child completed">
+            <span class="cot-icon check">&#x2713;</span>
+            <span class="cot-label">Search documentation for streaming API</span>
+          </div>
+          <div class="cot-step child completed">
+            <span class="cot-icon check">&#x2713;</span>
+            <span class="cot-label">Read src/api/stream.ts</span>
+          </div>
+          <div class="cot-step child completed">
+            <span class="cot-icon check">&#x2713;</span>
+            <span class="cot-label">Read src/hooks/useStreaming.ts</span>
+          </div>
+          <div class="cot-step child active">
+            <span class="cot-spinner loader text-spinner wide sm" data-spinner="pulse"></span>
+            <span class="cot-label">Generate implementation with tool use handling</span>
+          </div>
+        </div>
+        <div class="cot-stream" id="cot-stream">
+          To implement streaming responses with tool use, you'll need to set up an event-driven architecture that handles both text deltas and tool execution cycles. Here's the approach I recommend based on your existing codebase<span class="stream-cursor"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== FINANCIAL DASHBOARD ===================== -->
+    <section class="comp-section">
+      <div class="comp-section-label">Financial Dashboard</div>
+      <div class="dash-grid">
+
+        <!-- Portfolio Value -->
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <span class="dash-card-title">Portfolio Value</span>
+            <span class="dash-badge up">+2.4%</span>
+          </div>
+          <div class="dash-value">$184,291</div>
+          <div class="dash-sub">+$4,312 today</div>
+          <div class="sparkline">
+            <div class="spark-bar" style="height:45%"></div>
+            <div class="spark-bar" style="height:52%"></div>
+            <div class="spark-bar" style="height:48%"></div>
+            <div class="spark-bar" style="height:61%"></div>
+            <div class="spark-bar" style="height:55%"></div>
+            <div class="spark-bar" style="height:67%"></div>
+            <div class="spark-bar" style="height:72%"></div>
+            <div class="spark-bar" style="height:68%"></div>
+            <div class="spark-bar" style="height:75%"></div>
+            <div class="spark-bar" style="height:71%"></div>
+            <div class="spark-bar" style="height:82%"></div>
+            <div class="spark-bar" style="height:88%"></div>
+          </div>
+        </div>
+
+        <!-- Daily P&L -->
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <span class="dash-card-title">Daily P&amp;L</span>
+            <span class="dash-badge up">+$4,312</span>
+          </div>
+          <div class="dash-value" style="color: var(--c-green-text);">+2.4%</div>
+          <div class="dash-sub">vs. S&amp;P 500 +0.8%</div>
+          <div class="sparkline">
+            <div class="spark-bar" style="height:30%"></div>
+            <div class="spark-bar" style="height:42%"></div>
+            <div class="spark-bar" style="height:38%"></div>
+            <div class="spark-bar" style="height:55%"></div>
+            <div class="spark-bar" style="height:70%"></div>
+            <div class="spark-bar" style="height:62%"></div>
+            <div class="spark-bar" style="height:78%"></div>
+            <div class="spark-bar" style="height:85%"></div>
+            <div class="spark-bar" style="height:80%"></div>
+            <div class="spark-bar" style="height:90%"></div>
+            <div class="spark-bar" style="height:95%"></div>
+            <div class="spark-bar" style="height:100%"></div>
+          </div>
+        </div>
+
+        <!-- Holdings -->
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <span class="dash-card-title">Top Holdings</span>
+          </div>
+          <table class="holdings-table">
+            <thead>
+              <tr><th>Asset</th><th>Shares</th><th>Value</th><th>Change</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="ticker">NVDA</td><td>142</td><td>$18,460</td><td style="color:var(--c-green-text);">+3.2%</td></tr>
+              <tr><td class="ticker">AAPL</td><td>85</td><td>$15,725</td><td style="color:var(--c-green-text);">+1.1%</td></tr>
+              <tr><td class="ticker">MSFT</td><td>38</td><td>$14,820</td><td style="color:var(--c-green-text);">+0.8%</td></tr>
+              <tr><td class="ticker">TSLA</td><td>64</td><td>$12,160</td><td style="color:var(--c-red);">-1.4%</td></tr>
+              <tr><td class="ticker">GOOG</td><td>52</td><td>$9,360</td><td style="color:var(--c-green-text);">+2.1%</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Market News -->
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <span class="dash-card-title">Market News</span>
+            <span class="loader text-spinner" data-spinner="braille" style="font-size:0.85rem; color: var(--c-text-muted);"></span>
+          </div>
+          <div class="news-list">
+            <div class="news-item">
+              <span class="news-dot green"></span>
+              <div>
+                <div class="news-text">Fed signals rate hold through Q2, markets rally on soft-landing optimism</div>
+                <div class="news-time">12 min ago</div>
+              </div>
+            </div>
+            <div class="news-item">
+              <span class="news-dot green"></span>
+              <div>
+                <div class="news-text">NVIDIA reports record Q4 earnings, data center revenue up 409% YoY</div>
+                <div class="news-time">47 min ago</div>
+              </div>
+            </div>
+            <div class="news-item">
+              <span class="news-dot red"></span>
+              <div>
+                <div class="news-text">Tesla recalls 2.2M vehicles over warning light font size compliance</div>
+                <div class="news-time">1h ago</div>
+              </div>
+            </div>
+            <div class="news-item">
+              <span class="news-dot yellow"></span>
+              <div>
+                <div class="news-text">EU antitrust probe targets Apple's App Store commission structure</div>
+                <div class="news-time">2h ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================== LOADERS ===================== -->
+    <section class="comp-section">
+      <div class="comp-section-label">Loaders</div>
+      <div class="loader-pair">
+        <div class="loader-panel dark-panel" id="loader-dark"></div>
+        <div class="loader-panel light-panel" id="loader-light"></div>
+      </div>
+    </section>
+
+    <!-- ===================== AGENT SWARM ===================== -->
+    <section class="comp-section">
+      <div class="comp-section-label">Agent Swarm</div>
+
+      <div class="swarm-coordinator">
+        <span class="cot-dot"></span>
+        <span>Orchestrator</span>
+        <span class="swarm-task">Perform full codebase audit with security, tests, and documentation</span>
+        <span class="swarm-count">4 agents</span>
+      </div>
+
+      <div class="swarm-grid">
+
+        <!-- Agent 1: Code Analyst -->
+        <div class="cot-container">
+          <div class="cot-header">
+            <span class="cot-dot"></span>
+            Code Analyst
+          </div>
+          <div class="cot-body">
+            <div class="cot-step active">
+              <span class="cot-spinner loader text-spinner" data-spinner="braille"></span>
+              <span class="cot-type">Analyze</span>
+              <span class="cot-label">Repository structure</span>
+            </div>
+            <div class="cot-step child completed">
+              <span class="cot-icon check">&#x2713;</span>
+              <span class="cot-label">Read tsconfig.json</span>
+            </div>
+            <div class="cot-step child completed">
+              <span class="cot-icon check">&#x2713;</span>
+              <span class="cot-label">Read package.json</span>
+            </div>
+            <div class="cot-step child active">
+              <span class="cot-spinner loader text-spinner wide sm" data-spinner="scan"></span>
+              <span class="cot-label">Scan dependency graph</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agent 2: Test Runner -->
+        <div class="cot-container">
+          <div class="cot-header">
+            <span class="cot-dot"></span>
+            Test Runner
+          </div>
+          <div class="cot-body">
+            <div class="cot-step completed">
+              <span class="cot-icon check">&#x2713;</span>
+              <span class="cot-type">Run</span>
+              <span class="cot-label">Unit tests — 142 passed</span>
+            </div>
+            <div class="cot-step active">
+              <span class="cot-spinner loader text-spinner" data-spinner="orbit"></span>
+              <span class="cot-type">Run</span>
+              <span class="cot-label">Integration tests</span>
+            </div>
+            <div class="cot-step child completed">
+              <span class="cot-icon check">&#x2713;</span>
+              <span class="cot-label">API endpoint tests</span>
+            </div>
+            <div class="cot-step child active">
+              <span class="cot-spinner loader text-spinner wide sm" data-spinner="pulse"></span>
+              <span class="cot-label">Database migration tests</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agent 3: Security Auditor -->
+        <div class="cot-container">
+          <div class="cot-header">
+            <span class="cot-dot"></span>
+            Security Auditor
+          </div>
+          <div class="cot-body">
+            <div class="cot-step completed">
+              <span class="cot-icon check">&#x2713;</span>
+              <span class="cot-type">Check</span>
+              <span class="cot-label">OWASP top 10</span>
+            </div>
+            <div class="cot-step active">
+              <span class="cot-spinner loader text-spinner wide" data-spinner="snake"></span>
+              <span class="cot-type">Scan</span>
+              <span class="cot-label">CVE database</span>
+            </div>
+            <div class="cot-step child completed">
+              <span class="cot-icon check">&#x2713;</span>
+              <span class="cot-label">Check npm audit</span>
+            </div>
+            <div class="cot-step child active">
+              <span class="cot-spinner loader text-spinner wide sm" data-spinner="cascade"></span>
+              <span class="cot-label">Scan auth token handling</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agent 4: Docs Generator -->
+        <div class="cot-container">
+          <div class="cot-header">
+            <span class="cot-dot"></span>
+            Docs Generator
+          </div>
+          <div class="cot-body">
+            <div class="cot-step completed">
+              <span class="cot-icon check">&#x2713;</span>
+              <span class="cot-type">Parse</span>
+              <span class="cot-label">JSDoc comments</span>
+            </div>
+            <div class="cot-step active">
+              <span class="cot-spinner loader text-spinner wide" data-spinner="columns"></span>
+              <span class="cot-type">Generate</span>
+              <span class="cot-label">API reference</span>
+            </div>
+            <div class="cot-step child active">
+              <span class="cot-spinner loader text-spinner wide sm" data-spinner="breathe"></span>
+              <span class="cot-label">Writing endpoint docs</span>
+            </div>
+            <div class="cot-step child">
+              <span class="cot-icon" style="color: var(--c-text-muted);">○</span>
+              <span class="cot-label">Generate usage examples</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================== COMPACT SWARM ===================== -->
+    <section class="comp-section">
+      <div class="comp-section-label">Agent Swarm — Compact</div>
+      <div class="compact-swarm">
+        <div class="compact-swarm-intro">Starting three parallel audits of the design system.</div>
+
+        <!-- Agent 1: expanded -->
+        <div class="compact-agent expanded" onclick="this.classList.toggle('expanded')">
+          <div class="compact-agent-header">
+            <span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.85rem; color: var(--c-text-muted); width:16px; height:16px;"></span>
+            <span class="compact-agent-icon"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M16 7V5a4 4 0 0 0-8 0v2"/></svg></span>
+            <span class="compact-agent-role">Agent</span>
+            <span class="compact-agent-task">Audit type styles</span>
+            <svg class="compact-agent-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+          </div>
+          <div class="compact-agent-body" onclick="event.stopPropagation()">
+            <div class="agent-sub-step">
+              <span class="sub-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
+              <span class="agent-sub-label">Prompt</span>
+            </div>
+            <div class="agent-output">
+              <p>Async agent launched successfully.</p>
+              <p><code>agentId: ae924d8</code> (internal ID — do not mention to user. Use to resume later if needed.)</p>
+              <p><code>output_file: /private/tmp/claude/tasks/ae924d8.output</code></p>
+              <p>The agent is working in the background. You will be notified when it completes — no need to check. Continue with other tasks.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agent 2: collapsed -->
+        <div class="compact-agent" onclick="this.classList.toggle('expanded')">
+          <div class="compact-agent-header">
+            <span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.85rem; color: var(--c-text-muted); width:16px; height:16px;"></span>
+            <span class="compact-agent-icon"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M16 7V5a4 4 0 0 0-8 0v2"/></svg></span>
+            <span class="compact-agent-role">Agent</span>
+            <span class="compact-agent-task">Audit color system</span>
+            <svg class="compact-agent-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+          </div>
+          <div class="compact-agent-body" onclick="event.stopPropagation()">
+            <div class="agent-sub-step">
+              <span class="sub-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
+              <span class="agent-sub-label">Prompt</span>
+            </div>
+            <div class="agent-output">
+              <p>Scanning all CSS custom properties for contrast ratio compliance and token consistency.</p>
+              <p>Checking <code>--c-text</code> against <code>--c-bg</code> for WCAG AA... <code>ratio: 12.4:1</code> — pass.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agent 3: collapsed -->
+        <div class="compact-agent" onclick="this.classList.toggle('expanded')">
+          <div class="compact-agent-header">
+            <span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.85rem; color: var(--c-text-muted); width:16px; height:16px;"></span>
+            <span class="compact-agent-icon"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M16 7V5a4 4 0 0 0-8 0v2"/></svg></span>
+            <span class="compact-agent-role">Agent</span>
+            <span class="compact-agent-task">Audit UI components</span>
+            <svg class="compact-agent-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+          </div>
+          <div class="compact-agent-body" onclick="event.stopPropagation()">
+            <div class="agent-sub-step">
+              <span class="sub-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
+              <span class="agent-sub-label">Prompt</span>
+            </div>
+            <div class="agent-output">
+              <p>Enumerating all component sections in <code>components.html</code> for accessibility and semantic markup review.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================== STREAMING TEXT ===================== -->
+    <section class="comp-section">
+      <div class="comp-section-label">Streaming Text</div>
+      <div class="stream-card">
+        <div class="stream-output" id="stream-fast"></div>
+      </div>
+    </section>
+
+    <!-- ===================== TOOL USE CARDS ===================== -->
+    <section class="comp-section">
+      <div class="comp-section-label">Tool Use</div>
+      <div class="tool-stack">
+
+        <!-- search_web — completed, expanded -->
+        <div class="tool-card">
+          <div class="tool-card-header">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+            </div>
+            <span class="tool-card-name">search_web</span>
+            <span class="tool-card-status done">Done</span>
+            <svg class="tool-card-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="tool-card-body">
+            <pre>Query: "streaming API best practices 2025"
+Results: 4 sources found
+  1. Anthropic Docs — Streaming Messages
+  2. MDN — Server-Sent Events
+  3. GitHub — stream-json library
+  4. Dev.to — Real-time streaming patterns</pre>
+          </div>
+        </div>
+
+        <!-- run_code — active, expanded -->
+        <div class="tool-card">
+          <div class="tool-card-header">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            </div>
+            <span class="tool-card-name">run_code</span>
+            <span class="loader text-spinner sm" data-spinner="orbit" style="font-size:0.8rem; color: var(--c-text-muted); width:16px; height:16px;"></span>
+            <span class="tool-card-status running">Running</span>
+            <svg class="tool-card-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="tool-card-body">
+            <pre>$ npm run test -- --coverage
+PASS  src/api/stream.test.ts
+PASS  src/hooks/useStreaming.test.ts
+RUN   src/utils/tokenizer.test.ts<span class="stream-cursor"></span></pre>
+          </div>
+        </div>
+
+        <!-- read_file — collapsed with spinner -->
+        <div class="tool-card collapsed">
+          <div class="tool-card-header" onclick="this.parentElement.classList.toggle('collapsed')">
+            <div class="tool-card-icon">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <span class="tool-card-name">read_file</span>
+            <span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; color: var(--c-text-muted); width:16px; height:16px;"></span>
+            <span class="tool-card-status running">Reading</span>
+            <svg class="tool-card-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="tool-card-body">
+            <pre>Path: src/config/streaming.ts
+Reading 247 lines...</pre>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================== SKELETON LOADERS ===================== -->
+    <section class="comp-section">
+      <div class="comp-section-label">Skeleton Loaders</div>
+      <div class="skel-grid">
+
+        <div class="skel-card">
+          <div class="skel-card-label">Text content</div>
+          <div class="skel-line w100"></div>
+          <div class="skel-line w100"></div>
+          <div class="skel-line w80"></div>
+          <div style="height:0.6rem"></div>
+          <div class="skel-line w100"></div>
+          <div class="skel-line w60"></div>
+        </div>
+
+        <div class="skel-card">
+          <div class="skel-card-label">Card + Avatar</div>
+          <div class="skel-row">
+            <div class="skel-circle" style="margin-bottom:0"></div>
+            <div style="flex:1">
+              <div class="skel-line w60" style="margin-bottom:0.35rem"></div>
+              <div class="skel-line w40" style="margin-bottom:0"></div>
+            </div>
+          </div>
+          <div class="skel-card-outline"></div>
+          <div style="display:flex; gap:0.5rem;">
+            <div class="skel-pill"></div>
+            <div class="skel-pill" style="width:60px"></div>
+            <div class="skel-pill" style="width:100px"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================== NESTING EXAMPLE ===================== -->
+    <section class="comp-section">
+      <div class="comp-section-label">Surface Nesting</div>
+      <div class="surface-example">
+        <div class="surface-example-label">Nesting example</div>
+        <div class="surface-nested">
+          <div class="surface-nested-card">
+            <div class="surface-nested-card-title">Streaming response</div>
+            <div class="surface-nested-card-text">The agent is analyzing your codebase and generating a summary of the architecture.</div>
+            <span class="surface-raised-pill">3 sources found</span>
+          </div>
+          <div class="surface-nested-card">
+            <div class="surface-nested-card-title">Tool execution</div>
+            <div class="surface-nested-card-text">Running static analysis on 12 files to identify potential type errors.</div>
+            <span class="surface-raised-pill">In progress</span>
+          </div>
+          <div class="surface-overlay-bar">
+            <span>2 of 5 steps complete</span>
+            <span class="overlay-action">View all</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== COMMAND PALETTE ===================== -->
+    <section class="comp-section">
+      <div class="comp-section-label">Command Palette</div>
+      <div class="cmd-palette">
+        <div class="cmd-input-wrap">
+          <span class="cmd-prefix">/</span>
+          <input class="cmd-input" type="text" placeholder="Type a command..." value="new">
+        </div>
+        <div class="cmd-list">
+          <div class="cmd-item active">
+            <span class="cmd-item-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+            <span class="cmd-item-label">New conversation</span>
+            <span class="cmd-item-shortcut"><kbd>&#8984;</kbd><kbd>N</kbd></span>
+          </div>
+          <div class="cmd-item">
+            <span class="cmd-item-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg></span>
+            <span class="cmd-item-label">Search conversations</span>
+            <span class="cmd-item-shortcut"><kbd>&#8984;</kbd><kbd>K</kbd></span>
+          </div>
+          <div class="cmd-item">
+            <span class="cmd-item-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></span>
+            <span class="cmd-item-label">Open dashboard</span>
+            <span class="cmd-item-shortcut"><kbd>&#8984;</kbd><kbd>D</kbd></span>
+          </div>
+          <div class="cmd-item">
+            <span class="cmd-item-icon"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
+            <span class="cmd-item-label">Edit system prompt</span>
+            <span class="cmd-item-shortcut"><kbd>&#8984;</kbd><kbd>E</kbd></span>
+          </div>
+          <div class="cmd-item">
+            <span class="cmd-item-icon"><svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
+            <span class="cmd-item-label">Toggle code view</span>
+            <span class="cmd-item-shortcut"><kbd>&#8984;</kbd><kbd>J</kbd></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== COLOR PALETTE ===================== -->
+    <section class="comp-section">
+      <div class="comp-section-label">Color Palette</div>
+      <div class="palette-grid" id="paletteGrid">
+        <!-- Populated by JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="comp-footer">
+    Loading states for the age of agents.
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    // Loaders
+    const LOADERS = [
+      { spinner: 'braille',      label: 'Braille' },
+      { spinner: 'orbit',        label: 'Orbit' },
+      { spinner: 'breathe',      label: 'Breathe' },
+      { spinner: 'snake',        label: 'Snake',        wide: true },
+      { spinner: 'fillsweep',    label: 'Fill Sweep',   wide: true },
+      { spinner: 'pulse',        label: 'Pulse',        wide: true },
+      { spinner: 'columns',      label: 'Columns',      wide: true },
+      { spinner: 'checkerboard', label: 'Checkerboard', wide: true },
+      { spinner: 'scan',         label: 'Scan',         wide: true },
+      { spinner: 'rain',         label: 'Rain',         wide: true },
+      { spinner: 'cascade',      label: 'Cascade',      wide: true },
+      { spinner: 'sparkle',      label: 'Sparkle',      wide: true },
+      { spinner: 'waverows',     label: 'Wave Rows',    wide: true },
+      { spinner: 'helix',        label: 'Helix',        wide: true },
+      { spinner: 'diagswipe',    label: 'Diagonal Swipe', wide: true },
+    ];
+    function buildLoaderPanel(containerId) {
+      const el = document.getElementById(containerId);
+      LOADERS.forEach(l => {
+        const step = document.createElement('div');
+        step.className = 'loader-step';
+        step.innerHTML =
+          '<span class="loader text-spinner' + (l.wide ? ' wide' : '') + '" data-spinner="' + l.spinner + '"></span>' +
+          '<span class="loader-step-type">Agent</span>' +
+          '<span class="loader-step-label">' + l.label + '</span>';
+        el.appendChild(step);
+      });
+    }
+    buildLoaderPanel('loader-dark');
+    buildLoaderPanel('loader-light');
+
+    // Theme toggle
+    const toggle = document.getElementById('themeToggle');
+    const icon = document.getElementById('toggleIcon');
+    const label = document.getElementById('toggleLabel');
+    const html = document.documentElement;
+
+    function setTheme(theme) {
+      html.setAttribute('data-theme', theme);
+      if (theme === 'dark') {
+        icon.textContent = '\u2600';
+        label.textContent = 'Light';
+      } else {
+        icon.textContent = '\u263E';
+        label.textContent = 'Dark';
+      }
+      renderPalette();
+    }
+
+    toggle.addEventListener('click', () => {
+      const current = html.getAttribute('data-theme');
+      setTheme(current === 'dark' ? 'light' : 'dark');
+    });
+
+    // Color palette
+    const PALETTE = [
+      { name: 'Background',       var: '--c-bg' },
+      { name: 'Inset',            var: '--c-surface-0' },
+      { name: 'Surface',          var: '--c-surface' },
+      { name: 'Raised',           var: '--c-surface-raised' },
+      { name: 'Overlay',          var: '--c-surface-overlay' },
+      { name: 'Border',           var: '--c-border' },
+      { name: 'Border Subtle',    var: '--c-border-subtle' },
+      { name: 'Text',             var: '--c-text' },
+      { name: 'Text Secondary',   var: '--c-text-secondary' },
+      { name: 'Text Muted',       var: '--c-text-muted' },
+      { name: 'Accent',           var: '--c-accent' },
+      { name: 'Green',            var: '--c-green' },
+      { name: 'Red',              var: '--c-red' },
+      { name: 'Yellow',           var: '--c-yellow' },
+      { name: 'Code Background',  var: '--c-code-bg' },
+    ];
+
+    function renderPalette() {
+      const grid = document.getElementById('paletteGrid');
+      const style = getComputedStyle(document.documentElement);
+      grid.innerHTML = '';
+      PALETTE.forEach(c => {
+        const val = style.getPropertyValue(c.var).trim();
+        const swatch = document.createElement('div');
+        swatch.className = 'swatch';
+        swatch.innerHTML = `
+          <div class="swatch-color" style="background:${val}"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">${c.name}</div>
+            <div class="swatch-value">${val}</div>
+          </div>
+        `;
+        grid.appendChild(swatch);
+      });
+    }
+
+    // Streaming text — blur reveal per word
+    (function() {
+      const text = 'To implement streaming responses, set up an event loop that processes content_block_delta events for text tokens and content_block_stop events that signal tool use boundaries. This allows your UI to render text incrementally while showing loading states during tool execution.';
+      const words = text.split(' ');
+      const el = document.getElementById('stream-fast');
+      let i = 0;
+
+      function reset() {
+        i = 0;
+        el.innerHTML = '<span class="stream-cursor"></span>';
+        setTimeout(tick, 600);
+      }
+
+      function tick() {
+        if (i < words.length) {
+          const cursor = el.querySelector('.stream-cursor');
+          const span = document.createElement('span');
+          span.className = 'stream-word';
+          span.textContent = (i > 0 ? ' ' : '') + words[i];
+          el.insertBefore(span, cursor);
+          i++;
+          setTimeout(tick, 20);
+        } else {
+          setTimeout(reset, 3500);
+        }
+      }
+
+      reset();
+    })();
+
+    // Init
+    renderPalette();
+
+    // --- Menu toggle ---
+    const menuBtn = document.getElementById('menu-btn');
+    const menuDropdown = document.getElementById('menu-dropdown');
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menuDropdown.classList.toggle('open');
+    });
+    document.addEventListener('click', () => {
+      menuDropdown.classList.remove('open');
+    });
+  </script>
+</body>
+</html>

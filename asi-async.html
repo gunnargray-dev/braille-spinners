@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASI — Async Agents</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    :root {
+      --bg: #0c0c0f;
+      --surface: #151518;
+      --surface-raised: #1c1c21;
+      --border: #2a2a32;
+      --border-subtle: #222228;
+      --text: #e0e0e6;
+      --text-secondary: #a4a4b0;
+      --text-muted: #6e6e80;
+      --green: #3dba72;
+      --green-text: #6dcea0;
+      --accent: #b8b8c0;
+      --font-body: 'PPLX Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'PPLX Mono', 'SF Mono', monospace;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      letter-spacing: -0.01em;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* --- Nav Bar --- */
+    .asi-topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0.85rem 1.25rem;
+      background: rgba(12, 12, 15, 0.85);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .menu-btn {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: 1px solid var(--border);
+      border-radius: 8px; cursor: pointer; padding: 0;
+      transition: border-color 0.15s ease;
+    }
+    .menu-btn:hover { border-color: var(--text-muted); }
+    .menu-btn svg {
+      width: 16px; height: 16px;
+      stroke: var(--text-muted); fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .menu-dropdown {
+      position: absolute;
+      top: calc(100% + 0.5rem); left: 0;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 0.35rem;
+      display: flex; flex-direction: column; min-width: 160px;
+      opacity: 0; transform: translateY(-4px); pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      z-index: 200;
+    }
+    .menu-dropdown.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .menu-dropdown a {
+      font-size: 0.78rem; font-weight: 500;
+      color: var(--text-secondary); text-decoration: none;
+      padding: 0.5rem 0.65rem; border-radius: 6px;
+      transition: background 0.12s ease, color 0.12s ease;
+    }
+    .menu-dropdown a:hover { background: var(--surface-raised); color: var(--text); }
+    .view-toggle { display: flex; gap: 0.25rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.2rem; }
+    .view-toggle a { font-size: 0.68rem; font-weight: 500; color: var(--text-muted); text-decoration: none; padding: 0.3rem 0.6rem; border-radius: 6px; transition: color 0.15s ease, background 0.15s ease; }
+    .view-toggle a:hover { color: var(--text-secondary); }
+    .view-toggle a.active { background: var(--surface-raised); color: var(--text); }
+
+    /* --- Layout --- */
+    .asi-container { max-width: 720px; margin: 0 auto; padding: 6rem 2rem 12rem; }
+
+    /* --- Phase visibility --- */
+    .phase { opacity: 0; transform: translateY(8px); transition: opacity 0.5s ease, transform 0.5s ease; pointer-events: none; }
+    .phase.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .phase + .phase { margin-top: 1.25rem; }
+
+    /* --- Chat Bubble (user, right-aligned) --- */
+    .chat-bubble-row { display: flex; justify-content: flex-end; }
+    .chat-bubble {
+      background: var(--surface-raised); border: 1px solid var(--border);
+      border-radius: 18px 18px 4px 18px; padding: 0.65rem 1rem; max-width: 85%;
+      font-size: 0.88rem; font-weight: 400; line-height: 1.5; color: var(--text);
+    }
+    .chat-bubble.reply { font-size: 0.82rem; padding: 0.5rem 0.85rem; max-width: 60%; }
+
+    /* --- Agent Message (left-aligned text blocks) --- */
+    .agent-msg {
+      font-size: 0.85rem; line-height: 1.65; color: var(--text-secondary);
+    }
+    .agent-msg p { margin: 0.35rem 0; }
+    .agent-msg p:first-child { margin-top: 0; }
+    .agent-msg strong { color: var(--text); font-weight: 600; }
+
+    /* --- Agent Group (CoT) --- */
+    .agent-group {
+      opacity: 0; transform: translateY(6px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .agent-group.visible { opacity: 1; transform: translateY(0); }
+    .agent-group.completed { opacity: 0.45; transition: opacity 0.5s ease; }
+    .agent-group-header {
+      display: flex; align-items: center; gap: 0.45rem;
+      padding: 0.5rem 0; font-size: 0.82rem; cursor: pointer; position: relative;
+    }
+    .ag-spinner-wrap {
+      width: 16px; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: opacity 0.3s ease;
+    }
+    .ag-check {
+      color: var(--green); font-weight: 600; font-size: 0.78rem;
+      width: 16px; text-align: center; flex-shrink: 0;
+      opacity: 0; position: absolute; transition: opacity 0.3s ease;
+    }
+    .agent-group.completed .ag-check { opacity: 1; position: static; }
+    .agent-group.completed .ag-spinner-wrap { opacity: 0; width: 0; overflow: hidden; }
+    .ag-label { font-weight: 600; color: var(--text); }
+    .agent-group.visible:not(.completed) .ag-label {
+      background: linear-gradient(90deg,
+        var(--text) 0%, var(--text) 35%,
+        var(--text-muted) 50%,
+        var(--text) 65%, var(--text) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .agent-group.completed .ag-label {
+      background: none; -webkit-text-fill-color: var(--text); animation: none;
+    }
+    .ag-task {
+      color: var(--text-muted); flex: 1; min-width: 0;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .ag-chevron {
+      width: 12px; height: 12px; stroke: var(--text-muted); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      flex-shrink: 0; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .agent-group.expanded .ag-chevron { transform: rotate(90deg); }
+
+    .agent-group-body {
+      margin-left: 7px; padding-left: 1rem;
+      border-left: 1px solid var(--border);
+      display: grid; grid-template-rows: 0fr; opacity: 0;
+      transition: grid-template-rows 0.4s ease, opacity 0.35s ease, padding 0.4s ease;
+      padding-top: 0; padding-bottom: 0;
+    }
+    .agent-group-body-inner { overflow: hidden; }
+    .agent-group.expanded .agent-group-body {
+      grid-template-rows: 1fr; opacity: 1;
+      padding-top: 0.15rem; padding-bottom: 0.4rem;
+    }
+    .agent-group.completed .agent-group-body { opacity: 0.6; }
+
+    .ag-step {
+      display: flex; align-items: center; gap: 0.4rem;
+      padding: 0.2rem 0; font-size: 0.75rem;
+      opacity: 0; transition: opacity 0.3s ease; position: relative;
+    }
+    .ag-step.visible { opacity: 1; }
+    .ag-step.completed { opacity: 0.5; }
+    .ag-step-spinner-wrap {
+      width: 14px; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: opacity 0.3s ease;
+    }
+    .ag-step-check {
+      color: var(--green); font-weight: 600; font-size: 0.72rem;
+      width: 14px; text-align: center; flex-shrink: 0;
+      opacity: 0; position: absolute; transition: opacity 0.3s ease;
+    }
+    .ag-step.completed .ag-step-check { opacity: 1; position: static; }
+    .ag-step.completed .ag-step-spinner-wrap { opacity: 0; width: 0; overflow: hidden; }
+    .ag-step-text { font-family: var(--font-mono); color: var(--text-muted); }
+
+    /* --- Auth Card --- */
+    .auth-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1rem 1.15rem;
+    }
+    .auth-card p {
+      font-size: 0.82rem; line-height: 1.55; color: var(--text-secondary);
+      margin: 0 0 0.65rem;
+    }
+    .auth-card-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.78rem; font-weight: 600; color: var(--text);
+      background: var(--surface-raised); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.5rem 1rem; cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease;
+      margin-bottom: 0.75rem;
+    }
+    .auth-card-btn:hover { border-color: var(--text-muted); }
+    .auth-card-btn svg {
+      width: 14px; height: 14px; stroke: var(--text-muted); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .auth-card-btn.connected { border-color: var(--green); color: var(--green-text); }
+    .auth-card-btn.connected .auth-btn-check { display: inline; }
+    .auth-card-btn .auth-btn-check { display: none; color: var(--green); font-weight: 600; font-size: 0.78rem; }
+    .auth-card-list {
+      font-size: 0.75rem; color: var(--text-muted); line-height: 1.6;
+      margin: 0; padding-left: 1rem; list-style: none;
+    }
+    .auth-card-list li { position: relative; padding-left: 0.25rem; margin: 0.2rem 0; }
+    .auth-card-list li::before { content: '\2022'; position: absolute; left: -0.75rem; color: var(--border); }
+
+    /* --- Sleep / Pause Indicator --- */
+    .sleep-indicator {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.65rem 0.85rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; font-size: 0.75rem;
+    }
+    .sleep-indicator-icon {
+      width: 20px; height: 20px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sleep-indicator-icon svg {
+      width: 14px; height: 14px;
+      stroke: var(--text-muted); fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .sleep-indicator-text {
+      font-family: var(--font-mono); color: var(--text-muted); font-size: 0.72rem;
+    }
+    .sleep-indicator-text em { font-style: normal; color: var(--text-secondary); }
+
+    /* --- Metrics Block --- */
+    .metrics-block {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 0.75rem 0.95rem;
+    }
+    .metrics-title {
+      font-size: 0.72rem; font-weight: 600; color: var(--text-secondary);
+      margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .metrics-row {
+      display: flex; align-items: baseline; gap: 0.5rem;
+      padding: 0.2rem 0; font-size: 0.78rem;
+    }
+    .metrics-label { font-weight: 600; color: var(--text); min-width: 70px; }
+    .metrics-value { color: var(--text-muted); font-family: var(--font-mono); font-size: 0.72rem; }
+
+    /* --- Time Break --- */
+    .time-break {
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      padding: 2rem 0; color: var(--text-muted); font-size: 0.68rem;
+      font-family: var(--font-mono);
+    }
+    .time-break::before, .time-break::after { content: ''; width: 40px; height: 1px; background: var(--border); }
+
+    /* --- Unread Divider --- */
+    .unread-divider {
+      display: flex; align-items: center; gap: 0.75rem; margin: 0.5rem 0;
+    }
+    .unread-divider::before, .unread-divider::after { content: ''; flex: 1; height: 1px; background: #3d6b99; }
+    .unread-badge {
+      font-size: 0.68rem; font-weight: 600; color: #7aafdf; white-space: nowrap;
+      padding: 0.2rem 0.6rem; border-radius: 10px;
+      background: rgba(61, 107, 153, 0.15); border: 1px solid rgba(61, 107, 153, 0.3);
+    }
+
+    /* --- Timestamp Header --- */
+    .timestamp-header {
+      font-size: 0.68rem; font-weight: 500; color: var(--text-muted);
+      font-family: var(--font-mono); padding: 0.5rem 0 0.25rem; letter-spacing: 0.02em;
+    }
+
+    /* --- Agent Entry Header (wake) --- */
+    .agent-entry-header {
+      display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;
+    }
+    .agent-avatar {
+      width: 22px; height: 22px; border-radius: 6px;
+      background: var(--surface-raised); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .agent-avatar svg { width: 12px; height: 12px; stroke: var(--text-muted); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .agent-entry-name { font-size: 0.75rem; font-weight: 600; color: var(--text); }
+    .agent-entry-badge {
+      font-size: 0.58rem; font-weight: 500; color: var(--green-text);
+      background: rgba(61, 186, 114, 0.1); border: 1px solid rgba(61, 186, 114, 0.2);
+      border-radius: 4px; padding: 0.08rem 0.3rem;
+    }
+
+    /* --- Document Artifact --- */
+    .doc-artifact {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+      transition: border-color 0.2s ease; cursor: pointer;
+    }
+    .doc-artifact:hover { border-color: var(--text-muted); }
+    .doc-artifact-header {
+      display: flex; align-items: center; gap: 0.65rem;
+      padding: 0.85rem 1rem; border-bottom: 1px solid var(--border);
+    }
+    .doc-artifact-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: #2b2b35; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .doc-artifact-icon svg { width: 18px; height: 18px; fill: var(--text-secondary); }
+    .doc-artifact-meta { flex: 1; min-width: 0; }
+    .doc-artifact-title { font-size: 0.82rem; font-weight: 600; color: var(--text); line-height: 1.3; }
+    .doc-artifact-subtitle { font-size: 0.68rem; color: var(--text-muted); margin-top: 0.1rem; }
+    .doc-artifact-open {
+      font-size: 0.68rem; font-weight: 500; color: var(--text-muted);
+      padding: 0.3rem 0.6rem; border: 1px solid var(--border); border-radius: 6px;
+      background: transparent; cursor: pointer; flex-shrink: 0;
+      transition: color 0.15s ease, border-color 0.15s ease;
+    }
+    .doc-artifact-open:hover { color: var(--text-secondary); border-color: var(--text-muted); }
+    .doc-artifact-preview {
+      padding: 1rem 1.15rem 1.15rem; max-height: 280px;
+      overflow: hidden; position: relative;
+    }
+    .doc-artifact-preview::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+      height: 60px; background: linear-gradient(to top, var(--surface) 10%, transparent);
+      pointer-events: none;
+    }
+    .doc-preview-content { font-size: 0.75rem; line-height: 1.7; color: var(--text-secondary); }
+    .doc-preview-content h4 { font-size: 0.82rem; font-weight: 600; color: var(--text); margin: 0 0 0.35rem; }
+    .doc-preview-content p { margin: 0.35rem 0; }
+    .doc-preview-content .doc-table {
+      width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.7rem;
+    }
+    .doc-preview-content .doc-table th {
+      text-align: left; padding: 0.35rem 0.5rem; font-weight: 600;
+      color: var(--text-muted); border-bottom: 1px solid var(--border);
+      font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .doc-preview-content .doc-table td {
+      padding: 0.3rem 0.5rem; border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-secondary); font-size: 0.72rem;
+    }
+    .doc-preview-content .doc-table td:first-child { color: var(--text); font-weight: 500; }
+    .doc-preview-content .metric-highlight {
+      color: var(--green-text); font-family: var(--font-mono); font-size: 0.7rem;
+    }
+
+    /* --- Answer (blur-reveal) --- */
+    .answer-text { font-size: 0.85rem; line-height: 1.7; color: var(--text-secondary); }
+    .answer-text .word { display: inline; animation: wordReveal 0.25s ease-out forwards; }
+    @keyframes wordReveal { from { opacity: 0; filter: blur(4px); } to { opacity: 1; filter: blur(0); } }
+    .answer-text strong { color: var(--text); font-weight: 600; }
+
+    /* --- Bottom Search Bar --- */
+    .search-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+      padding: 0.75rem 1.25rem 1.25rem;
+      background: linear-gradient(to top, var(--bg) 60%, transparent);
+      display: flex; justify-content: center;
+    }
+    .search-bar-inner {
+      width: 100%; max-width: 640px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; display: flex; flex-direction: column;
+      box-shadow: 0 -4px 24px rgba(0,0,0,0.3);
+    }
+    .search-bar-input { flex: 1; padding: 0.9rem 1.1rem 0.5rem; }
+    .search-bar-input input {
+      width: 100%; border: none; background: transparent;
+      font-family: var(--font-body); font-size: 0.92rem;
+      color: var(--text); outline: none; letter-spacing: -0.01em;
+    }
+    .search-bar-input input::placeholder { color: var(--text-muted); }
+    .search-bar-footer { display: flex; align-items: center; justify-content: space-between; padding: 0.45rem 0.6rem 0.6rem 1rem; }
+    .search-bar-left { display: flex; align-items: center; gap: 0.35rem; }
+    .search-bar-right { display: flex; align-items: center; gap: 0.5rem; }
+    .sb-icon-btn { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: none; background: transparent; color: var(--text-muted); cursor: pointer; border-radius: 50%; padding: 0; transition: color 0.15s ease, background 0.15s ease; }
+    .sb-icon-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .sb-icon-btn:hover { color: var(--text-secondary); background: var(--surface-raised); }
+    .sb-model { font-size: 0.68rem; font-weight: 500; color: var(--text-muted); display: flex; align-items: center; gap: 0.3rem; cursor: pointer; }
+    .sb-submit { width: 32px; height: 32px; border-radius: 50%; background: var(--text); color: var(--bg); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: opacity 0.15s ease; flex-shrink: 0; }
+    .sb-submit svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .sb-submit:hover { opacity: 0.8; }
+
+    .asi-footer { text-align: center; padding: 3rem 2rem; color: var(--text-muted); font-size: 0.72rem; }
+
+    @keyframes textShimmer { 0% { background-position: 200% 50%; } 100% { background-position: -100% 50%; } }
+
+    @media (max-width: 640px) {
+      .asi-container { padding: 4rem 1.25rem 6rem; }
+      .chat-bubble { font-size: 0.82rem; max-width: 92%; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="asi-topbar">
+    <div style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%);">
+      <button class="menu-btn" id="menu-btn" aria-label="Menu">
+        <svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      </button>
+      <div class="menu-dropdown" id="menu-dropdown">
+        <a href="components.html">Components</a>
+        <a href="asi-v0-scope.html">ASI Experience</a>
+      </div>
+    </div>
+    <div class="view-toggle">
+      <a href="asi-v0-scope.html">Wide Research</a>
+      <a href="asi-v0-rows.html">Wide Research - Rows</a>
+      <a href="asi.html">Subagents - List</a>
+      <a href="asi-mega.html">Subagents - Grid</a>
+      <a href="asi-async.html" class="active">Async Agents</a>
+    </div>
+  </nav>
+
+  <div class="asi-container">
+
+    <!-- Phase 1: User Query -->
+    <div class="phase" id="p-query">
+      <div class="chat-bubble-row">
+        <div class="chat-bubble">Please notify me when any major business or tech publication writes a story about ChatGPT, Claude, or Gemini that includes metrics around usage or growth. Please also create a Notion doc titled Competitive Monitoring and include those stories there, with a note on the metric, and a link to the story.</div>
+      </div>
+    </div>
+
+    <!-- Phase 2: Agent initial response -->
+    <div class="phase" id="p-agent-1">
+      <div class="agent-msg">
+        <p>I'll set up competitive monitoring for you. Let me first check your connected services and load relevant skills.</p>
+      </div>
+    </div>
+
+    <!-- Phase 3: Check tools agent group -->
+    <div class="phase" id="p-ag-tools">
+      <div class="agent-group" id="ag-tools">
+        <div class="agent-group-header" onclick="this.parentElement.classList.toggle('expanded')">
+          <span class="ag-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; color: var(--text-muted); width:16px; height:16px;"></span></span>
+          <span class="ag-check">&#x2713;</span>
+          <span class="ag-label">Setup</span>
+          <span class="ag-task">Checking connected services</span>
+          <svg class="ag-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="agent-group-body"><div class="agent-group-body-inner">
+          <div class="ag-step" id="ag-tools-s1"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Checking which apps are connected</span></div>
+          <div class="ag-step" id="ag-tools-s2"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Notion isn't connected yet — need to request access</span></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- Phase 4: Auth interstitial -->
+    <div class="phase" id="p-auth">
+      <div class="auth-card">
+        <p>I need access to Notion to create the monitoring doc. Please connect your account:</p>
+        <button class="auth-card-btn" id="auth-btn">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span id="auth-btn-text">Login to Notion</span>
+          <span class="auth-btn-check">&#x2713;</span>
+        </button>
+        <ul class="auth-card-list">
+          <li>Create and edit pages in your workspace</li>
+          <li>Read workspace content for monitoring updates</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Phase 5: User reply -->
+    <div class="phase" id="p-user-reply">
+      <div class="chat-bubble-row">
+        <div class="chat-bubble reply">Done, I connected</div>
+      </div>
+    </div>
+
+    <!-- Phase 6: Confirm auth agent group -->
+    <div class="phase" id="p-ag-auth">
+      <div class="agent-group" id="ag-auth">
+        <div class="agent-group-header" onclick="this.parentElement.classList.toggle('expanded')">
+          <span class="ag-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; color: var(--text-muted); width:16px; height:16px;"></span></span>
+          <span class="ag-check">&#x2713;</span>
+          <span class="ag-label">Auth</span>
+          <span class="ag-task">Verifying your connected apps</span>
+          <svg class="ag-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="agent-group-body"><div class="agent-group-body-inner">
+          <div class="ag-step" id="ag-auth-s1"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Re-checking connected apps</span></div>
+          <div class="ag-step" id="ag-auth-s2"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Confirmed Notion and Slack are both connected</span></div>
+          <div class="ag-step" id="ag-auth-s3"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Loading the research assistant skill</span></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- Phase 7: Research agent group -->
+    <div class="phase" id="p-ag-research">
+      <div class="agent-group" id="ag-research">
+        <div class="agent-group-header" onclick="this.parentElement.classList.toggle('expanded')">
+          <span class="ag-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; color: var(--text-muted); width:16px; height:16px;"></span></span>
+          <span class="ag-check">&#x2713;</span>
+          <span class="ag-label">Research</span>
+          <span class="ag-task">Finding stories with usage metrics</span>
+          <svg class="ag-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="agent-group-body"><div class="agent-group-body-inner">
+          <div class="ag-step" id="ag-res-s1"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Searching for recent ChatGPT, Claude, and Gemini stories with usage metrics</span></div>
+          <div class="ag-step" id="ag-res-s2"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Found 4 relevant stories with growth data</span></div>
+          <div class="ag-step" id="ag-res-s3"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Reading Reuters — AI chatbot market share breakdown</span></div>
+          <div class="ag-step" id="ag-res-s4"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Reading The Information — Claude enterprise adoption</span></div>
+          <div class="ag-step" id="ag-res-s5"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Reading Sensor Tower — Gemini growth numbers</span></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- Phase 8: Create Notion + notify agent group -->
+    <div class="phase" id="p-ag-create">
+      <div class="agent-group" id="ag-create">
+        <div class="agent-group-header" onclick="this.parentElement.classList.toggle('expanded')">
+          <span class="ag-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; color: var(--text-muted); width:16px; height:16px;"></span></span>
+          <span class="ag-check">&#x2713;</span>
+          <span class="ag-label">Create</span>
+          <span class="ag-task">Setting up Notion doc and notifications</span>
+          <svg class="ag-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="agent-group-body"><div class="agent-group-body-inner">
+          <div class="ag-step" id="ag-cr-s1"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Creating Notion page — "Competitive Monitoring"</span></div>
+          <div class="ag-step" id="ag-cr-s2"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Adding 4 stories with metrics and source links</span></div>
+          <div class="ag-step" id="ag-cr-s3"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Sending you a Slack DM with the highlights</span></div>
+          <div class="ag-step" id="ag-cr-s4"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Scheduling next check in 24 hours</span></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- Phase 9: Summary -->
+    <div class="phase" id="p-summary">
+      <div class="answer-text" id="summary-text"></div>
+    </div>
+
+    <!-- Phase 10: Document Artifact -->
+    <div class="phase" id="p-artifact">
+      <div class="doc-artifact">
+        <div class="doc-artifact-header">
+          <div class="doc-artifact-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 2C4.9 2 4 2.9 4 4v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6H6zm7 1.5L18.5 9H13V3.5zM7 13h10v1.5H7V13zm0 3h10v1.5H7V16zm0 3h7v1.5H7V19zm0-9h4v1.5H7V10z"/></svg>
+          </div>
+          <div class="doc-artifact-meta">
+            <div class="doc-artifact-title">Competitive Monitoring</div>
+            <div class="doc-artifact-subtitle">Notion &middot; 4 stories &middot; Updated just now</div>
+          </div>
+          <button class="doc-artifact-open">Open</button>
+        </div>
+        <div class="doc-artifact-preview">
+          <div class="doc-preview-content">
+            <h4>AI Chatbot Competitive Landscape — Usage &amp; Growth Metrics</h4>
+            <p>Tracking stories from major publications that cite specific usage or growth numbers for ChatGPT, Claude, and Gemini.</p>
+            <table class="doc-table">
+              <thead>
+                <tr><th>Source</th><th>Product</th><th>Metric</th><th>Date</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Reuters</td><td>ChatGPT</td><td><span class="metric-highlight">878M monthly users</span>, 64.5% market share</td><td>Jan 28</td></tr>
+                <tr><td>The Information</td><td>Claude</td><td><span class="metric-highlight">30M MAU</span>, 70% Fortune 100 adoption</td><td>Jan 26</td></tr>
+                <tr><td>Sensor Tower</td><td>Gemini</td><td><span class="metric-highlight">450M MAU</span>, 49% growth in 12 weeks</td><td>Jan 24</td></tr>
+                <tr><td>Bloomberg</td><td>ChatGPT</td><td><span class="metric-highlight">$2B annualized revenue</span>, 300M weekly active</td><td>Jan 22</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 11: Metrics quick view -->
+    <div class="phase" id="p-metrics">
+      <div class="metrics-block">
+        <div class="metrics-title">Today's Key Metrics</div>
+        <div class="metrics-row"><span class="metrics-label">ChatGPT</span><span class="metrics-value">878M users, 64.5% market share</span></div>
+        <div class="metrics-row"><span class="metrics-label">Claude</span><span class="metrics-value">30M MAU, 29% enterprise share, 70% Fortune 100 adoption</span></div>
+        <div class="metrics-row"><span class="metrics-label">Gemini</span><span class="metrics-value">450M MAU, 21.5% market share, 49% growth in 12 weeks</span></div>
+      </div>
+    </div>
+
+    <!-- Phase 12: Sleep -->
+    <div class="phase" id="p-sleep-1">
+      <div class="sleep-indicator">
+        <div class="sleep-indicator-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </div>
+        <div class="sleep-indicator-text">Monitoring paused — <em>resuming tomorrow at 9:01 PM</em></div>
+      </div>
+    </div>
+
+    <!-- Phase 13: Time Break -->
+    <div class="phase" id="p-timebreak">
+      <div class="time-break">24 hours later</div>
+    </div>
+
+    <!-- Phase 14: Unread Divider -->
+    <div class="phase" id="p-unread">
+      <div class="unread-divider">
+        <span class="unread-badge">New</span>
+      </div>
+    </div>
+
+    <!-- Phase 15: Agent Wake -->
+    <div class="phase" id="p-wake">
+      <div class="timestamp-header">9:02 PM CST — January 31, 2026</div>
+      <div class="agent-entry-header">
+        <div class="agent-avatar">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+        </div>
+        <span class="agent-entry-name">Monitoring Agent</span>
+        <span class="agent-entry-badge">Auto-resumed</span>
+      </div>
+    </div>
+
+    <!-- Phase 16: Wake agent group -->
+    <div class="phase" id="p-ag-wake">
+      <div class="agent-group" id="ag-wake">
+        <div class="agent-group-header" onclick="this.parentElement.classList.toggle('expanded')">
+          <span class="ag-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; color: var(--text-muted); width:16px; height:16px;"></span></span>
+          <span class="ag-check">&#x2713;</span>
+          <span class="ag-label">Scan</span>
+          <span class="ag-task">Looking for new stories since yesterday</span>
+          <svg class="ag-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="agent-group-body"><div class="agent-group-body-inner">
+          <div class="ag-step" id="ag-wk-s1"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Searching for new stories from the last 24 hours</span></div>
+          <div class="ag-step" id="ag-wk-s2"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Found 1 new story — Gemini growing 5x faster than ChatGPT</span></div>
+          <div class="ag-step" id="ag-wk-s3"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Reading Sensor Tower report on Gemini vs ChatGPT growth</span></div>
+          <div class="ag-step" id="ag-wk-s4"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Adding entry to Competitive Monitoring doc</span></div>
+          <div class="ag-step" id="ag-wk-s5"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Sending you a Slack notification</span></div>
+          <div class="ag-step" id="ag-wk-s6"><span class="ag-step-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; color: var(--text-muted); width:12px; height:12px;"></span></span><span class="ag-step-check">&#x2713;</span><span class="ag-step-text">Scheduling next check in 24 hours</span></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- Phase 17: Wake summary -->
+    <div class="phase" id="p-wake-summary">
+      <div class="answer-text" id="wake-summary-text"></div>
+    </div>
+
+    <!-- Phase 18: Updated document artifact -->
+    <div class="phase" id="p-artifact-2">
+      <div class="doc-artifact">
+        <div class="doc-artifact-header">
+          <div class="doc-artifact-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 2C4.9 2 4 2.9 4 4v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6H6zm7 1.5L18.5 9H13V3.5zM7 13h10v1.5H7V13zm0 3h10v1.5H7V16zm0 3h7v1.5H7V19zm0-9h4v1.5H7V10z"/></svg>
+          </div>
+          <div class="doc-artifact-meta">
+            <div class="doc-artifact-title">Competitive Monitoring</div>
+            <div class="doc-artifact-subtitle">Notion &middot; 5 stories &middot; 1 new entry added</div>
+          </div>
+          <button class="doc-artifact-open">Open</button>
+        </div>
+        <div class="doc-artifact-preview">
+          <div class="doc-preview-content">
+            <h4>AI Chatbot Competitive Landscape — Usage &amp; Growth Metrics</h4>
+            <table class="doc-table">
+              <thead>
+                <tr><th>Source</th><th>Product</th><th>Metric</th><th>Date</th></tr>
+              </thead>
+              <tbody>
+                <tr style="background: rgba(61, 186, 114, 0.04);"><td style="color: var(--green-text);">Sensor Tower <span style="font-size:0.6rem; opacity:0.7;">NEW</span></td><td>Gemini</td><td><span class="metric-highlight">5x faster growth</span> vs ChatGPT (30% vs ~6%)</td><td>Jan 31</td></tr>
+                <tr><td>Reuters</td><td>ChatGPT</td><td><span class="metric-highlight">878M monthly users</span>, 64.5% market share</td><td>Jan 28</td></tr>
+                <tr><td>The Information</td><td>Claude</td><td><span class="metric-highlight">30M MAU</span>, 70% Fortune 100 adoption</td><td>Jan 26</td></tr>
+                <tr><td>Sensor Tower</td><td>Gemini</td><td><span class="metric-highlight">450M MAU</span>, 49% growth in 12 weeks</td><td>Jan 24</td></tr>
+                <tr><td>Bloomberg</td><td>ChatGPT</td><td><span class="metric-highlight">$2B annualized revenue</span>, 300M weekly active</td><td>Jan 22</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 19: Slack notification confirmation -->
+    <div class="phase" id="p-slack-2">
+      <div class="agent-msg">
+        <p>I've updated the Notion doc and sent you a Slack notification with the new finding. Continuing daily checks.</p>
+      </div>
+    </div>
+
+    <!-- Phase 20: Second sleep -->
+    <div class="phase" id="p-sleep-2">
+      <div class="sleep-indicator">
+        <div class="sleep-indicator-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </div>
+        <div class="sleep-indicator-text">Monitoring paused — <em>resuming tomorrow at 9:02 PM</em></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="search-bar">
+    <div class="search-bar-inner">
+      <div class="search-bar-input"><input type="text" placeholder="Ask a follow-up..."></div>
+      <div class="search-bar-footer">
+        <div class="search-bar-left">
+          <button class="sb-icon-btn" title="Attach"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+          <button class="sb-icon-btn" title="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg></button>
+        </div>
+        <div class="search-bar-right">
+          <span class="sb-model">Opus 4.5 <svg viewBox="0 0 24 24" style="width:12px; height:12px;"><polyline points="6 9 12 15 18 9"/></svg></span>
+          <button class="sb-submit"><svg viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="asi-footer">ASI — Async Agents</footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    // --- Timeline Engine ---
+    const timers = [];
+    function schedule(delay, fn) { timers.push(setTimeout(fn, delay)); }
+    function clearAll() { timers.forEach(t => clearTimeout(t)); timers.length = 0; }
+
+    // --- Smooth auto-scroll ---
+    let autoScroll = true;
+    let scrollRaf = null;
+    window.addEventListener('wheel', () => { autoScroll = false; if (scrollRaf) { cancelAnimationFrame(scrollRaf); scrollRaf = null; } }, { passive: true });
+    window.addEventListener('touchmove', () => { autoScroll = false; if (scrollRaf) { cancelAnimationFrame(scrollRaf); scrollRaf = null; } }, { passive: true });
+
+    function scrollIntoView(el) {
+      if (!autoScroll || !el) return;
+      const rect = el.getBoundingClientRect();
+      const targetY = window.scrollY + rect.top - window.innerHeight * 0.45;
+      const startY = window.scrollY;
+      const diff = targetY - startY;
+      if (Math.abs(diff) < 2) return;
+      const duration = Math.min(1200, Math.max(600, Math.abs(diff) * 0.8));
+      const startTime = performance.now();
+      function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+      function step(now) {
+        if (!autoScroll) return;
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        window.scrollTo(0, startY + diff * ease(progress));
+        if (progress < 1) { scrollRaf = requestAnimationFrame(step); }
+        else { scrollRaf = null; }
+      }
+      if (scrollRaf) cancelAnimationFrame(scrollRaf);
+      scrollRaf = requestAnimationFrame(step);
+    }
+
+    function show(id) {
+      const el = document.getElementById(id);
+      if (el) { el.classList.add('visible'); scrollIntoView(el); }
+    }
+
+    // --- Agent group helpers ---
+    function showGroup(id) {
+      const el = document.getElementById(id);
+      if (el) { el.classList.add('visible', 'expanded'); scrollIntoView(el); }
+    }
+    function completeGroup(id) {
+      const el = document.getElementById(id);
+      if (el) { el.classList.add('completed'); }
+    }
+    function showStep(id) {
+      const el = document.getElementById(id);
+      if (el) { el.classList.add('visible'); scrollIntoView(el); }
+    }
+    function completeStep(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('completed');
+    }
+
+    function fadeIn(id) {
+      const el = document.getElementById(id);
+      if (el) { el.style.opacity = '1'; scrollIntoView(el); }
+    }
+
+    // --- Blur-reveal word streamer ---
+    function streamWords(targetId, text, wordDelay) {
+      wordDelay = wordDelay || 38;
+      const el = document.getElementById(targetId);
+      if (!el) return;
+      el.innerHTML = '';
+      const words = text.split(' ');
+      words.forEach(function(w, i) {
+        schedule(i * wordDelay, function() {
+          const span = document.createElement('span');
+          span.className = 'word';
+          span.innerHTML = w + ' ';
+          el.appendChild(span);
+          scrollIntoView(el);
+        });
+      });
+    }
+
+    // --- Run ---
+    function run() {
+      clearAll();
+      autoScroll = true;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Reset all phases
+      document.querySelectorAll('.phase').forEach(el => el.classList.remove('visible'));
+      document.querySelectorAll('.agent-group').forEach(el => {
+        el.classList.remove('visible', 'expanded', 'completed');
+      });
+      document.querySelectorAll('.ag-step').forEach(el => {
+        el.classList.remove('visible', 'completed');
+      });
+      // Reset auth button
+      const authBtn = document.getElementById('auth-btn');
+      authBtn.classList.remove('connected');
+      document.getElementById('auth-btn-text').textContent = 'Login to Notion';
+      // Reset summary text
+      document.getElementById('summary-text').innerHTML = '';
+      document.getElementById('wake-summary-text').innerHTML = '';
+
+      // ========== USER QUERY ==========
+      show('p-query');
+
+      // ========== AGENT INTRO ==========
+      schedule(1200, () => show('p-agent-1'));
+
+      // ========== SETUP AGENT GROUP (check tools) ==========
+      schedule(2500, () => {
+        show('p-ag-tools');
+        showGroup('ag-tools');
+        schedule(400, () => showStep('ag-tools-s1'));
+        schedule(1500, () => { completeStep('ag-tools-s1'); showStep('ag-tools-s2'); });
+        schedule(2800, () => { completeStep('ag-tools-s2'); completeGroup('ag-tools'); });
+      });
+
+      // ========== AUTH CARD ==========
+      schedule(6000, () => show('p-auth'));
+
+      // ========== LOGIN BUTTON CONNECTED ==========
+      schedule(9000, () => {
+        authBtn.classList.add('connected');
+        document.getElementById('auth-btn-text').textContent = 'Connected';
+      });
+
+      // ========== USER REPLY ==========
+      schedule(10000, () => show('p-user-reply'));
+
+      // ========== AUTH VERIFY AGENT GROUP ==========
+      schedule(11500, () => {
+        show('p-ag-auth');
+        showGroup('ag-auth');
+        schedule(400, () => showStep('ag-auth-s1'));
+        schedule(1200, () => { completeStep('ag-auth-s1'); showStep('ag-auth-s2'); });
+        schedule(2200, () => { completeStep('ag-auth-s2'); showStep('ag-auth-s3'); });
+        schedule(3200, () => { completeStep('ag-auth-s3'); completeGroup('ag-auth'); });
+      });
+
+      // ========== RESEARCH AGENT GROUP ==========
+      schedule(16500, () => {
+        show('p-ag-research');
+        showGroup('ag-research');
+        schedule(400, () => showStep('ag-res-s1'));
+        schedule(2000, () => { completeStep('ag-res-s1'); showStep('ag-res-s2'); });
+        schedule(3200, () => { completeStep('ag-res-s2'); showStep('ag-res-s3'); });
+        schedule(4500, () => { completeStep('ag-res-s3'); showStep('ag-res-s4'); });
+        schedule(5800, () => { completeStep('ag-res-s4'); showStep('ag-res-s5'); });
+        schedule(7000, () => { completeStep('ag-res-s5'); completeGroup('ag-research'); });
+      });
+
+      // ========== CREATE NOTION + NOTIFY AGENT GROUP ==========
+      schedule(24500, () => {
+        show('p-ag-create');
+        showGroup('ag-create');
+        schedule(400, () => showStep('ag-cr-s1'));
+        schedule(1800, () => { completeStep('ag-cr-s1'); showStep('ag-cr-s2'); });
+        schedule(3500, () => { completeStep('ag-cr-s2'); showStep('ag-cr-s3'); });
+        schedule(5000, () => { completeStep('ag-cr-s3'); showStep('ag-cr-s4'); });
+        schedule(6200, () => { completeStep('ag-cr-s4'); completeGroup('ag-create'); });
+      });
+
+      // ========== SUMMARY (blur-reveal) ==========
+      schedule(32000, () => {
+        show('p-summary');
+        streamWords('summary-text',
+          "<strong>Done.</strong> I've set up competitive monitoring for ChatGPT, Claude, and Gemini. I found 4 stories with usage/growth metrics today, created the <strong>Competitive Monitoring</strong> Notion doc with all entries, and sent you a Slack DM with the key highlights. I'll check every 24 hours for new stories from major business and tech publications.",
+          36
+        );
+      });
+
+      // ========== DOCUMENT ARTIFACT ==========
+      schedule(34500, () => show('p-artifact'));
+
+      // ========== METRICS + SLEEP ==========
+      schedule(35500, () => show('p-metrics'));
+      schedule(36500, () => show('p-sleep-1'));
+
+      // ========== TIME BREAK ==========
+      schedule(40000, () => show('p-timebreak'));
+
+      // ========== UNREAD ==========
+      schedule(42500, () => show('p-unread'));
+
+      // ========== AGENT WAKE ==========
+      schedule(45000, () => {
+        show('p-wake');
+        schedule(800, () => {
+          show('p-ag-wake');
+          showGroup('ag-wake');
+          schedule(400, () => showStep('ag-wk-s1'));
+          schedule(2000, () => { completeStep('ag-wk-s1'); showStep('ag-wk-s2'); });
+          schedule(3500, () => { completeStep('ag-wk-s2'); showStep('ag-wk-s3'); });
+          schedule(5000, () => { completeStep('ag-wk-s3'); showStep('ag-wk-s4'); });
+          schedule(6500, () => { completeStep('ag-wk-s4'); showStep('ag-wk-s5'); });
+          schedule(7800, () => { completeStep('ag-wk-s5'); showStep('ag-wk-s6'); });
+          schedule(9000, () => { completeStep('ag-wk-s6'); completeGroup('ag-wake'); });
+        });
+      });
+
+      // ========== WAKE SUMMARY (blur-reveal) ==========
+      schedule(56500, () => {
+        show('p-wake-summary');
+        streamWords('wake-summary-text',
+          "<strong>Found 1 new story.</strong> Sensor Tower reports Gemini's MAU grew 5x faster than ChatGPT — 30% growth vs ~6% between Aug–Nov 2025. This is significant competitive intelligence worth flagging.",
+          36
+        );
+      });
+
+      // ========== UPDATED DOC ARTIFACT ==========
+      schedule(59500, () => show('p-artifact-2'));
+
+      // ========== SLACK CONFIRMATION ==========
+      schedule(60500, () => show('p-slack-2'));
+
+      // ========== SECOND SLEEP ==========
+      schedule(62000, () => show('p-sleep-2'));
+
+      // ========== REPLAY ==========
+      schedule(74000, () => run());
+    }
+
+    // --- Start ---
+    if (typeof startAllSpinners === 'function') startAllSpinners();
+    run();
+
+    // --- Menu toggle ---
+    const menuBtn = document.getElementById('menu-btn');
+    const menuDropdown = document.getElementById('menu-dropdown');
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menuDropdown.classList.toggle('open');
+    });
+    document.addEventListener('click', () => {
+      menuDropdown.classList.remove('open');
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASI — Subagents Grid</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    :root {
+      --bg: #0c0c0f;
+      --surface: #151518;
+      --surface-raised: #1c1c21;
+      --border: #2a2a32;
+      --border-subtle: #222228;
+      --text: #e0e0e6;
+      --text-secondary: #a4a4b0;
+      --text-muted: #6e6e80;
+      --green: #3dba72;
+      --green-text: #6dcea0;
+      --accent: #b8b8c0;
+      --font-body: 'PPLX Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'PPLX Mono', 'SF Mono', monospace;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      letter-spacing: -0.01em;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* --- Nav Bar --- */
+    .asi-topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.85rem 1.25rem;
+      background: rgba(12, 12, 15, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .menu-btn {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: 1px solid var(--border);
+      border-radius: 8px; cursor: pointer; padding: 0;
+      transition: border-color 0.15s ease;
+    }
+    .menu-btn:hover { border-color: var(--text-muted); }
+    .menu-btn svg {
+      width: 16px; height: 16px;
+      stroke: var(--text-muted); fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .menu-dropdown {
+      position: absolute;
+      top: calc(100% + 0.5rem); left: 0;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 0.35rem;
+      display: flex; flex-direction: column; min-width: 160px;
+      opacity: 0; transform: translateY(-4px); pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      z-index: 200;
+    }
+    .menu-dropdown.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .menu-dropdown a {
+      font-size: 0.78rem; font-weight: 500;
+      color: var(--text-secondary); text-decoration: none;
+      padding: 0.5rem 0.65rem; border-radius: 6px;
+      transition: background 0.12s ease, color 0.12s ease;
+    }
+    .menu-dropdown a:hover { background: var(--surface-raised); color: var(--text); }
+
+    /* View toggle */
+    .view-toggle {
+      display: flex;
+      gap: 0.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.2rem;
+    }
+    .view-toggle a {
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+    .view-toggle a:hover {
+      color: var(--text-secondary);
+    }
+    .view-toggle a.active {
+      background: var(--surface-raised);
+      color: var(--text);
+    }
+
+    /* --- Layout --- */
+    .asi-container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 6rem 2rem 12rem;
+    }
+
+    /* --- Phase visibility --- */
+    .phase {
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      pointer-events: none;
+    }
+    .phase.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .phase + .phase {
+      margin-top: 1.75rem;
+    }
+
+    /* --- Phase 1: Query (chat bubble) --- */
+    .chat-bubble-row {
+      display: flex;
+      justify-content: flex-end;
+    }
+    .chat-bubble {
+      background: var(--surface-raised);
+      border: 1px solid var(--border);
+      border-radius: 18px 18px 4px 18px;
+      padding: 0.65rem 1rem;
+      max-width: 80%;
+      font-size: 0.88rem;
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    /* --- Phase 2: Orchestrator --- */
+    .orch-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      padding: 0.3rem 0;
+    }
+    .orch-spinner {
+      background: linear-gradient(90deg,
+        var(--text-muted) 0%, var(--text-muted) 35%,
+        var(--text) 50%,
+        var(--text-muted) 65%, var(--text-muted) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .orch-label { font-weight: 500; }
+    .orch-plan {
+      margin-top: 0.5rem;
+      margin-left: 7px;
+      padding-left: 1rem;
+      border-left: 2px solid var(--border);
+    }
+    .orch-plan-step {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      padding: 0.2rem 0;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .orch-plan-step.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* --- Phase 3: Agent Grid (3 cards) --- */
+    .agent-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.5rem;
+    }
+    .agent-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 0.75rem;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .agent-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .agent-card.completed {
+      opacity: 0.4;
+      transition: opacity 0.6s ease;
+    }
+    .agent-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.25rem;
+    }
+    .agent-card-icon svg {
+      width: 14px; height: 14px;
+      stroke: var(--text-muted);
+      fill: none;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .agent-card-status {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .agent-card-spinner-wrap { transition: opacity 0.3s ease; }
+    .agent-card-check {
+      color: var(--green);
+      font-weight: 600;
+      font-size: 0.75rem;
+      opacity: 0;
+      position: absolute;
+      transition: opacity 0.3s ease;
+    }
+    .agent-card.completed .agent-card-check { opacity: 1; }
+    .agent-card.completed .agent-card-spinner-wrap { opacity: 0; }
+
+    .agent-card-role {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.1rem;
+    }
+    .agent-card.active .agent-card-role {
+      background: linear-gradient(90deg,
+        var(--text) 0%, var(--text) 35%,
+        var(--text-muted) 50%,
+        var(--text) 65%, var(--text) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .agent-card.completed .agent-card-role {
+      background: none;
+      -webkit-text-fill-color: var(--text);
+      animation: none;
+    }
+    .agent-card-task {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* --- Phase 4: Flat Chain-of-Thought Log --- */
+    .cot-log {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .log-row {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.4rem 0;
+      font-size: 0.78rem;
+      cursor: pointer;
+      position: relative;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .log-row.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .log-row.completed {
+      opacity: 0.45;
+      transition: opacity 0.5s ease;
+    }
+    .log-spinner-wrap {
+      width: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: opacity 0.3s ease;
+    }
+    .log-check {
+      color: var(--green);
+      font-weight: 600;
+      font-size: 0.78rem;
+      width: 16px;
+      text-align: center;
+      flex-shrink: 0;
+      opacity: 0;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      transition: opacity 0.3s ease;
+    }
+    .log-row.completed .log-check { opacity: 1; }
+    .log-row.completed .log-spinner-wrap { opacity: 0; }
+
+    .log-agent {
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      color: var(--text-secondary);
+      background: var(--surface-raised);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .log-tool {
+      font-family: var(--font-mono);
+      font-weight: 500;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+    .log-arg {
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+      min-width: 0;
+    }
+    .log-chevron {
+      width: 12px; height: 12px;
+      stroke: var(--text-muted);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .log-row.expanded .log-chevron { transform: rotate(90deg); }
+
+    .log-expand {
+      margin-left: 7px;
+      padding-left: 1rem;
+      border-left: 2px solid var(--border);
+      display: grid;
+      grid-template-rows: 0fr;
+      opacity: 0;
+      transition: grid-template-rows 0.4s ease, opacity 0.35s ease, padding 0.4s ease;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+    .log-expand > .log-expand-inner {
+      overflow: hidden;
+    }
+    .log-row.expanded + .log-expand {
+      grid-template-rows: 1fr;
+      opacity: 1;
+      padding-top: 0.25rem;
+      padding-bottom: 0.4rem;
+    }
+    .log-output {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+    .log-row.completed + .log-expand {
+      opacity: 0.45;
+    }
+
+    /* --- Phase 5: Synthesis --- */
+    .synthesis-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .synthesis-label {
+      font-weight: 500;
+      background: linear-gradient(90deg,
+        var(--text-secondary) 0%, var(--text-secondary) 35%,
+        var(--text) 50%,
+        var(--text-secondary) 65%, var(--text-secondary) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+
+    /* --- Phase 6: Answer (markdown-style) --- */
+    .asi-answer {
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+    }
+    .answer-text {
+      font-size: 0.88rem;
+      line-height: 1.75;
+      color: var(--text-secondary);
+    }
+    .answer-text .word {
+      display: inline;
+      animation: wordReveal 0.25s ease-out forwards;
+    }
+    @keyframes wordReveal {
+      from { opacity: 0; filter: blur(4px); }
+      to   { opacity: 1; filter: blur(0); }
+    }
+    .answer-text h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin: 0 0 0.5rem;
+    }
+    .answer-text h3 {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 1.25rem 0 0.35rem;
+    }
+    .answer-text p { margin: 0.5rem 0; }
+    .answer-text ul {
+      margin: 0.4rem 0 0.75rem;
+      padding-left: 1.25rem;
+      list-style: none;
+    }
+    .answer-text li {
+      margin: 0.5rem 0;
+      color: var(--text-secondary);
+      padding-left: 0.25rem;
+      position: relative;
+    }
+    .answer-text li::before {
+      content: '\2022';
+      color: var(--text-muted);
+      position: absolute;
+      left: -1rem;
+    }
+    .answer-text code {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      background: var(--surface);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      color: var(--accent);
+      border: 1px solid var(--border-subtle);
+    }
+    .answer-text em { color: var(--text-muted); font-style: italic; }
+    .answer-text strong { color: var(--text); font-weight: 600; }
+    .answer-text hr {
+      border: none;
+      border-top: 1px solid var(--border-subtle);
+      margin: 1.25rem 0;
+    }
+    .answer-text blockquote {
+      margin: 1rem 0;
+      padding: 0.75rem 1rem;
+      border-left: 3px solid var(--accent);
+      background: color-mix(in srgb, var(--accent) 5%, transparent);
+      border-radius: 0 8px 8px 0;
+      font-size: 0.85rem;
+    }
+    .answer-text blockquote p { margin: 0; }
+    .answer-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+      margin: 0.75rem 0;
+    }
+    .answer-table th {
+      text-align: left;
+      font-weight: 500;
+      color: var(--text-muted);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.4rem 0.5rem 0.4rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .answer-table td {
+      padding: 0.45rem 0.5rem 0.45rem 0;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+    }
+    .answer-table td:last-child, .answer-table th:last-child { text-align: right; padding-right: 0; }
+    .answer-table .mono {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+    }
+    .answer-table .status-ok { color: var(--green); font-weight: 500; }
+    .answer-table .status-warn { color: var(--amber, #d4a07c); font-weight: 500; }
+
+    /* --- Document Artifact --- */
+    .doc-artifact {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+      cursor: pointer;
+    }
+    .doc-artifact:hover {
+      border-color: var(--text-muted);
+    }
+    .doc-artifact-header {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.85rem 1rem;
+    }
+    .doc-artifact-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: #2b579a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .doc-artifact-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: #fff;
+    }
+    .doc-artifact-meta {
+      flex: 1;
+      min-width: 0;
+    }
+    .doc-artifact-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .doc-artifact-subtitle {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin-top: 0.1rem;
+    }
+    .doc-artifact-open {
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      padding: 0.3rem 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: transparent;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: color 0.15s ease, border-color 0.15s ease;
+    }
+    .doc-artifact-open:hover {
+      color: var(--text-secondary);
+      border-color: var(--text-muted);
+    }
+
+    /* --- Bottom Search Bar --- */
+    .search-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 0.75rem 1.25rem 1.25rem;
+      background: linear-gradient(to top, var(--bg) 60%, transparent);
+      display: flex;
+      justify-content: center;
+    }
+    .search-bar-inner {
+      width: 100%;
+      max-width: 640px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 -4px 24px rgba(0,0,0,0.3);
+    }
+    .search-bar-input {
+      flex: 1;
+      padding: 0.9rem 1.1rem 0.5rem;
+    }
+    .search-bar-input input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      font-family: var(--font-body);
+      font-size: 0.92rem;
+      color: var(--text);
+      outline: none;
+      letter-spacing: -0.01em;
+    }
+    .search-bar-input input::placeholder { color: var(--text-muted); }
+    .search-bar-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.45rem 0.6rem 0.6rem 1rem;
+    }
+    .search-bar-left { display: flex; align-items: center; gap: 0.35rem; }
+    .search-bar-right { display: flex; align-items: center; gap: 0.5rem; }
+    .sb-icon-btn {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      border: none; background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 50%;
+      padding: 0;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+    .sb-icon-btn svg {
+      width: 16px; height: 16px;
+      stroke: currentColor; fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .sb-icon-btn:hover {
+      color: var(--text-secondary);
+      background: var(--surface-raised);
+    }
+    .sb-model {
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      cursor: pointer;
+    }
+    .sb-submit {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+      flex-shrink: 0;
+    }
+    .sb-submit svg {
+      width: 16px; height: 16px;
+      stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .sb-submit:hover { opacity: 0.8; }
+
+    /* --- Footer --- */
+    .asi-footer {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+    }
+
+    @keyframes textShimmer {
+      0% { background-position: 200% 50%; }
+      100% { background-position: -100% 50%; }
+    }
+
+    @media (max-width: 640px) {
+      .asi-container { padding: 4rem 1.25rem 6rem; }
+      .chat-bubble { font-size: 0.82rem; max-width: 92%; }
+      .agent-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="asi-topbar">
+    <div style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%);">
+      <button class="menu-btn" id="menu-btn" aria-label="Menu">
+        <svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      </button>
+      <div class="menu-dropdown" id="menu-dropdown">
+        <a href="components.html">Components</a>
+        <a href="asi-v0-scope.html">ASI Experience</a>
+      </div>
+    </div>
+    <div class="view-toggle">
+      <a href="asi-v0-scope.html">Wide Research</a>
+      <a href="asi-v0-rows.html">Wide Research - Rows</a>
+      <a href="asi.html">Subagents - List</a>
+      <a href="asi-mega.html" class="active">Subagents - Grid</a>
+      <a href="asi-async.html">Async Agents</a>
+    </div>
+  </nav>
+
+  <div class="asi-container">
+
+    <!-- Phase 1: Query -->
+    <div class="phase" id="phase-query">
+      <div class="chat-bubble-row">
+        <div class="chat-bubble">Research and plan a trip to Tokyo, Japan for March 15-22. Find the best flights, hotels, and build a day-by-day itinerary.</div>
+      </div>
+    </div>
+
+    <!-- Phase 2: Orchestrator -->
+    <div class="phase" id="phase-orch">
+      <div class="orch-row">
+        <span class="orch-spinner loader text-spinner sm" data-spinner="braille" style="font-size:0.85rem; width:16px; height:16px;"></span>
+        <span class="orch-label">Thinking...</span>
+      </div>
+      <div class="orch-plan" id="orch-plan">
+        <div class="orch-plan-step" id="orch-step-1">Break into 3 parallel research tracks</div>
+        <div class="orch-plan-step" id="orch-step-2">Spawn flight research, hotel research, and itinerary planning agents</div>
+      </div>
+    </div>
+
+    <!-- Phase 3: Agent Grid (3 cards) -->
+    <div class="phase" id="phase-grid">
+      <div class="agent-grid">
+        <!-- Card 1: Flight Research -->
+        <div class="agent-card" id="card-1">
+          <div class="agent-card-header">
+            <span class="agent-card-icon"><svg viewBox="0 0 24 24"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.4-.1.9.3 1.1l5.5 3.2-2.7 2.7-2.1-.4c-.3-.1-.7 0-.9.2l-.4.4 2.8 1.5 1.5 2.8.4-.4c.2-.2.3-.6.2-.9l-.4-2.1 2.7-2.7 3.2 5.5c.2.4.7.5 1.1.3l.5-.3c.4-.2.6-.6.5-1.1z"/></svg></span>
+            <span class="agent-card-status">
+              <span class="agent-card-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; width:14px; height:14px;"></span></span>
+              <span class="agent-card-check">&#x2713;</span>
+            </span>
+          </div>
+          <div class="agent-card-role">Flight Research</div>
+          <div class="agent-card-task">Search flights to Tokyo</div>
+        </div>
+        <!-- Card 2: Hotel Research -->
+        <div class="agent-card" id="card-2">
+          <div class="agent-card-header">
+            <span class="agent-card-icon"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9h1"/><path d="M9 13h1"/><path d="M9 17h1"/></svg></span>
+            <span class="agent-card-status">
+              <span class="agent-card-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; width:14px; height:14px;"></span></span>
+              <span class="agent-card-check">&#x2713;</span>
+            </span>
+          </div>
+          <div class="agent-card-role">Hotel Research</div>
+          <div class="agent-card-task">Find hotels in Tokyo</div>
+        </div>
+        <!-- Card 3: Itinerary Planning -->
+        <div class="agent-card" id="card-3">
+          <div class="agent-card-header">
+            <span class="agent-card-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+            <span class="agent-card-status">
+              <span class="agent-card-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; width:14px; height:14px;"></span></span>
+              <span class="agent-card-check">&#x2713;</span>
+            </span>
+          </div>
+          <div class="agent-card-role">Itinerary Planner</div>
+          <div class="agent-card-task">Build day-by-day plan</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 4: Flat Chain-of-Thought Log -->
+    <div class="phase visible" id="phase-log" style="opacity:1; transform:none;">
+      <div class="cot-log" id="cot-log">
+
+        <div class="log-row" id="log-1" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Flight Research</span>
+          <span class="log-tool">Searching direct flights</span>
+          <span class="log-arg">Chicago to Tokyo, March 15–22</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">Found 8 direct flights:
+ANA NH11 — depart 11:30 AM, arrive 3:15 PM+1 — $1,240 RT
+JAL JL009 — depart 12:05 PM, arrive 3:50 PM+1 — $1,185 RT
+United UA881 — depart 10:15 AM, arrive 2:00 PM+1 — $1,095 RT</div></div></div>
+
+        <div class="log-row" id="log-2" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Hotel Research</span>
+          <span class="log-tool">Searching top-rated hotels</span>
+          <span class="log-arg">near Shinjuku Station, 7 nights</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">12 hotels found in Shinjuku area:
+Park Hyatt Tokyo — $420/night ★ 4.8 (Lost in Translation vibes)
+Hotel Gracery Shinjuku — $165/night ★ 4.5 (Godzilla head!)
+Keio Plaza Hotel — $195/night ★ 4.4 (reliable, great transit access)</div></div></div>
+
+        <div class="log-row" id="log-3" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Itinerary Planner</span>
+          <span class="log-tool">Drafting a 7-day itinerary</span>
+          <span class="log-arg">across Tokyo's best neighborhoods</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">Day 1: Arrive Shinjuku — settle in, explore Kabukicho
+Day 2: Asakusa + Ueno — Senso-ji, Nakamise, Ueno Park
+Day 3: Shibuya + Harajuku — Meiji Shrine, Takeshita St
+Day 4: Tsukiji + Ginza — outer market, teamLab, shopping
+Day 5: Day trip to Kamakura — Great Buddha, Hase-dera
+Day 6: Akihabara + Yanaka — electronics, old-town stroll
+Day 7: Shinjuku Gyoen cherry blossoms, depart</div></div></div>
+
+        <div class="log-row" id="log-4" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Flight Research</span>
+          <span class="log-tool">Comparing fares across airlines</span>
+          <span class="log-arg">economy and premium on 5 carriers</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">| Airline | Economy | Premium | Duration |
+|---------|---------|---------|----------|
+| ANA     | $1,240  | $1,890  | 13h 45m  |
+| JAL     | $1,185  | $1,810  | 13h 45m  |
+| United  | $1,095  | $1,680  | 14h 00m  |
+| Delta   | $1,320  | $2,010  | 15h 30m* |
+| Korean  | $985    | —       | 16h 20m* |
+* = one stop</div></div></div>
+
+        <div class="log-row" id="log-5" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Hotel Research</span>
+          <span class="log-tool">Evaluating neighborhoods</span>
+          <span class="log-arg">Shinjuku vs Shibuya vs Asakusa pricing</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">Shinjuku: best transit hub, $140-420/night avg
+Shibuya: trendy area, $160-380/night avg
+Asakusa: traditional feel, $95-220/night avg
+→ Recommendation: Shinjuku for first-time visitors (JR hub)</div></div></div>
+
+        <div class="log-row" id="log-6" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Itinerary Planner</span>
+          <span class="log-tool">Finding must-try restaurants</span>
+          <span class="log-arg">sushi, ramen, and izakaya picks by area</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">Top picks by day:
+  Omoide Yokocho — yakitori alley, no reservation needed
+  Sometaro — okonomiyaki in Asakusa, walk-in OK
+  Afuri — yuzu ramen in Harajuku, minimal wait
+  Sushi Dai — omakase at Tsukiji, arrive 6 AM
+  Matsubara-an — handmade soba in Kamakura
+  Kanda Matsuya — udon near Akihabara since 1884</div></div></div>
+
+        <div class="log-row" id="log-7" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Flight Research</span>
+          <span class="log-tool">Checking one-stop routes</span>
+          <span class="log-arg">via Seoul and Taipei for savings</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">Korean Air via Seoul (ICN): $985 RT, +2.5h layover
+EVA Air via Taipei (TPE): $1,010 RT, +3h layover
+→ Save $255 vs direct ANA, but adds 2-3 hours each way</div></div></div>
+
+        <div class="log-row" id="log-8" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Hotel Research</span>
+          <span class="log-tool">Verifying room availability</span>
+          <span class="log-arg">during cherry blossom peak season</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">Hotel Gracery Shinjuku: Available Mar 15-22 ✓
+  $165/night (7 nights = $1,155)
+  Free cancellation until Mar 8
+  ⚠ Cherry blossom season — only 2 rooms left at this rate</div></div></div>
+
+        <div class="log-row" id="log-9" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Itinerary Planner</span>
+          <span class="log-tool">Calculating transit options</span>
+          <span class="log-arg">JR Pass vs Suica for 7-day coverage</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">7-day JR Pass: $200 — covers Kamakura day trip + all JR lines
+Suica card: pay-as-you-go, ~$4-8/day for metro only
+→ JR Pass recommended (Kamakura alone saves $30 RT)
+Average daily transit: 45 min between neighborhoods</div></div></div>
+
+      </div>
+    </div>
+
+    <!-- Phase 5: Synthesis -->
+    <div class="phase" id="phase-synthesis">
+      <div class="synthesis-row">
+        <span class="orch-spinner loader text-spinner sm" data-spinner="braille" style="font-size:0.85rem; width:16px; height:16px;" id="synth-spinner"></span>
+        <span class="synthesis-label" id="synth-label">Synthesizing results from 3 agents...</span>
+      </div>
+    </div>
+
+    <!-- Phase 6: Answer -->
+    <div class="phase" id="phase-answer">
+      <div class="asi-answer">
+        <div class="answer-text" id="answer-output"></div>
+      </div>
+    </div>
+
+    <!-- Phase 7: Document Artifact -->
+    <div class="phase" id="phase-doc">
+      <div class="doc-artifact">
+        <div class="doc-artifact-header">
+          <div class="doc-artifact-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 2C4.9 2 4 2.9 4 4v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6H6zm7 1.5L18.5 9H13V3.5zM7 13h10v1.5H7V13zm0 3h10v1.5H7V16zm0 3h7v1.5H7V19zm0-9h4v1.5H7V10z"/></svg>
+          </div>
+          <div class="doc-artifact-meta">
+            <div class="doc-artifact-title">Tokyo Trip Plan — Complete Itinerary</div>
+            <div class="doc-artifact-subtitle">Document &middot; 7 days &middot; flights, hotels, activities</div>
+          </div>
+          <button class="doc-artifact-open">Open</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="search-bar">
+    <div class="search-bar-inner">
+      <div class="search-bar-input">
+        <input type="text" placeholder="Ask a follow-up...">
+      </div>
+      <div class="search-bar-footer">
+        <div class="search-bar-left">
+          <button class="sb-icon-btn" title="Attach">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <button class="sb-icon-btn" title="Search">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+          </button>
+        </div>
+        <div class="search-bar-right">
+          <span class="sb-model">Opus 4.5 <svg viewBox="0 0 24 24" style="width:12px; height:12px;"><polyline points="6 9 12 15 18 9"/></svg></span>
+          <button class="sb-submit">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="asi-footer">
+    ASI Experience Prototype — Subagents Grid View
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    // --- Timeline Engine ---
+    const timers = [];
+    function schedule(delay, fn) { timers.push(setTimeout(fn, delay)); }
+    function clearAll() { timers.forEach(t => clearTimeout(t)); timers.length = 0; }
+
+    // --- Auto-scroll ---
+    let autoScroll = true;
+    window.addEventListener('wheel', () => { autoScroll = false; }, { passive: true });
+    window.addEventListener('touchmove', () => { autoScroll = false; }, { passive: true });
+
+    function scrollIntoView(el) {
+      if (!autoScroll || !el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function show(id) {
+      const el = document.getElementById(id);
+      if (el) { el.classList.add('visible'); scrollIntoView(el); }
+    }
+
+    function showCard(id) {
+      const el = document.getElementById(id);
+      if (el) { el.classList.add('visible', 'active'); scrollIntoView(el); }
+    }
+
+    function completeCard(id) {
+      const el = document.getElementById(id);
+      if (el) { el.classList.add('completed'); el.classList.remove('active'); }
+    }
+
+    function showLog(id) {
+      const el = document.getElementById(id);
+      if (el) { el.classList.add('visible', 'expanded'); scrollIntoView(el); }
+    }
+
+    function completeLog(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('completed', 'visible');
+    }
+
+    // --- Blur-reveal word streamer ---
+    function streamWords(elId, html, delay, callback) {
+      const el = document.getElementById(elId);
+      el.innerHTML = html;
+
+      const wordSpans = [];
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+      const textNodes = [];
+      while (walker.nextNode()) textNodes.push(walker.currentNode);
+
+      textNodes.forEach(node => {
+        const words = node.textContent.split(/(\s+)/);
+        if (words.length <= 1 && !node.textContent.trim()) return;
+        const frag = document.createDocumentFragment();
+        words.forEach(w => {
+          if (!w) return;
+          if (/^\s+$/.test(w)) {
+            frag.appendChild(document.createTextNode(w));
+          } else {
+            const span = document.createElement('span');
+            span.className = 'word';
+            span.style.opacity = '0';
+            span.textContent = w;
+            frag.appendChild(span);
+            wordSpans.push(span);
+          }
+        });
+        node.parentNode.replaceChild(frag, node);
+      });
+
+      let i = 0;
+      function tick() {
+        if (i >= wordSpans.length) { if (callback) callback(); return; }
+        wordSpans[i].style.opacity = '';
+        wordSpans[i].style.animation = 'wordReveal 0.25s ease-out forwards';
+        i++;
+        schedule(delay, tick);
+      }
+      tick();
+    }
+
+    // --- Answer content ---
+    const ANSWER_HTML = `<h2>Tokyo Trip Plan — March 15-22</h2>
+<p>After researching flights, hotels, and attractions across Tokyo, here's your complete travel plan for <strong>7 nights in Tokyo</strong> during early cherry blossom season.</p>
+<h3>Flights</h3>
+<ul>
+<li><strong>Outbound:</strong> ANA NH11 — Mar 15, depart 11:30 AM ORD → arrive 3:15 PM NRT (Mar 16). <em>Direct, 13h 45m.</em></li>
+<li><strong>Return:</strong> ANA NH12 — Mar 22, depart 5:30 PM NRT → arrive 3:45 PM ORD (same day). <em>Direct, 12h 15m.</em></li>
+<li><strong>Price:</strong> $1,240 round trip per person (economy). Premium economy available at $1,890.</li>
+</ul>
+<h3>Hotel</h3>
+<ul>
+<li><strong>Hotel Gracery Shinjuku</strong> — 7 nights at $165/night ($1,155 total). Rated 4.5 stars, steps from Shinjuku Station, famous Godzilla head on the roof terrace. Free cancellation until Mar 8.</li>
+</ul>
+<h3>Day-by-Day Itinerary</h3>
+<table class="answer-table">
+<thead><tr><th>Day</th><th>Area</th><th>Highlights</th><th>Meals</th></tr></thead>
+<tbody>
+<tr><td class="mono">Mar 16</td><td>Shinjuku</td><td>Arrive & settle in, explore Kabukicho</td><td>Omoide Yokocho (yakitori alley)</td></tr>
+<tr><td class="mono">Mar 17</td><td>Asakusa + Ueno</td><td>Senso-ji, Nakamise, Ueno Park</td><td>Sometaro (okonomiyaki)</td></tr>
+<tr><td class="mono">Mar 18</td><td>Shibuya + Harajuku</td><td>Meiji Shrine, Takeshita St, Shibuya Crossing</td><td>Afuri (yuzu ramen)</td></tr>
+<tr><td class="mono">Mar 19</td><td>Tsukiji + Ginza</td><td>Outer market, teamLab Borderless, shopping</td><td>Sushi Dai (omakase)</td></tr>
+<tr><td class="mono">Mar 20</td><td>Day trip: Kamakura</td><td>Great Buddha, Hase-dera, Enoshima Island</td><td>Matsubara-an (soba)</td></tr>
+<tr><td class="mono">Mar 21</td><td>Akihabara + Yanaka</td><td>Electronics, manga, old-town Tokyo stroll</td><td>Kanda Matsuya (udon)</td></tr>
+<tr><td class="mono">Mar 22</td><td>Shinjuku</td><td>Gyoen cherry blossoms (if blooming), depart</td><td class="status-ok">Flight 5:30 PM</td></tr>
+</tbody>
+</table>
+<h3>Budget Summary</h3>
+<blockquote><p>Flights: <strong>$1,240</strong> + Hotel: <strong>$1,155</strong> + JR Pass (7-day): <strong>$200</strong> + Food & activities: <strong>~$700</strong> = <strong>~$3,295 total per person</strong>. Cherry blossom season typically starts mid-to-late March in Tokyo — you may catch early blooms at Shinjuku Gyoen and Ueno Park.</p></blockquote>`;
+
+
+    // --- Run the experience ---
+    function run() {
+      clearAll();
+      autoScroll = true;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.querySelectorAll('.phase').forEach(el => {
+        el.classList.remove('visible');
+        el.style.opacity = '';
+        el.style.transform = '';
+      });
+      document.querySelectorAll('.agent-card').forEach(el => {
+        el.classList.remove('visible', 'completed', 'active');
+      });
+      document.querySelectorAll('.log-row').forEach(el => {
+        el.classList.remove('visible', 'completed', 'expanded');
+      });
+      document.querySelectorAll('.orch-plan-step').forEach(el => {
+        el.classList.remove('visible');
+      });
+
+      const answerEl = document.getElementById('answer-output');
+      answerEl.innerHTML = '';
+      const synthSpinner = document.getElementById('synth-spinner');
+      synthSpinner.style.display = '';
+      const synthLabel = document.getElementById('synth-label');
+      synthLabel.textContent = 'Synthesizing results from 3 agents...';
+      synthLabel.style.background = '';
+      synthLabel.style.webkitBackgroundClip = '';
+      synthLabel.style.backgroundClip = '';
+      synthLabel.style.webkitTextFillColor = '';
+      synthLabel.style.animation = '';
+      synthLabel.className = 'synthesis-label';
+
+      // ========== PHASE 1: Query (instant) ==========
+      show('phase-query');
+
+      // ========== PHASE 2: Orchestrator (instant) ==========
+      show('phase-orch');
+      show('orch-step-1');
+      show('orch-step-2');
+
+      // ========== PHASE 3: Agent Grid (all 3 at once) ==========
+      schedule(1200, () => {
+        show('phase-grid');
+        ['card-1','card-2','card-3'].forEach(id => showCard(id));
+      });
+
+      // ========== PHASE 4: Log entries (interleaved across 3 agents) ==========
+      // First round: one from each agent
+      schedule(3500, () => { show('phase-log'); showLog('log-1'); });
+      schedule(4300, () => showLog('log-2'));
+      schedule(5100, () => showLog('log-3'));
+
+      // Second round
+      schedule(7000, () => { completeLog('log-1'); showLog('log-4'); });
+      schedule(7800, () => { completeLog('log-2'); showLog('log-5'); });
+      schedule(8600, () => { completeLog('log-3'); showLog('log-6'); });
+
+      // Third round
+      schedule(10500, () => { completeLog('log-4'); showLog('log-7'); });
+      schedule(11300, () => { completeLog('log-5'); showLog('log-8'); });
+      schedule(12100, () => { completeLog('log-6'); showLog('log-9'); });
+
+      // Complete remaining logs + cards
+      schedule(14000, () => { completeLog('log-7'); completeCard('card-1'); });
+      schedule(14800, () => { completeLog('log-8'); completeCard('card-2'); });
+      schedule(15600, () => { completeLog('log-9'); completeCard('card-3'); });
+
+      // ========== PHASE 5: Synthesis ==========
+      schedule(17000, () => show('phase-synthesis'));
+      schedule(20000, () => {
+        synthSpinner.style.display = 'none';
+        synthLabel.textContent = 'Synthesis complete — 3 agents, 9 tools, full itinerary ready';
+        synthLabel.style.background = 'none';
+        synthLabel.style.webkitTextFillColor = 'var(--green-text)';
+        synthLabel.style.animation = 'none';
+      });
+
+      // ========== PHASE 6: Answer ==========
+      schedule(21000, () => {
+        show('phase-answer');
+        schedule(500, () => {
+          streamWords('answer-output', ANSWER_HTML, 20, () => {
+            schedule(100, () => show('phase-doc'));
+          });
+        });
+      });
+
+      // ========== REPLAY ==========
+      schedule(45000, () => run());
+    }
+
+    run();
+
+    // --- Menu toggle ---
+    const menuBtn = document.getElementById('menu-btn');
+    const menuDropdown = document.getElementById('menu-dropdown');
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menuDropdown.classList.toggle('open');
+    });
+    document.addEventListener('click', () => {
+      menuDropdown.classList.remove('open');
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASI — Floating Agents</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    :root {
+      --bg: #0c0c0f;
+      --surface: #151518;
+      --surface-raised: #1c1c21;
+      --border: #2a2a32;
+      --border-subtle: #222228;
+      --text: #e0e0e6;
+      --text-secondary: #a4a4b0;
+      --text-muted: #6e6e80;
+      --green: #3dba72;
+      --green-text: #6dcea0;
+      --accent: #b8b8c0;
+      --font-body: 'PPLX Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'PPLX Mono', 'SF Mono', monospace;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      letter-spacing: -0.01em;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* --- Nav Bar --- */
+    .asi-topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.85rem 1.25rem;
+      background: rgba(12, 12, 15, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .menu-btn {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: 1px solid var(--border);
+      border-radius: 8px; cursor: pointer; padding: 0;
+      transition: border-color 0.15s ease;
+    }
+    .menu-btn:hover { border-color: var(--text-muted); }
+    .menu-btn svg {
+      width: 16px; height: 16px;
+      stroke: var(--text-muted); fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .menu-dropdown {
+      position: absolute;
+      top: calc(100% + 0.5rem); left: 1.25rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 0.35rem;
+      display: flex; flex-direction: column; min-width: 160px;
+      opacity: 0; transform: translateY(-4px); pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .menu-dropdown.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .menu-dropdown a {
+      font-size: 0.78rem; font-weight: 500;
+      color: var(--text-secondary); text-decoration: none;
+      padding: 0.5rem 0.65rem; border-radius: 6px;
+      transition: background 0.12s ease, color 0.12s ease;
+    }
+    .menu-dropdown a:hover { background: var(--surface-raised); color: var(--text); }
+    .view-toggle {
+      display: flex; gap: 0.25rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.2rem;
+    }
+    .view-toggle a {
+      font-size: 0.68rem; font-weight: 500;
+      color: var(--text-muted); text-decoration: none;
+      padding: 0.3rem 0.6rem; border-radius: 6px;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+    .view-toggle a:hover { color: var(--text-secondary); }
+    .view-toggle a.active { background: var(--surface-raised); color: var(--text); }
+
+    /* --- Layout --- */
+    .asi-container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 6rem 2rem 16rem; /* extra bottom padding for floating panel + search bar */
+    }
+
+    /* --- Phase visibility --- */
+    .phase {
+      opacity: 0; transform: translateY(8px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      pointer-events: none;
+    }
+    .phase.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .phase + .phase { margin-top: 1.75rem; }
+
+    /* --- Phase 1: Query --- */
+    .asi-query {
+      font-size: 1.4rem; font-weight: 500;
+      line-height: 1.5; color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    /* --- Phase 2: Orchestrator --- */
+    .orch-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.85rem; color: var(--text-secondary);
+      padding: 0.3rem 0;
+    }
+    .orch-spinner {
+      background: linear-gradient(90deg,
+        var(--text-muted) 0%, var(--text-muted) 35%,
+        var(--text) 50%,
+        var(--text-muted) 65%, var(--text-muted) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .orch-label { font-weight: 500; }
+    .orch-plan {
+      margin-top: 0.5rem; margin-left: 7px;
+      padding-left: 1rem; border-left: 2px solid var(--border);
+    }
+    .orch-plan-step {
+      font-size: 0.8rem; color: var(--text-muted);
+      padding: 0.2rem 0; opacity: 0; transform: translateY(4px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .orch-plan-step.visible { opacity: 1; transform: translateY(0); }
+
+    /* --- Flat Chain-of-Thought Log --- */
+    .cot-log { display: flex; flex-direction: column; gap: 0; }
+    .log-row {
+      display: flex; align-items: center; gap: 0.45rem;
+      padding: 0.4rem 0; font-size: 0.78rem; cursor: pointer;
+      position: relative; opacity: 0; transform: translateY(6px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .log-row.visible { opacity: 1; transform: translateY(0); }
+    .log-row.completed { opacity: 0.45; transition: opacity 0.5s ease; }
+    .log-spinner-wrap {
+      width: 16px; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: opacity 0.3s ease;
+    }
+    .log-check {
+      color: var(--green); font-weight: 600; font-size: 0.78rem;
+      width: 16px; text-align: center; flex-shrink: 0;
+      opacity: 0; position: absolute; transition: opacity 0.3s ease;
+    }
+    .log-row.completed .log-check { opacity: 1; position: static; }
+    .log-row.completed .log-spinner-wrap { opacity: 0; width: 0; overflow: hidden; }
+    .log-agent {
+      font-size: 0.65rem; font-weight: 600;
+      padding: 0.15rem 0.5rem; border-radius: 4px;
+      white-space: nowrap; flex-shrink: 0;
+      color: var(--text-secondary);
+      background: var(--surface-raised);
+      border: 1px solid var(--border-subtle);
+    }
+    .log-tool {
+      font-family: var(--font-mono); font-weight: 500;
+      color: var(--text-secondary); flex-shrink: 0;
+    }
+    .log-arg {
+      font-family: var(--font-mono); color: var(--text-muted);
+      overflow: hidden; text-overflow: ellipsis;
+      white-space: nowrap; flex: 1; min-width: 0;
+    }
+    .log-chevron {
+      width: 12px; height: 12px;
+      stroke: var(--text-muted); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      flex-shrink: 0;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .log-row.expanded .log-chevron { transform: rotate(90deg); }
+    .log-expand {
+      margin-left: 7px; padding-left: 1rem;
+      border-left: 2px solid var(--border);
+      display: grid; grid-template-rows: 0fr; opacity: 0;
+      transition: grid-template-rows 0.4s ease, opacity 0.35s ease, padding 0.4s ease;
+      padding-top: 0; padding-bottom: 0;
+    }
+    .log-expand > .log-expand-inner { overflow: hidden; }
+    .log-row.expanded + .log-expand {
+      grid-template-rows: 1fr; opacity: 1;
+      padding-top: 0.25rem; padding-bottom: 0.4rem;
+    }
+    .log-output {
+      font-family: var(--font-mono); font-size: 0.72rem;
+      color: var(--text-muted); background: var(--surface);
+      border-radius: 8px; padding: 0.65rem 0.85rem;
+      line-height: 1.6; white-space: pre-wrap;
+    }
+    .log-row.completed + .log-expand { opacity: 0.45; }
+
+    /* --- Synthesis --- */
+    .synthesis-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.4rem 0; font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .synthesis-label {
+      font-weight: 500;
+      background: linear-gradient(90deg,
+        var(--text-secondary) 0%, var(--text-secondary) 35%,
+        var(--text) 50%,
+        var(--text-secondary) 65%, var(--text-secondary) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+
+    /* --- Answer (markdown-style) --- */
+    .asi-answer { border-top: 1px solid var(--border); padding-top: 1.5rem; }
+    .answer-text { font-size: 0.88rem; line-height: 1.75; color: var(--text-secondary); }
+    .answer-text .word { display: inline; animation: wordReveal 0.25s ease-out forwards; }
+    @keyframes wordReveal {
+      from { opacity: 0; filter: blur(4px); }
+      to   { opacity: 1; filter: blur(0); }
+    }
+    .answer-text h2 { font-size: 1.15rem; font-weight: 600; letter-spacing: -0.02em; color: var(--text); margin: 0 0 0.5rem; }
+    .answer-text h3 { font-size: 0.92rem; font-weight: 600; color: var(--text); margin: 1.25rem 0 0.35rem; }
+    .answer-text p { margin: 0.5rem 0; }
+    .answer-text ul { margin: 0.4rem 0 0.75rem; padding-left: 1.25rem; list-style: none; }
+    .answer-text li { margin: 0.5rem 0; color: var(--text-secondary); padding-left: 0.25rem; position: relative; }
+    .answer-text li::before { content: '\2022'; color: var(--text-muted); position: absolute; left: -1rem; }
+    .answer-text code {
+      font-family: var(--font-mono); font-size: 0.78rem;
+      background: var(--surface); padding: 0.15rem 0.4rem; border-radius: 4px;
+      color: var(--accent); border: 1px solid var(--border-subtle);
+    }
+    .answer-text em { color: var(--text-muted); font-style: italic; }
+    .answer-text strong { color: var(--text); font-weight: 600; }
+    .answer-text hr { border: none; border-top: 1px solid var(--border-subtle); margin: 1.25rem 0; }
+    .answer-text blockquote {
+      margin: 1rem 0; padding: 0.75rem 1rem;
+      border-left: 3px solid var(--accent);
+      background: color-mix(in srgb, var(--accent) 5%, transparent);
+      border-radius: 0 8px 8px 0; font-size: 0.85rem;
+    }
+    .answer-text blockquote p { margin: 0; }
+    .answer-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin: 0.75rem 0; }
+    .answer-table th {
+      text-align: left; font-weight: 500; color: var(--text-muted);
+      font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em;
+      padding: 0.4rem 0.5rem 0.4rem 0; border-bottom: 1px solid var(--border);
+    }
+    .answer-table td {
+      padding: 0.45rem 0.5rem 0.45rem 0;
+      border-bottom: 1px solid var(--border-subtle); color: var(--text-secondary);
+    }
+    .answer-table td:last-child, .answer-table th:last-child { text-align: right; padding-right: 0; }
+    .answer-table .mono { font-family: var(--font-mono); font-size: 0.72rem; }
+    .answer-table .status-ok { color: var(--green); font-weight: 500; }
+    .answer-table .status-warn { color: var(--amber, #d4a07c); font-weight: 500; }
+    .answer-sources { margin-top: 1rem; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .answer-source {
+      font-size: 0.65rem; font-weight: 500;
+      padding: 0.2rem 0.5rem; border-radius: 6px;
+      background: var(--surface-raised); border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    /* ============================================
+       FLOATING AGENT PANEL
+       ============================================ */
+    .floating-panel {
+      position: fixed;
+      bottom: 9rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 101;
+      width: calc(100% - 2.5rem);
+      max-width: 640px;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+    .floating-panel.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Shared container — pill that expands into panel */
+    .fp-pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, border-radius 0.35s ease;
+      margin: 0 auto;
+      width: fit-content;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    .fp-pill:hover { border-color: var(--text-muted); }
+
+    /* Collapsed header row */
+    .fp-pill-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.55rem 1.25rem;
+    }
+    .fp-pill-text {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .fp-close {
+      display: none;
+      width: 22px; height: 22px;
+      align-items: center; justify-content: center;
+      background: none; border: none; cursor: pointer;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      padding: 0;
+      font-size: 1rem;
+      line-height: 1;
+      transition: color 0.15s ease;
+    }
+    .fp-close:hover { color: var(--text); }
+
+    /* Expandable grid area inside the pill */
+    .fp-grid-wrap {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .fp-grid-inner { overflow: hidden; }
+
+    /* Expanded state */
+    .fp-pill.expanded {
+      width: 100%;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .fp-pill.expanded .fp-pill-header {
+      justify-content: space-between;
+      padding: 0.65rem 1rem;
+    }
+    .fp-pill.expanded .fp-pill-spinner { display: none; }
+    .fp-pill.expanded .fp-close { display: flex; }
+    .fp-pill.expanded .fp-grid-wrap {
+      grid-template-rows: 1fr;
+    }
+
+    /* Agent grid inside panel */
+    .fp-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      padding: 0.25rem 0.85rem 0.85rem;
+    }
+
+    /* Individual agent card */
+    .fp-agent {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--surface-raised);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 0.6rem 0.75rem;
+      transition: opacity 0.4s ease;
+    }
+    .fp-agent.completed { opacity: 0.5; }
+
+    /* Status indicator — braille spinner or checkmark */
+    .fp-agent-status {
+      position: relative;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .fp-agent-spinner-wrap { transition: opacity 0.3s ease; }
+    .fp-agent-check {
+      color: var(--green);
+      font-weight: 600;
+      font-size: 0.85rem;
+      opacity: 0;
+      position: absolute;
+      transition: opacity 0.3s ease;
+    }
+    .fp-agent.completed .fp-agent-check { opacity: 1; position: static; }
+    .fp-agent.completed .fp-agent-spinner-wrap { opacity: 0; width: 0; overflow: hidden; }
+
+    /* Agent info */
+    .fp-info { flex: 1; min-width: 0; }
+    .fp-name {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .fp-agent.active .fp-name {
+      background: linear-gradient(90deg,
+        var(--text) 0%, var(--text) 35%,
+        var(--text-muted) 50%,
+        var(--text) 65%, var(--text) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .fp-agent.completed .fp-name {
+      background: none;
+      -webkit-text-fill-color: var(--text);
+      animation: none;
+    }
+    .fp-status {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+    .fp-agent.active .fp-status { color: var(--green-text); }
+    .fp-agent.completed .fp-status { color: var(--text-muted); }
+    .fp-model {
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    /* --- Bottom Search Bar --- */
+    .search-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 0.75rem 1.25rem 1.25rem;
+      background: linear-gradient(to top, var(--bg) 60%, transparent);
+      display: flex; justify-content: center;
+    }
+    .search-bar-inner {
+      width: 100%; max-width: 640px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; display: flex; flex-direction: column;
+      box-shadow: 0 -4px 24px rgba(0,0,0,0.3);
+    }
+    .search-bar-input { flex: 1; padding: 0.9rem 1.1rem 0.5rem; }
+    .search-bar-input input {
+      width: 100%; border: none; background: transparent;
+      font-family: var(--font-body); font-size: 0.92rem;
+      color: var(--text); outline: none; letter-spacing: -0.01em;
+    }
+    .search-bar-input input::placeholder { color: var(--text-muted); }
+    .search-bar-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.45rem 0.6rem 0.6rem 1rem;
+    }
+    .search-bar-left { display: flex; align-items: center; gap: 0.35rem; }
+    .search-bar-right { display: flex; align-items: center; gap: 0.5rem; }
+    .sb-icon-btn {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      border: none; background: transparent;
+      color: var(--text-muted); cursor: pointer;
+      border-radius: 50%; padding: 0;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+    .sb-icon-btn svg {
+      width: 16px; height: 16px;
+      stroke: currentColor; fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .sb-icon-btn:hover { color: var(--text-secondary); background: var(--surface-raised); }
+    .sb-model {
+      font-size: 0.68rem; font-weight: 500; color: var(--text-muted);
+      display: flex; align-items: center; gap: 0.3rem; cursor: pointer;
+    }
+    .sb-submit {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--text); color: var(--bg); border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: opacity 0.15s ease; flex-shrink: 0;
+    }
+    .sb-submit svg {
+      width: 16px; height: 16px;
+      stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .sb-submit:hover { opacity: 0.8; }
+
+    .asi-footer { text-align: center; padding: 3rem 2rem; color: var(--text-muted); font-size: 0.72rem; }
+
+    @keyframes textShimmer {
+      0% { background-position: 200% 50%; }
+      100% { background-position: -100% 50%; }
+    }
+
+    @media (max-width: 640px) {
+      .asi-container { padding: 4rem 1.25rem 10rem; }
+      .asi-query { font-size: 1.15rem; }
+      .fp-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="asi-topbar">
+    <div style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%);">
+      <button class="menu-btn" id="menu-btn" aria-label="Menu">
+        <svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      </button>
+      <div class="menu-dropdown" id="menu-dropdown">
+        <a href="components.html">Components</a>
+        <a href="asi-v0-scope.html">ASI Experience</a>
+      </div>
+    </div>
+    <div class="view-toggle">
+      <a href="asi.html">Agent List</a>
+      <a href="asi-condensed.html">Agent Grid</a>
+      <a href="asi-mega.html">Mega Grid</a>
+      <a href="asi-floating.html" class="active">Floating</a>
+    </div>
+  </nav>
+
+  <div class="asi-container">
+
+    <!-- Phase 1: Query -->
+    <div class="phase" id="phase-query">
+      <div class="asi-query" id="query-text">
+        Analyze our production infrastructure, identify single points of failure, and generate a remediation plan with estimated downtime for each fix.
+      </div>
+    </div>
+
+    <!-- Phase 2: Orchestrator -->
+    <div class="phase" id="phase-orch">
+      <div class="orch-row">
+        <span class="orch-spinner loader text-spinner sm" data-spinner="braille" style="font-size:0.85rem; width:16px; height:16px;"></span>
+        <span class="orch-label">Thinking...</span>
+      </div>
+      <div class="orch-plan" id="orch-plan">
+        <div class="orch-plan-step" id="orch-step-1">Decompose into 9 parallel workstreams</div>
+        <div class="orch-plan-step" id="orch-step-2">Spawn infrastructure, security, SRE, cost, network, compliance, performance, backup, release agents</div>
+      </div>
+    </div>
+
+    <!-- Phase 3: Flat Chain-of-Thought Log (no inline grid — agents are in floating panel) -->
+    <div class="phase visible" id="phase-log" style="opacity:1; transform:none;">
+      <div class="cot-log" id="cot-log">
+
+        <div class="log-row" id="log-1" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Infra Analyst</span>
+          <span class="log-tool">read_file</span>
+          <span class="log-arg">infrastructure/topology.yaml</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">services: 14 | load_balancers: 2 | databases: 3 (primary + 2 read replicas)
+single_az_services: [payments-api, auth-service, session-store]
+no_failover: [redis-cache-primary, payments-api]</div></div></div>
+
+        <div class="log-row" id="log-2" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Security Auditor</span>
+          <span class="log-tool">scan_ports</span>
+          <span class="log-arg">0.0.0.0/0 --services payments,auth,redis</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">OPEN  tcp/6379  redis-cache-primary    0.0.0.0/0  ⚠ public
+OPEN  tcp/443   payments-api           10.0.0.0/8
+OPEN  tcp/443   auth-service           10.0.0.0/8
+OPEN  tcp/5432  payments-db            sg-0a1b2c3d</div></div></div>
+
+        <div class="log-row" id="log-3" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Network Engineer</span>
+          <span class="log-tool">trace_route</span>
+          <span class="log-arg">vpc-peering payments &rarr; auth &rarr; redis</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">payments-api → auth-service: 2 hops (vpc-peer-0a1b, nat-gw-east1a) 1.2ms
+auth-service → redis-cache: 1 hop (vpc-peer-0a1b) 0.4ms
+⚠ all traffic routes through single NAT gateway in us-east-1a</div></div></div>
+
+        <div class="log-row" id="log-4" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Compliance Officer</span>
+          <span class="log-tool">check_policy</span>
+          <span class="log-arg">SOC2 controls &mdash; data-at-rest, access-logs</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">SOC2 CC6.1 (Encryption at rest): PASS — AES-256 on all RDS, S3
+SOC2 CC6.6 (Access logs):        WARN — CloudTrail enabled but no alerts
+SOC2 CC7.2 (Incident response):  PASS — PagerDuty integration active
+SOC2 CC8.1 (Change management):  WARN — 3 unreviewed IAM changes</div></div></div>
+
+        <div class="log-row" id="log-5" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">SRE Planner</span>
+          <span class="log-tool">search_docs</span>
+          <span class="log-arg">incident runbooks &mdash; payments-api, auth-service</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">Found 3 runbooks:
+  → payments-api-failover.md (last updated 12d ago)
+  → auth-service-restart.md (last updated 45d ago)
+  → redis-cache-recovery.md (last updated 8d ago)</div></div></div>
+
+        <div class="log-row" id="log-6" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Cost Estimator</span>
+          <span class="log-tool">aws_pricing</span>
+          <span class="log-arg">ElastiCache r6g.large, ECS Fargate 0.5vCPU</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">ElastiCache r6g.large: $0.134/hr ($97.82/mo)
+ECS Fargate 0.5vCPU:   $0.02535/hr ($18.51/mo)
+ECS Fargate 1GB mem:   $0.00278/hr ($2.03/mo)</div></div></div>
+
+        <div class="log-row" id="log-7" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Perf. Analyst</span>
+          <span class="log-tool">run_benchmark</span>
+          <span class="log-arg">p99 latency &mdash; payments-api, auth-service</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">payments-api  p50: 42ms  p95: 128ms  p99: 340ms  ⚠ SLA breach &gt;200ms
+auth-service  p50: 18ms  p95: 55ms   p99: 89ms   ✓ within SLA
+redis-cache   p50: 0.8ms p95: 2.1ms  p99: 4.2ms  ✓ within SLA</div></div></div>
+
+        <div class="log-row" id="log-8" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Backup Strategist</span>
+          <span class="log-tool">check_snapshots</span>
+          <span class="log-arg">RDS, ElastiCache &mdash; retention &amp; RPO</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">RDS payments-db:    daily snapshots, 7d retention, RPO: 24h ✓
+ElastiCache redis:  NO BACKUPS CONFIGURED ⚠ RPO: undefined
+S3 config-store:    versioning enabled, 90d lifecycle ✓</div></div></div>
+
+        <div class="log-row" id="log-9" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Release Manager</span>
+          <span class="log-tool">read_file</span>
+          <span class="log-arg">deploy/release-schedule.yaml</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">next_maintenance_window: "2025-02-04 Tue 02:00-04:00 UTC"
+pending_releases: 2
+  - payments-api v2.4.1 (hotfix: connection pool)
+  - auth-service v1.8.0 (feature: MFA rollout)
+deploy_strategy: blue-green | canary 10% → 50% → 100%</div></div></div>
+
+        <div class="log-row" id="log-10" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Infra Analyst</span>
+          <span class="log-tool">run_query</span>
+          <span class="log-arg">SELECT service, az_count, failover FROM infra WHERE redundancy &lt; 2</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">| service         | az_count | failover |
+|-----------------|----------|----------|
+| payments-api    | 1        | none     |
+| auth-service    | 1        | none     |
+| redis-cache     | 1        | none     |</div></div></div>
+
+        <div class="log-row" id="log-11" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Security Auditor</span>
+          <span class="log-tool">run_query</span>
+          <span class="log-arg">SELECT * FROM security_groups WHERE ingress = '0.0.0.0/0'</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">| sg_id          | port  | protocol | source    | service        |
+|----------------|-------|----------|-----------|----------------|
+| sg-0a1b2c3d    | 6379  | tcp      | 0.0.0.0/0 | redis-cache    |
+| sg-4e5f6a7b    | 22    | tcp      | 0.0.0.0/0 | bastion-legacy |</div></div></div>
+
+        <div class="log-row" id="log-12" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Network Engineer</span>
+          <span class="log-tool">check_dns</span>
+          <span class="log-arg">failover DNS records &mdash; payments.prod.internal</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">payments.prod.internal → A 10.0.1.42 (us-east-1a) TTL 60
+  ⚠ no failover record configured
+auth.prod.internal → A 10.0.1.88 (us-east-1a) TTL 60
+  ⚠ same AZ, no cross-AZ failover</div></div></div>
+
+        <div class="log-row" id="log-13" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Perf. Analyst</span>
+          <span class="log-tool">run_query</span>
+          <span class="log-arg">SELECT service, p99_ms FROM latency WHERE p99_ms &gt; 200</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">| service         | p99_ms | sla_ms | breach |
+|-----------------|--------|--------|--------|
+| payments-api    | 340    | 200    | YES    |
+| session-store   | 220    | 200    | YES    |</div></div></div>
+
+        <div class="log-row" id="log-14" onclick="this.classList.toggle('expanded')">
+          <span class="log-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color: var(--text-muted); width:14px; height:14px;"></span></span>
+          <span class="log-check">&#x2713;</span>
+          <span class="log-agent">Compliance Officer</span>
+          <span class="log-tool">audit_log</span>
+          <span class="log-arg">IAM role changes &mdash; last 30 days</span>
+          <svg class="log-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="log-expand"><div class="log-expand-inner"><div class="log-output">3 unreviewed IAM changes detected:
+  2025-01-12: AttachRolePolicy → payments-api-role (s3:PutObject) by dev-ops-bot
+  2025-01-18: CreateRole → temp-debug-role (AdministratorAccess) by jsmith ⚠
+  2025-01-25: UpdatePolicy → redis-access-policy (expanded CIDR) by terraform</div></div></div>
+
+      </div>
+    </div>
+
+    <!-- Synthesis -->
+    <div class="phase" id="phase-synthesis">
+      <div class="synthesis-row">
+        <span class="orch-spinner loader text-spinner sm" data-spinner="braille" style="font-size:0.85rem; width:16px; height:16px;" id="synth-spinner"></span>
+        <span class="synthesis-label" id="synth-label">Synthesizing results from 9 agents...</span>
+      </div>
+    </div>
+
+    <!-- Answer -->
+    <div class="phase" id="phase-answer">
+      <div class="asi-answer">
+        <div class="answer-text" id="answer-output"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================================
+       FLOATING AGENT PANEL
+       ============================================ -->
+  <div class="floating-panel" id="floating-panel">
+    <div class="fp-pill" id="fp-pill" onclick="toggleFloatingPanel()">
+      <div class="fp-pill-header">
+        <span class="fp-pill-spinner loader text-spinner sm" data-spinner="braille" id="fp-spinner" style="font-size:0.8rem; width:14px; height:14px; color: var(--text-muted);"></span>
+        <span class="fp-pill-text" id="fp-pill-text">9 subagents &bull; 0 tasks complete</span>
+        <button class="fp-close" onclick="event.stopPropagation(); toggleFloatingPanel();">&times;</button>
+      </div>
+      <div class="fp-grid-wrap">
+        <div class="fp-grid-inner">
+        <div class="fp-grid">
+          <div class="fp-agent" id="fa-1" data-agent="Infra Analyst">
+            <span class="fp-agent-status"><span class="fp-agent-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; width:14px; height:14px;"></span></span><span class="fp-agent-check">&#x2713;</span></span>
+            <span class="fp-info"><span class="fp-name">Infra Analyst</span><br><span class="fp-status">Waiting</span></span>
+            <span class="fp-model">Opus 4.5</span>
+          </div>
+          <div class="fp-agent" id="fa-2" data-agent="Security Auditor">
+            <span class="fp-agent-status"><span class="fp-agent-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; width:14px; height:14px;"></span></span><span class="fp-agent-check">&#x2713;</span></span>
+            <span class="fp-info"><span class="fp-name">Security Auditor</span><br><span class="fp-status">Waiting</span></span>
+            <span class="fp-model">Opus 4.5</span>
+          </div>
+          <div class="fp-agent" id="fa-3" data-agent="SRE Planner">
+            <span class="fp-agent-status"><span class="fp-agent-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; width:14px; height:14px;"></span></span><span class="fp-agent-check">&#x2713;</span></span>
+            <span class="fp-info"><span class="fp-name">SRE Planner</span><br><span class="fp-status">Waiting</span></span>
+            <span class="fp-model">Opus 4.5</span>
+          </div>
+          <div class="fp-agent" id="fa-4" data-agent="Cost Estimator">
+            <span class="fp-agent-status"><span class="fp-agent-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; width:14px; height:14px;"></span></span><span class="fp-agent-check">&#x2713;</span></span>
+            <span class="fp-info"><span class="fp-name">Cost Estimator</span><br><span class="fp-status">Waiting</span></span>
+            <span class="fp-model">Opus 4.5</span>
+          </div>
+          <div class="fp-agent" id="fa-5" data-agent="Network Engineer">
+            <span class="fp-agent-status"><span class="fp-agent-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; width:14px; height:14px;"></span></span><span class="fp-agent-check">&#x2713;</span></span>
+            <span class="fp-info"><span class="fp-name">Network Engineer</span><br><span class="fp-status">Waiting</span></span>
+            <span class="fp-model">Opus 4.5</span>
+          </div>
+          <div class="fp-agent" id="fa-6" data-agent="Compliance Officer">
+            <span class="fp-agent-status"><span class="fp-agent-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; width:14px; height:14px;"></span></span><span class="fp-agent-check">&#x2713;</span></span>
+            <span class="fp-info"><span class="fp-name">Compliance Officer</span><br><span class="fp-status">Waiting</span></span>
+            <span class="fp-model">Opus 4.5</span>
+          </div>
+          <div class="fp-agent" id="fa-7" data-agent="Perf. Analyst">
+            <span class="fp-agent-status"><span class="fp-agent-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; width:14px; height:14px;"></span></span><span class="fp-agent-check">&#x2713;</span></span>
+            <span class="fp-info"><span class="fp-name">Perf. Analyst</span><br><span class="fp-status">Waiting</span></span>
+            <span class="fp-model">Opus 4.5</span>
+          </div>
+          <div class="fp-agent" id="fa-8" data-agent="Backup Strategist">
+            <span class="fp-agent-status"><span class="fp-agent-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; width:14px; height:14px;"></span></span><span class="fp-agent-check">&#x2713;</span></span>
+            <span class="fp-info"><span class="fp-name">Backup Strategist</span><br><span class="fp-status">Waiting</span></span>
+            <span class="fp-model">Opus 4.5</span>
+          </div>
+          <div class="fp-agent" id="fa-9" data-agent="Release Manager">
+            <span class="fp-agent-status"><span class="fp-agent-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; width:14px; height:14px;"></span></span><span class="fp-agent-check">&#x2713;</span></span>
+            <span class="fp-info"><span class="fp-name">Release Manager</span><br><span class="fp-status">Waiting</span></span>
+            <span class="fp-model">Opus 4.5</span>
+          </div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="search-bar">
+    <div class="search-bar-inner">
+      <div class="search-bar-input">
+        <input type="text" placeholder="Ask a follow-up...">
+      </div>
+      <div class="search-bar-footer">
+        <div class="search-bar-left">
+          <button class="sb-icon-btn" title="Attach">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <button class="sb-icon-btn" title="Search">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+          </button>
+        </div>
+        <div class="search-bar-right">
+          <span class="sb-model">Opus 4.5 <svg viewBox="0 0 24 24" style="width:12px; height:12px;"><polyline points="6 9 12 15 18 9"/></svg></span>
+          <button class="sb-submit">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="asi-footer">
+    ASI Experience Prototype — Floating Agents View
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    // --- Timeline Engine ---
+    const timers = [];
+    function schedule(delay, fn) { timers.push(setTimeout(fn, delay)); }
+    function clearAll() { timers.forEach(t => clearTimeout(t)); timers.length = 0; }
+
+    // --- Auto-scroll ---
+    let autoScroll = true;
+    window.addEventListener('wheel', () => { autoScroll = false; }, { passive: true });
+    window.addEventListener('touchmove', () => { autoScroll = false; }, { passive: true });
+    function scrollIntoView(el) {
+      if (!autoScroll || !el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function show(id) {
+      const el = document.getElementById(id);
+      if (el) { el.classList.add('visible'); scrollIntoView(el); }
+    }
+
+    function showLog(id) {
+      const el = document.getElementById(id);
+      if (el) { el.classList.add('visible', 'expanded'); scrollIntoView(el); }
+    }
+
+    function completeLog(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('completed', 'visible');
+    }
+
+    // --- Floating Panel ---
+    let fpExpanded = false;
+    let completedTasks = 0;
+
+    function toggleFloatingPanel() {
+      const pill = document.getElementById('fp-pill');
+      fpExpanded = !fpExpanded;
+      pill.classList.toggle('expanded', fpExpanded);
+    }
+
+    function setAgentStatus(agentId, status) {
+      const el = document.getElementById(agentId);
+      if (!el) return;
+      const statusEl = el.querySelector('.fp-status');
+      el.classList.remove('active', 'completed');
+      if (status === 'active') {
+        el.classList.add('active');
+        statusEl.textContent = 'Researching';
+      } else if (status === 'completed') {
+        el.classList.add('completed');
+        statusEl.textContent = 'Complete';
+      } else {
+        statusEl.textContent = 'Waiting';
+      }
+    }
+
+    function updateFloatingCount() {
+      completedTasks++;
+      const text = `9 subagents \u2022 ${completedTasks} tasks complete`;
+      document.getElementById('fp-pill-text').innerHTML = text;
+    }
+
+    // Agent-to-floating-card mapping
+    const agentCardMap = {
+      'Infra Analyst': 'fa-1',
+      'Security Auditor': 'fa-2',
+      'SRE Planner': 'fa-3',
+      'Cost Estimator': 'fa-4',
+      'Network Engineer': 'fa-5',
+      'Compliance Officer': 'fa-6',
+      'Perf. Analyst': 'fa-7',
+      'Backup Strategist': 'fa-8',
+      'Release Manager': 'fa-9',
+    };
+
+    function activateAgent(name) {
+      const id = agentCardMap[name];
+      if (id) setAgentStatus(id, 'active');
+    }
+
+    function completeAgent(name) {
+      const id = agentCardMap[name];
+      if (id) setAgentStatus(id, 'completed');
+    }
+
+    // --- Blur-reveal word streamer ---
+    function streamWords(elId, html, delay, callback) {
+      const el = document.getElementById(elId);
+      el.innerHTML = html;
+      const wordSpans = [];
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+      const textNodes = [];
+      while (walker.nextNode()) textNodes.push(walker.currentNode);
+      textNodes.forEach(node => {
+        const words = node.textContent.split(/(\s+)/);
+        if (words.length <= 1 && !node.textContent.trim()) return;
+        const frag = document.createDocumentFragment();
+        words.forEach(w => {
+          if (!w) return;
+          if (/^\s+$/.test(w)) {
+            frag.appendChild(document.createTextNode(w));
+          } else {
+            const span = document.createElement('span');
+            span.className = 'word';
+            span.style.opacity = '0';
+            span.textContent = w;
+            frag.appendChild(span);
+            wordSpans.push(span);
+          }
+        });
+        node.parentNode.replaceChild(frag, node);
+      });
+      let i = 0;
+      function tick() {
+        if (i >= wordSpans.length) { if (callback) callback(); return; }
+        wordSpans[i].style.opacity = '';
+        wordSpans[i].style.animation = 'wordReveal 0.25s ease-out forwards';
+        i++;
+        schedule(delay, tick);
+      }
+      tick();
+    }
+
+    // --- Answer content ---
+    const ANSWER_HTML = `<h2>Infrastructure Remediation Plan</h2>
+<p>Analysis of <code>infrastructure/topology.yaml</code> and cross-referencing with security scans, incident runbooks, and cost projections surfaced <strong>three critical single points of failure</strong> across the production stack.</p>
+<h3>Critical Findings</h3>
+<ul>
+<li><strong>payments-api</strong> — Single AZ deployment in <code>us-east-1a</code> with no failover target. Deploy a secondary instance in <code>us-east-1b</code> behind the existing ALB with health-check routing. <em>Estimated downtime: 0 min (blue-green deploy).</em></li>
+<li><strong>redis-cache-primary</strong> — No replica configured; 100% of session state depends on a single node. Provision an ElastiCache <code>r6g.large</code> replica with automatic failover enabled. <em>Estimated downtime: &lt;2 min (DNS failover).</em></li>
+<li><strong>auth-service</strong> — Single AZ with a shared database connection pool bottleneck at 80% utilization. Migrate to multi-AZ ECS tasks with connection pooling via <code>PgBouncer</code>. <em>Estimated downtime: 5-8 min (rolling deploy).</em></li>
+</ul>
+<h3>Remediation Summary</h3>
+<table class="answer-table">
+<thead><tr><th>Service</th><th>Issue</th><th>Remediation</th><th>Cost Delta</th><th>Downtime</th></tr></thead>
+<tbody>
+<tr><td class="mono">payments-api</td><td>Single AZ</td><td>Multi-AZ blue-green</td><td>+$142/mo</td><td class="status-ok">0 min</td></tr>
+<tr><td class="mono">redis-cache</td><td>No replica</td><td>ElastiCache replica</td><td>+$98/mo</td><td class="status-warn">&lt;2 min</td></tr>
+<tr><td class="mono">auth-service</td><td>Single AZ + pool</td><td>Multi-AZ + PgBouncer</td><td>+$67/mo</td><td class="status-warn">5-8 min</td></tr>
+</tbody>
+</table>
+<h3>Security Notes</h3>
+<p>Port scan identified <strong>2 open security groups</strong> with <code>0.0.0.0/0</code> ingress on the payments and auth services. TLS certificates for <code>*.prod.internal</code> are valid with 43 days until expiry — renewal should be scheduled.</p>
+<hr>
+<blockquote><p>Total estimated cost increase: <strong>+$307/month</strong> (+4.2%). Total remediation downtime: <strong>under 10 minutes</strong> with rolling deploys. All changes can be executed within a single maintenance window and require no application code changes.</p></blockquote>`;
+
+    const SOURCES = ['AWS Well-Architected', 'Internal Runbooks', 'PagerDuty Incidents', 'Terraform State', 'SOC2 Controls', 'Route53 DNS'];
+
+    // --- Run the experience ---
+    function run() {
+      clearAll();
+      autoScroll = true;
+      completedTasks = 0;
+      fpExpanded = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Reset phases
+      document.querySelectorAll('.phase').forEach(el => {
+        el.classList.remove('visible');
+        el.style.opacity = '';
+        el.style.transform = '';
+      });
+      document.querySelectorAll('.log-row').forEach(el => {
+        el.classList.remove('visible', 'completed', 'expanded');
+      });
+      document.querySelectorAll('.orch-plan-step').forEach(el => {
+        el.classList.remove('visible');
+      });
+
+      // Reset floating panel
+      const fp = document.getElementById('floating-panel');
+      const fpPill = document.getElementById('fp-pill');
+      fp.classList.remove('visible');
+      fpPill.classList.remove('expanded');
+      document.querySelectorAll('.fp-agent').forEach(el => {
+        el.classList.remove('active', 'completed');
+        el.querySelector('.fp-status').textContent = 'Waiting';
+      });
+      document.getElementById('fp-pill-text').innerHTML = '9 subagents &bull; 0 tasks complete';
+
+      // Reset answer
+      document.getElementById('answer-output').innerHTML = '';
+      const synthSpinner = document.getElementById('synth-spinner');
+      synthSpinner.style.display = '';
+      const synthLabel = document.getElementById('synth-label');
+      synthLabel.textContent = 'Synthesizing results from 9 agents...';
+      synthLabel.style.background = '';
+      synthLabel.style.webkitBackgroundClip = '';
+      synthLabel.style.backgroundClip = '';
+      synthLabel.style.webkitTextFillColor = '';
+      synthLabel.style.animation = '';
+      synthLabel.className = 'synthesis-label';
+
+      // ========== PHASE 1: Query (instant) ==========
+      show('phase-query');
+
+      // ========== PHASE 2: Orchestrator (instant) ==========
+      show('phase-orch');
+      show('orch-step-1');
+      show('orch-step-2');
+
+      // ========== PHASE 3: Floating panel appears (collapsed pill) ==========
+      schedule(1200, () => {
+        fp.classList.add('visible');
+        // Activate all agents (status updates happen in background)
+        Object.keys(agentCardMap).forEach(name => activateAgent(name));
+      });
+
+      // ========== PHASE 4: Flat Log — 14 interleaved entries ==========
+      schedule(5500, () => { show('phase-log'); showLog('log-1'); });
+      schedule(6300, () => showLog('log-2'));
+      schedule(6900, () => showLog('log-3'));
+      schedule(7500, () => showLog('log-4'));
+      schedule(8100, () => showLog('log-5'));
+      schedule(8700, () => showLog('log-6'));
+      schedule(9300, () => showLog('log-7'));
+      schedule(9900, () => showLog('log-8'));
+      schedule(10500, () => showLog('log-9'));
+
+      // First wave completes → second wave + update counter
+      schedule(12500, () => { completeLog('log-1'); updateFloatingCount(); showLog('log-10'); });
+      schedule(13300, () => { completeLog('log-2'); updateFloatingCount(); showLog('log-11'); });
+      schedule(13900, () => { completeLog('log-3'); updateFloatingCount(); showLog('log-12'); });
+      schedule(14500, () => { completeLog('log-4'); updateFloatingCount(); showLog('log-13'); });
+      schedule(15100, () => { completeLog('log-5'); updateFloatingCount(); showLog('log-14'); });
+
+      // Remaining completions + agent completions + counter updates
+      schedule(15800, () => { completeLog('log-6'); updateFloatingCount(); completeAgent('Cost Estimator'); });
+      schedule(16400, () => { completeLog('log-7'); updateFloatingCount(); completeAgent('Perf. Analyst'); });
+      schedule(17000, () => { completeLog('log-8'); updateFloatingCount(); completeAgent('Backup Strategist'); });
+      schedule(17600, () => { completeLog('log-9'); updateFloatingCount(); completeAgent('Release Manager'); });
+      schedule(18400, () => { completeLog('log-10'); updateFloatingCount(); completeAgent('Infra Analyst'); });
+      schedule(19000, () => { completeLog('log-11'); updateFloatingCount(); completeAgent('Security Auditor'); });
+      schedule(19600, () => { completeLog('log-12'); updateFloatingCount(); completeAgent('Network Engineer'); });
+      schedule(20200, () => { completeLog('log-13'); updateFloatingCount(); completeAgent('SRE Planner'); });
+      schedule(20800, () => { completeLog('log-14'); updateFloatingCount(); completeAgent('Compliance Officer'); });
+
+      // ========== PHASE 5: Synthesis ==========
+      schedule(22500, () => show('phase-synthesis'));
+      schedule(25500, () => {
+        synthSpinner.style.display = 'none';
+        synthLabel.textContent = 'Synthesis complete — 9 agents, 14 tools, 3 critical findings';
+        synthLabel.style.background = 'none';
+        synthLabel.style.webkitTextFillColor = 'var(--green-text)';
+        synthLabel.style.animation = 'none';
+      });
+
+      // Hide floating panel after all agents done
+      schedule(23000, () => {
+        fp.classList.remove('visible');
+      });
+
+      // ========== PHASE 6: Answer ==========
+      schedule(26500, () => {
+        show('phase-answer');
+        schedule(500, () => {
+          streamWords('answer-output', ANSWER_HTML, 20, () => {
+            const srcDiv = document.createElement('div');
+            srcDiv.className = 'answer-sources';
+            SOURCES.forEach(s => {
+              const chip = document.createElement('span');
+              chip.className = 'answer-source';
+              chip.textContent = s;
+              srcDiv.appendChild(chip);
+            });
+            document.getElementById('answer-output').appendChild(srcDiv);
+          });
+        });
+      });
+
+      // ========== REPLAY ==========
+      schedule(50000, () => run());
+    }
+
+    // --- Menu toggle ---
+    const menuBtn = document.getElementById('menu-btn');
+    const menuDropdown = document.getElementById('menu-dropdown');
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menuDropdown.classList.toggle('open');
+    });
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.floating-panel')) {
+        menuDropdown.classList.remove('open');
+      } else {
+        menuDropdown.classList.remove('open');
+      }
+    });
+
+    run();
+  </script>
+</body>
+</html>
