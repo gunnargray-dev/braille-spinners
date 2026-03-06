@@ -1,0 +1,2964 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Streaming Components</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    :root {
+      --bg: #0c0c0f;
+      --surface: #151518;
+      --surface-raised: #1c1c21;
+      --border: #2a2a32;
+      --border-subtle: #222228;
+      --text: #e0e0e6;
+      --text-secondary: #a4a4b0;
+      --text-muted: #6e6e80;
+      --green: #3dba72;
+      --green-bg: rgba(61,186,114,0.1);
+      --green-text: #6dcea0;
+      --red: #f08080;
+      --accent: #b8b8c0;
+      --blue: #7ca4d4;
+      --blue-bg: rgba(124,164,212,0.1);
+      --yellow: #d4a84c;
+      --yellow-bg: rgba(212,168,76,0.1);
+      --purple: #b07cd4;
+      --purple-bg: rgba(176,124,212,0.08);
+      --muted-bg: rgba(110,110,128,0.1);
+      --font-body: 'PPLX Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'PPLX Mono', 'SF Mono', monospace;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+      --shadow-md: 0 2px 10px rgba(0,0,0,0.18);
+      --shadow-lg: 0 6px 24px rgba(0,0,0,0.25);
+    }
+
+    [data-theme="light"] {
+      --bg: #f7f7fa;
+      --surface: #ffffff;
+      --surface-raised: #fbfbfc;
+      --border: #e8e8ec;
+      --border-subtle: #ededf1;
+      --text: #2c2c3a;
+      --text-secondary: #6b6b7b;
+      --text-muted: #9d9daa;
+      --green: #2a9d5c;
+      --green-bg: #f0fdf6;
+      --green-text: #1a7a3c;
+      --red: #d45c5c;
+      --accent: #b8b8c0;
+      --blue: #4a7ab5;
+      --blue-bg: rgba(74,122,181,0.08);
+      --yellow: #c49530;
+      --yellow-bg: rgba(196,149,48,0.08);
+      --purple: #8a5aab;
+      --purple-bg: rgba(138,90,171,0.06);
+      --muted-bg: rgba(110,110,128,0.06);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.025);
+      --shadow-md: 0 2px 10px rgba(0,0,0,0.035);
+      --shadow-lg: 0 6px 24px rgba(0,0,0,0.05);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      letter-spacing: -0.01em;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    /* --- Top Bar --- */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.85rem 1.5rem;
+      background: color-mix(in srgb, var(--bg) 85%, transparent);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .topbar-left { display: flex; align-items: center; gap: 0.75rem; }
+    .topbar-title {
+      font-size: 0.78rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+    .topbar-right { display: flex; align-items: center; gap: 0.5rem; }
+
+    .menu-btn, .theme-btn {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: 1px solid var(--border);
+      border-radius: 8px; cursor: pointer; padding: 0;
+      transition: border-color 0.15s ease;
+      color: var(--text-muted); font-size: 0.9rem;
+    }
+    .menu-btn:hover, .theme-btn:hover { border-color: var(--text-muted); }
+    .menu-btn svg {
+      width: 16px; height: 16px;
+      stroke: var(--text-muted); fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .menu-dropdown {
+      position: absolute; top: calc(100% + 0.5rem); left: 0;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 0.35rem;
+      display: flex; flex-direction: column; min-width: 180px;
+      opacity: 0; transform: translateY(-4px); pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      box-shadow: var(--shadow-lg); z-index: 200;
+    }
+    .menu-dropdown.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .menu-dropdown a {
+      font-size: 0.78rem; font-weight: 500;
+      color: var(--text-secondary); text-decoration: none;
+      padding: 0.5rem 0.65rem; border-radius: 6px;
+      transition: background 0.12s ease, color 0.12s ease;
+    }
+    .menu-dropdown a:hover { background: var(--surface-raised); color: var(--text); }
+
+    /* --- Layout --- */
+    .page-container {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 5.5rem 2rem 6rem;
+    }
+    .page-header {
+      text-align: center;
+      margin-bottom: 3.5rem;
+    }
+    .page-header h1 {
+      font-size: 2rem; font-weight: 600;
+      letter-spacing: -0.03em; color: var(--text);
+    }
+    .page-header p {
+      margin-top: 0.4rem; font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    /* --- Sections --- */
+    .section { margin-bottom: 3.5rem; }
+    .section-label {
+      font-size: 0.6rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.14em;
+      color: var(--text-muted); margin-bottom: 1rem;
+    }
+    .section-desc {
+      font-size: 0.78rem; color: var(--text-muted);
+      margin: -0.5rem 0 1rem; line-height: 1.5;
+    }
+
+    /* --- Demo Panels --- */
+    .demo-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .demo-panel + .demo-panel { margin-top: 0.75rem; }
+    .demo-label {
+      font-size: 0.62rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--text-muted); margin-bottom: 0.75rem;
+    }
+
+    /* ==========================================
+       1. Text Shimmer
+       ========================================== */
+    .shimmer-row {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.35rem 0;
+    }
+    .shimmer-text {
+      background: linear-gradient(90deg,
+        var(--text-muted) 0%, var(--text-muted) 35%,
+        var(--text) 50%,
+        var(--text-muted) 65%, var(--text-muted) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .shimmer-sm { font-size: 0.78rem; }
+    .shimmer-md { font-size: 0.88rem; font-weight: 500; }
+    .shimmer-lg { font-size: 1.1rem; font-weight: 600; }
+
+    @keyframes textShimmer {
+      0% { background-position: 200% 50%; }
+      100% { background-position: -100% 50%; }
+    }
+
+    /* ==========================================
+       2. Chat Bubble
+       ========================================== */
+    .chat-bubble-row {
+      display: flex; justify-content: flex-end;
+    }
+    .chat-bubble {
+      background: var(--surface-raised);
+      border: 1px solid var(--border);
+      border-radius: 18px 18px 4px 18px;
+      padding: 0.65rem 1rem;
+      max-width: 80%;
+      font-size: 0.88rem; font-weight: 400;
+      line-height: 1.5; color: var(--text);
+    }
+
+    /* ==========================================
+       3. Orchestrator
+       ========================================== */
+    .orch-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.85rem; color: var(--text-secondary);
+      padding: 0.3rem 0;
+    }
+    .orch-label { font-weight: 500; }
+    .orch-plan {
+      margin-top: 0.5rem; margin-left: 7px;
+      padding-left: 1rem; border-left: 2px solid var(--border);
+    }
+    .orch-plan-step {
+      font-size: 0.8rem; color: var(--text-muted);
+      padding: 0.2rem 0;
+    }
+
+    /* ==========================================
+       4. Agent Row (List style)
+       ========================================== */
+    .swarm-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.45rem 0; font-size: 0.88rem;
+      cursor: pointer; position: relative;
+    }
+    .swarm-row.completed .swarm-role,
+    .swarm-row.completed .swarm-task { opacity: 0.5; transition: opacity 0.5s ease; }
+    .swarm-icon { width: 16px; height: 16px; flex-shrink: 0; }
+    .swarm-icon svg {
+      width: 16px; height: 16px; stroke: var(--text-muted); fill: none;
+      stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .swarm-role {
+      font-weight: 600; color: var(--text);
+    }
+    .swarm-role.shimmer {
+      background: linear-gradient(90deg,
+        var(--text) 0%, var(--text) 35%, var(--text-muted) 50%,
+        var(--text) 65%, var(--text) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .swarm-row.completed .swarm-role.shimmer {
+      background: none; -webkit-text-fill-color: var(--text);
+      animation: none; opacity: 0.5;
+    }
+    .swarm-task {
+      font-family: var(--font-mono); font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .swarm-task.shimmer {
+      background: linear-gradient(90deg,
+        var(--text-muted) 0%, var(--text-muted) 35%, var(--text-secondary) 50%,
+        var(--text-muted) 65%, var(--text-muted) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .swarm-row.completed .swarm-task.shimmer {
+      background: none; -webkit-text-fill-color: var(--text-muted);
+      animation: none; opacity: 0.5;
+    }
+    .swarm-spinner-wrap { transition: opacity 0.3s ease; }
+    .swarm-check {
+      color: var(--green); font-weight: 600; font-size: 0.85rem;
+      width: 16px; text-align: center; flex-shrink: 0;
+      opacity: 0; position: absolute; top: 50%; transform: translateY(-50%);
+      transition: opacity 0.3s ease;
+    }
+    .swarm-row.completed .swarm-check { opacity: 1; }
+    .swarm-row.completed .swarm-spinner-wrap { opacity: 0; }
+    .swarm-chevron {
+      width: 12px; height: 12px; stroke: var(--text-muted); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      flex-shrink: 0; transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    .swarm-row.expanded .swarm-chevron { transform: rotate(90deg); }
+
+    /* --- Agent Expand --- */
+    .agent-expand {
+      margin-left: 7px; padding-left: 1.5rem;
+      border-left: 2px solid var(--border);
+      display: grid; grid-template-rows: 0fr; opacity: 0;
+      transition: grid-template-rows 0.4s ease, opacity 0.35s ease, padding 0.4s ease;
+      padding-top: 0; padding-bottom: 0;
+    }
+    .agent-expand > .agent-expand-inner { overflow: hidden; }
+    .swarm-row.expanded + .agent-expand {
+      grid-template-rows: 1fr; opacity: 1;
+      padding-top: 0.4rem; padding-bottom: 0.5rem;
+    }
+
+    /* --- Tool Row --- */
+    .tool-row {
+      display: flex; align-items: center; gap: 0.45rem;
+      padding: 0.3rem 0; font-size: 0.78rem;
+      position: relative;
+    }
+    .tool-name {
+      font-family: var(--font-mono); font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .tool-arg {
+      font-family: var(--font-mono); color: var(--text-muted);
+    }
+    .tool-spinner-wrap { transition: opacity 0.3s ease; }
+    .tool-check {
+      color: var(--green); font-weight: 600; font-size: 0.78rem;
+      width: 14px; text-align: center; flex-shrink: 0;
+      opacity: 0; position: absolute; top: 50%; transform: translateY(-50%);
+      transition: opacity 0.3s ease;
+    }
+    .tool-row.completed .tool-check { opacity: 1; }
+    .tool-row.completed .tool-spinner-wrap { opacity: 0; }
+
+    .tool-output {
+      font-family: var(--font-mono); font-size: 0.72rem;
+      color: var(--text-muted); background: var(--bg);
+      border-radius: 8px; padding: 0.65rem 0.85rem;
+      margin: 0.3rem 0 0.5rem; line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    /* ==========================================
+       5. Agent Card (Grid style)
+       ========================================== */
+    .agent-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
+    .agent-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.6rem 0.75rem;
+    }
+    .agent-card.completed { opacity: 0.4; transition: opacity 0.6s ease; }
+    .agent-card-header {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 0.25rem;
+    }
+    .agent-card-icon svg {
+      width: 14px; height: 14px; stroke: var(--text-muted); fill: none;
+      stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .agent-card-status {
+      position: relative; display: flex; align-items: center;
+    }
+    .agent-card-spinner-wrap { transition: opacity 0.3s ease; }
+    .agent-card-check {
+      color: var(--green); font-weight: 600; font-size: 0.75rem;
+      opacity: 0; position: absolute; transition: opacity 0.3s ease;
+    }
+    .agent-card.completed .agent-card-check { opacity: 1; }
+    .agent-card.completed .agent-card-spinner-wrap { opacity: 0; }
+    .agent-card-role {
+      font-size: 0.72rem; font-weight: 600; color: var(--text);
+      margin-bottom: 0.1rem;
+    }
+    .agent-card-role.shimmer {
+      background: linear-gradient(90deg,
+        var(--text) 0%, var(--text) 35%, var(--text-muted) 50%,
+        var(--text) 65%, var(--text) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .agent-card.completed .agent-card-role.shimmer {
+      background: none; -webkit-text-fill-color: var(--text);
+      animation: none;
+    }
+    .agent-card-task {
+      font-family: var(--font-mono); font-size: 0.62rem;
+      color: var(--text-muted); line-height: 1.4;
+    }
+
+    /* ==========================================
+       6. Synthesis Row
+       ========================================== */
+    .synthesis-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.4rem 0; font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .synthesis-label {
+      font-weight: 500;
+    }
+    .synthesis-label.shimmer {
+      background: linear-gradient(90deg,
+        var(--text-secondary) 0%, var(--text-secondary) 35%,
+        var(--text) 50%,
+        var(--text-secondary) 65%, var(--text-secondary) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .synthesis-done {
+      color: var(--green-text); font-weight: 500; font-size: 0.85rem;
+    }
+
+    /* ==========================================
+       7. Streaming Text (blur reveal)
+       ========================================== */
+    .stream-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .stream-output {
+      font-size: 0.88rem; line-height: 1.75;
+      color: var(--text-secondary);
+    }
+    .stream-output .word {
+      display: inline;
+      animation: wordReveal 0.25s ease-out forwards;
+    }
+    @keyframes wordReveal {
+      from { opacity: 0; filter: blur(4px); }
+      to   { opacity: 1; filter: blur(0); }
+    }
+    .stream-cursor {
+      display: inline-block; width: 2px; height: 1em;
+      background: var(--accent); vertical-align: text-bottom;
+      animation: cursorBlink 1s step-end infinite;
+    }
+    @keyframes cursorBlink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    /* ==========================================
+       8. Document Artifact
+       ========================================== */
+    .doc-artifact {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+      transition: border-color 0.2s ease; cursor: pointer;
+    }
+    .doc-artifact:hover { border-color: var(--text-muted); }
+    .doc-artifact-header {
+      display: flex; align-items: center; gap: 0.65rem;
+      padding: 0.85rem 1rem;
+    }
+    .doc-artifact-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: #2b579a;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .doc-artifact-icon svg { width: 18px; height: 18px; fill: #fff; }
+    .doc-artifact-meta { flex: 1; min-width: 0; }
+    .doc-artifact-title {
+      font-size: 0.82rem; font-weight: 600;
+      color: var(--text); line-height: 1.3;
+    }
+    .doc-artifact-subtitle {
+      font-size: 0.68rem; color: var(--text-muted); margin-top: 0.1rem;
+    }
+    .doc-artifact-open {
+      font-size: 0.68rem; font-weight: 500;
+      color: var(--text-muted); padding: 0.3rem 0.6rem;
+      border: 1px solid var(--border); border-radius: 6px;
+      background: transparent; cursor: pointer; flex-shrink: 0;
+      transition: color 0.15s ease, border-color 0.15s ease;
+    }
+    .doc-artifact-open:hover {
+      color: var(--text-secondary); border-color: var(--text-muted);
+    }
+
+    /* ==========================================
+       9. Tool Use Card
+       ========================================== */
+    .tool-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+    }
+    .tool-card + .tool-card { margin-top: 0.5rem; }
+    .tool-card-header {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1rem; cursor: pointer;
+      transition: background 0.12s ease;
+    }
+    .tool-card-header:hover { background: var(--surface-raised); }
+    .tool-card-icon svg {
+      width: 14px; height: 14px; stroke: var(--text-muted); fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .tool-card-name {
+      font-family: var(--font-mono); font-size: 0.8rem;
+      font-weight: 500; color: var(--text); flex: 1;
+    }
+    .tool-card-status {
+      font-size: 0.68rem; font-weight: 500; padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+    }
+    .tool-card-status.done { color: var(--green-text); background: var(--green-bg); }
+    .tool-card-status.running { color: var(--blue); background: var(--blue-bg); }
+    .tool-card-chevron {
+      width: 14px; height: 14px; stroke: var(--text-muted); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      transition: transform 0.2s ease;
+    }
+    .tool-card.collapsed .tool-card-chevron { transform: rotate(-90deg); }
+    .tool-card-body {
+      padding: 0 1rem 0.75rem;
+      transition: max-height 0.3s ease;
+    }
+    .tool-card.collapsed .tool-card-body {
+      max-height: 0; overflow: hidden; padding: 0 1rem;
+    }
+    .tool-card-body pre {
+      font-family: var(--font-mono); font-size: 0.72rem;
+      color: var(--text-muted); background: var(--bg);
+      border-radius: 8px; padding: 0.65rem 0.85rem;
+      line-height: 1.6; white-space: pre-wrap; margin: 0;
+    }
+
+    /* ==========================================
+       10. Search Bar
+       ========================================== */
+    .search-bar-demo {
+      position: relative; padding-top: 1.5rem;
+    }
+    .search-bar-inner {
+      width: 100%; max-width: 640px; margin: 0 auto;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; display: flex; flex-direction: column;
+      box-shadow: var(--shadow-md);
+    }
+    .search-bar-input { flex: 1; padding: 0.9rem 1.1rem 0.5rem; }
+    .search-bar-input input {
+      width: 100%; border: none; background: transparent;
+      font-family: var(--font-body); font-size: 0.92rem;
+      color: var(--text); outline: none;
+    }
+    .search-bar-input input::placeholder { color: var(--text-muted); }
+    .search-bar-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.45rem 0.6rem 0.6rem 1rem;
+    }
+    .search-bar-left, .search-bar-right {
+      display: flex; align-items: center; gap: 0.35rem;
+    }
+    .search-bar-right { gap: 0.5rem; }
+    .sb-icon-btn {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      border: none; background: transparent; color: var(--text-muted);
+      cursor: pointer; border-radius: 50%;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+    .sb-icon-btn svg {
+      width: 16px; height: 16px; stroke: currentColor; fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .sb-icon-btn:hover { color: var(--text-secondary); background: var(--surface-raised); }
+    .sb-model {
+      font-size: 0.68rem; font-weight: 500; color: var(--text-muted);
+      display: flex; align-items: center; gap: 0.3rem; cursor: pointer;
+    }
+    .sb-submit {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--text); color: var(--bg); border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: opacity 0.15s ease;
+    }
+    .sb-submit svg {
+      width: 16px; height: 16px; stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .sb-submit:hover { opacity: 0.8; }
+
+    /* ==========================================
+       11. Compact Agent (Claude Code style)
+       ========================================== */
+    .compact-agent {
+      border: 1px solid var(--border); border-radius: 10px;
+      overflow: hidden; transition: border-color 0.15s ease;
+    }
+    .compact-agent + .compact-agent { margin-top: 0.5rem; }
+    .compact-agent-header {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.55rem 0.85rem; cursor: pointer;
+      transition: background 0.12s ease;
+    }
+    .compact-agent-header:hover { background: var(--surface-raised); }
+    .compact-agent-icon svg {
+      width: 14px; height: 14px; stroke: var(--text-muted); fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .compact-agent-role {
+      font-size: 0.78rem; font-weight: 600; color: var(--text-secondary);
+    }
+    .compact-agent-task {
+      font-family: var(--font-mono); font-size: 0.72rem;
+      color: var(--text-muted); flex: 1;
+    }
+    .compact-agent-chevron {
+      width: 12px; height: 12px; stroke: var(--text-muted); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      transition: transform 0.2s ease; flex-shrink: 0;
+    }
+    .compact-agent.expanded .compact-agent-chevron { transform: rotate(90deg); }
+    .compact-agent-body {
+      max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+      padding: 0 0.85rem;
+    }
+    .compact-agent.expanded .compact-agent-body {
+      max-height: 200px; padding: 0 0.85rem 0.75rem;
+    }
+    .agent-output {
+      font-family: var(--font-mono); font-size: 0.68rem;
+      color: var(--text-muted); background: var(--bg);
+      border-radius: 8px; padding: 0.65rem 0.85rem;
+      line-height: 1.6;
+    }
+    .agent-output code {
+      background: var(--surface-raised); padding: 0.1rem 0.3rem;
+      border-radius: 3px; font-size: 0.65rem;
+    }
+
+    /* ==========================================
+       12. Skeleton Loaders
+       ========================================== */
+    .skel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .skel-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.25rem;
+    }
+    .skel-card-label {
+      font-size: 0.6rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--text-muted); margin-bottom: 0.75rem;
+    }
+    .skel-line {
+      height: 10px; border-radius: 5px; margin-bottom: 0.45rem;
+      background: linear-gradient(90deg,
+        var(--surface-raised) 0%, var(--border) 50%, var(--surface-raised) 100%);
+      background-size: 200% 100%;
+      animation: skelShimmer 1.8s ease-in-out infinite;
+    }
+    .skel-line.w100 { width: 100%; }
+    .skel-line.w80 { width: 80%; }
+    .skel-line.w60 { width: 60%; }
+    .skel-line.w40 { width: 40%; }
+    .skel-circle {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(90deg,
+        var(--surface-raised) 0%, var(--border) 50%, var(--surface-raised) 100%);
+      background-size: 200% 100%;
+      animation: skelShimmer 1.8s ease-in-out infinite;
+      margin-bottom: 0.5rem; flex-shrink: 0;
+    }
+    .skel-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .skel-pill {
+      width: 48px; height: 20px; border-radius: 10px;
+      background: linear-gradient(90deg,
+        var(--surface-raised) 0%, var(--border) 50%, var(--surface-raised) 100%);
+      background-size: 200% 100%;
+      animation: skelShimmer 1.8s ease-in-out infinite;
+    }
+    @keyframes skelShimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ==========================================
+       13. Log Row (flat chain-of-thought)
+       ========================================== */
+    .log-row {
+      display: flex; align-items: center; gap: 0.45rem;
+      padding: 0.4rem 0; font-size: 0.78rem;
+    }
+    .log-row.completed { opacity: 0.45; }
+    .log-badge {
+      font-size: 0.55rem; font-weight: 600;
+      padding: 0.12rem 0.4rem; border-radius: 3px;
+      white-space: nowrap;
+    }
+    .log-badge.blue { color: var(--blue); background: var(--blue-bg); }
+    .log-badge.yellow { color: var(--yellow); background: var(--yellow-bg); }
+    .log-badge.purple { color: var(--purple); background: var(--purple-bg); }
+    .log-tool {
+      font-family: var(--font-mono); font-weight: 500;
+      color: var(--text-secondary); font-size: 0.75rem;
+    }
+    .log-arg {
+      font-family: var(--font-mono); color: var(--text-muted);
+      font-size: 0.72rem;
+    }
+    .log-check {
+      color: var(--green); font-weight: 600; font-size: 0.72rem;
+      width: 14px; text-align: center; flex-shrink: 0;
+    }
+
+    /* ==========================================
+       14. Task Row (workspace sidebar style)
+       ========================================== */
+    .task-list {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+    }
+    .task-row {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.55rem 1rem; border-bottom: 1px solid var(--border-subtle);
+      transition: background 0.12s ease;
+    }
+    .task-row:last-child { border-bottom: none; }
+    .task-row:hover { background: rgba(255,255,255,0.02); }
+    .task-row.active { background: rgba(61,186,114,0.04); border-left: 2px solid var(--green); }
+    .task-status {
+      width: 16px; height: 16px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .task-status .check-icon { font-size: 0.68rem; color: var(--green); }
+    .task-status .queued-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      border: 1.5px solid var(--text-muted);
+    }
+    .task-status .new-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--purple);
+    }
+    .task-name {
+      font-size: 0.75rem; font-weight: 500; color: var(--text);
+      flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .task-meta {
+      font-size: 0.6rem; color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* ==========================================
+       COT Pipeline Components
+       ========================================== */
+
+    /* Thinking cycle text */
+    .thinking-cycle {
+      font-size: 0.82rem;
+      transition: opacity 0.35s ease, filter 0.35s ease;
+    }
+    .thinking-cycle.fade-out {
+      opacity: 0; filter: blur(4px);
+    }
+
+    /* Plan steps (todo list) */
+    .cmp-plan-steps {
+      margin-left: 7px;
+      padding-left: 1rem;
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .cmp-plan-step {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.22rem 0;
+      font-size: 0.78rem;
+    }
+    .cmp-plan-circle {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.35s ease;
+    }
+    .cmp-plan-circle svg {
+      width: 10px; height: 10px;
+      stroke: var(--green); stroke-width: 2.5;
+      stroke-linecap: round; stroke-linejoin: round;
+      fill: none;
+      opacity: 0; transform: scale(0.5);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .cmp-plan-step.completed .cmp-plan-circle { border-color: var(--green); }
+    .cmp-plan-step.completed .cmp-plan-circle svg { opacity: 1; transform: scale(1); }
+    .cmp-plan-text {
+      color: var(--text-secondary); font-weight: 400;
+      transition: color 0.35s ease;
+    }
+    .cmp-plan-step.completed .cmp-plan-text { color: var(--text-muted); }
+
+    /* Wide research row (agent group with expandable substeps) */
+    .cmp-agent-group {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      overflow: hidden;
+    }
+    .cmp-agent-group + .cmp-agent-group { margin-top: 0.35rem; }
+    .cmp-agent-group.completed { opacity: 0.5; }
+    .cmp-ag-header {
+      display: flex; align-items: center;
+      gap: 0.45rem;
+      padding: 0.6rem 0.85rem;
+      cursor: pointer;
+      transition: background 0.12s ease;
+    }
+    .cmp-ag-header:hover { background: var(--surface-raised); }
+    .cmp-ag-spinner {
+      width: 16px; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .cmp-ag-check {
+      color: var(--green); font-weight: 600; font-size: 0.78rem;
+      width: 16px; text-align: center; flex-shrink: 0;
+    }
+    .cmp-ag-label {
+      font-size: 0.82rem; font-weight: 600; color: var(--text);
+    }
+    .cmp-agent-group:not(.completed) .cmp-ag-label {
+      background: linear-gradient(90deg,
+        var(--text) 0%, var(--text) 35%,
+        var(--text-muted) 50%,
+        var(--text) 65%, var(--text) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .cmp-ag-task {
+      flex: 1; min-width: 0;
+      color: var(--text-muted); font-size: 0.75rem;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .cmp-ag-chevron {
+      width: 12px; height: 12px;
+      stroke: var(--text-muted); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      flex-shrink: 0;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .cmp-agent-group.expanded .cmp-ag-chevron { transform: rotate(90deg); }
+    .cmp-ag-body {
+      margin-left: 7px; padding-left: 1rem;
+      border-left: 1px solid var(--border);
+      display: grid; grid-template-rows: 0fr;
+      opacity: 0;
+      transition: grid-template-rows 0.4s ease, opacity 0.35s ease, padding 0.4s ease;
+      padding-top: 0; padding-bottom: 0;
+    }
+    .cmp-ag-body-inner { overflow: hidden; }
+    .cmp-agent-group.expanded .cmp-ag-body {
+      grid-template-rows: 1fr; opacity: 1;
+      padding-top: 0.15rem; padding-bottom: 0.5rem;
+    }
+    .cmp-ag-step {
+      display: flex; align-items: center; gap: 0.4rem;
+      padding: 0.2rem 0; font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .cmp-ag-step-icon { font-size: 0.65rem; width: 14px; text-align: center; }
+    .cmp-ag-step-icon.done { color: var(--green); }
+
+    /* Research card with progress ring */
+    .cmp-research-grid {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;
+    }
+    .cmp-research-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 0.6rem 0.75rem;
+      display: flex; align-items: center; gap: 0.55rem;
+    }
+    .cmp-research-card.completed { opacity: 0.4; }
+    .cmp-rc-num {
+      position: relative; width: 28px; height: 28px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cmp-rc-ring {
+      position: absolute; inset: 0;
+      border: 1.5px dashed var(--border);
+      border-radius: 50%;
+      transition: border-color 0.3s ease;
+    }
+    .cmp-research-card.active .cmp-rc-ring {
+      border: none;
+      background: conic-gradient(var(--text-muted) var(--cmp-ring, 0deg), transparent var(--cmp-ring, 0deg));
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #fff calc(100% - 2px));
+      mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #fff calc(100% - 2px));
+      animation: cmpProgressArc 4s ease-in-out infinite;
+    }
+    .cmp-research-card.completed .cmp-rc-ring {
+      border: none;
+      background: conic-gradient(var(--green) 360deg, transparent 360deg);
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #fff calc(100% - 2px));
+      mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #fff calc(100% - 2px));
+      animation: none;
+    }
+    @property --cmp-ring { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+    @keyframes cmpProgressArc {
+      0%   { --cmp-ring: 0deg; }
+      50%  { --cmp-ring: 270deg; }
+      100% { --cmp-ring: 360deg; }
+    }
+    .cmp-rc-num-text {
+      font-size: 0.65rem; font-weight: 600;
+      color: var(--text-muted); z-index: 1;
+    }
+    .cmp-research-card.active .cmp-rc-num-text { color: var(--text-secondary); }
+    .cmp-research-card.completed .cmp-rc-num-text { opacity: 0; }
+    .cmp-rc-check {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--green); font-weight: 600; font-size: 0.75rem;
+      opacity: 0; transition: opacity 0.3s ease;
+    }
+    .cmp-research-card.completed .cmp-rc-check { opacity: 1; }
+    .cmp-rc-info { flex: 1; min-width: 0; }
+    .cmp-rc-role {
+      font-size: 0.7rem; font-weight: 600; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .cmp-research-card.active .cmp-rc-role {
+      background: linear-gradient(90deg,
+        var(--text) 0%, var(--text) 35%,
+        var(--text-muted) 50%,
+        var(--text) 65%, var(--text) 100%);
+      background-size: 300% 100%;
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.4s linear infinite;
+    }
+    .cmp-rc-task {
+      font-size: 0.62rem; color: var(--text-muted);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* Project group (todo list with badges) */
+    .cmp-project-group {
+      border-bottom: 1px solid var(--border);
+    }
+    .cmp-project-group:last-child { border-bottom: none; }
+    .cmp-proj-header {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.7rem 1rem;
+      cursor: pointer;
+      transition: background 0.12s ease;
+      user-select: none;
+    }
+    .cmp-proj-header:hover { background: var(--surface-raised); }
+    .cmp-proj-chevron {
+      width: 14px; height: 14px;
+      stroke: var(--text-muted); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+    .cmp-project-group.collapsed .cmp-proj-chevron { transform: rotate(-90deg); }
+    .cmp-proj-name {
+      font-size: 0.72rem; font-weight: 600; color: var(--text-secondary);
+      flex: 1;
+    }
+    .cmp-proj-count {
+      font-size: 0.6rem; color: var(--text-muted);
+      background: rgba(110,110,128,0.1);
+      padding: 0.1rem 0.35rem; border-radius: 4px;
+    }
+    .cmp-proj-tasks {
+      overflow: hidden;
+      transition: max-height 0.25s ease;
+    }
+    .cmp-project-group.collapsed .cmp-proj-tasks { max-height: 0 !important; }
+    .cmp-task-row {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.5rem 1rem 0.5rem 1.8rem;
+      border-left: 2px solid transparent;
+      transition: background 0.12s ease;
+    }
+    .cmp-task-row:hover { background: rgba(255,255,255,0.02); }
+    .cmp-task-row.active {
+      background: rgba(61,186,114,0.04);
+      border-left-color: var(--green);
+    }
+    .cmp-task-icon {
+      width: 16px; height: 16px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .cmp-queued-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      border: 1.5px solid var(--text-muted);
+    }
+    .cmp-new-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #b07cd4;
+    }
+    .cmp-task-body {
+      flex: 1; min-width: 0;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .cmp-task-name {
+      font-size: 0.72rem; font-weight: 450; color: var(--text);
+      flex: 1; min-width: 0;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .cmp-task-stat {
+      font-size: 0.6rem; color: var(--text-muted);
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .cmp-task-badge {
+      font-size: 0.55rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      padding: 0.12rem 0.4rem; border-radius: 3px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .cmp-task-badge.running { color: var(--blue); background: rgba(124,164,212,0.1); }
+    .cmp-task-badge.completed { color: #6dcea0; background: rgba(61,186,114,0.1); }
+    .cmp-task-badge.queued { color: var(--text-muted); background: rgba(110,110,128,0.1); }
+    .cmp-task-badge.new { color: #b07cd4; background: rgba(176,124,212,0.08); }
+
+    /* Clarifying question */
+    .clarify-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.25rem 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .clarify-title {
+      font-size: 0.88rem; font-weight: 600; color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+    .clarify-field { margin-bottom: 0.75rem; }
+    .clarify-label {
+      font-size: 0.68rem; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 0.35rem;
+    }
+    .clarify-chips { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+    .clarify-chip {
+      font-size: 0.72rem; font-weight: 500;
+      padding: 0.3rem 0.65rem; border-radius: 999px;
+      background: transparent; border: 1px solid var(--border);
+      color: var(--text-secondary); cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .clarify-chip:hover { border-color: var(--text-muted); color: var(--text); }
+    .clarify-chip.selected {
+      background: var(--text); color: var(--bg);
+      border-color: var(--text);
+    }
+    .clarify-input {
+      width: 100%; border: 1px solid var(--border); background: var(--bg);
+      border-radius: 8px; padding: 0.45rem 0.65rem;
+      font-family: var(--font-body); font-size: 0.78rem;
+      color: var(--text); outline: none;
+    }
+    .clarify-input::placeholder { color: var(--text-muted); }
+    .clarify-actions {
+      display: flex; gap: 0.5rem; margin-top: 1rem;
+    }
+    .clarify-btn {
+      font-size: 0.75rem; font-weight: 500;
+      padding: 0.4rem 1rem; border-radius: 999px;
+      cursor: pointer; transition: all 0.15s ease;
+      font-family: var(--font-body);
+    }
+    .clarify-btn.primary {
+      background: var(--text); color: var(--bg); border: none;
+    }
+    .clarify-btn.primary:hover { opacity: 0.85; }
+    .clarify-btn.secondary {
+      background: transparent; color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+    .clarify-btn.secondary:hover { border-color: var(--text-muted); }
+
+    /* Skills checklist */
+    .skill-list { display: flex; flex-direction: column; gap: 0.15rem; }
+    .skill-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.25rem 0; font-size: 0.78rem;
+    }
+    .skill-icon {
+      width: 14px; text-align: center; flex-shrink: 0;
+      font-size: 0.72rem;
+    }
+    .skill-icon.check { color: var(--green); font-weight: 600; }
+    .skill-icon.loading { color: var(--text-muted); }
+    .skill-name { color: var(--text-secondary); }
+    .skill-name.active { color: var(--text); }
+
+    /* Memory row */
+    .memory-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.35rem 0; font-size: 0.78rem;
+    }
+    .memory-icon { font-size: 0.72rem; color: var(--text-muted); flex-shrink: 0; }
+    .memory-label { color: var(--text-secondary); font-weight: 500; }
+    .memory-detail {
+      font-family: var(--font-mono); font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    /* Connector card */
+    .connector-row { display: flex; gap: 0.65rem; flex-wrap: wrap; }
+    .connector-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 0.85rem 1rem;
+      flex: 1; min-width: 200px;
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .connector-head {
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .connector-icon {
+      width: 28px; height: 28px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; flex-shrink: 0;
+    }
+    .connector-name { font-size: 0.78rem; font-weight: 600; color: var(--text); }
+    .connector-desc { font-size: 0.65rem; color: var(--text-muted); line-height: 1.4; }
+    .connector-actions { display: flex; gap: 0.35rem; }
+    .connector-btn {
+      font-size: 0.65rem; font-weight: 500;
+      padding: 0.3rem 0.65rem; border-radius: 6px;
+      cursor: pointer; font-family: var(--font-body);
+      transition: all 0.15s ease;
+    }
+    .connector-btn.connect {
+      background: var(--text); color: var(--bg); border: none;
+    }
+    .connector-btn.skip {
+      background: transparent; color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    /* File coordination */
+    .file-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.25rem 0; font-size: 0.75rem;
+    }
+    .file-icon { font-size: 0.68rem; color: var(--text-muted); flex-shrink: 0; width: 14px; text-align: center; }
+    .file-icon.check { color: var(--green); font-weight: 600; }
+    .file-name {
+      font-family: var(--font-mono); font-size: 0.7rem;
+      color: var(--text-secondary);
+    }
+    .file-meta {
+      font-family: var(--font-mono); font-size: 0.62rem;
+      color: var(--text-muted);
+    }
+
+    /* Build output preview */
+    .build-preview {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+    }
+    .build-preview-bar {
+      display: flex; align-items: center; gap: 0.35rem;
+      padding: 0.4rem 0.65rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .build-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+    }
+    .build-preview-body {
+      padding: 0.75rem;
+      font-family: var(--font-mono); font-size: 0.62rem;
+      color: var(--text-muted); line-height: 1.6;
+      min-height: 60px;
+    }
+
+    /* Visual validation */
+    .validation-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.3rem 0; font-size: 0.75rem;
+    }
+    .validation-icon { font-size: 0.72rem; flex-shrink: 0; width: 14px; text-align: center; }
+    .validation-icon.pass { color: var(--green); font-weight: 600; }
+    .validation-icon.checking { color: var(--text-muted); }
+    .validation-label { color: var(--text-secondary); }
+
+    /* Scheduling / monitoring */
+    .schedule-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.4rem 0.75rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; font-size: 0.72rem;
+    }
+    .schedule-row + .schedule-row { margin-top: 0.35rem; }
+    .schedule-icon { font-size: 0.72rem; color: var(--text-muted); flex-shrink: 0; }
+    .schedule-label { font-weight: 500; color: var(--text-secondary); }
+    .schedule-time {
+      font-family: var(--font-mono); font-size: 0.62rem;
+      color: var(--text-muted); margin-left: auto;
+    }
+
+    /* ==========================================
+       Parallel Patterns — shared
+       ========================================== */
+    .pattern-panel {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .pattern-panel + .pattern-panel { margin-top: 0.75rem; }
+    .pattern-replay {
+      position: absolute; top: 0.75rem; right: 0.75rem;
+      font-size: 0.62rem; font-weight: 500; color: var(--text-muted);
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; padding: 0.25rem 0.55rem; cursor: pointer;
+      transition: color 0.15s ease, border-color 0.15s ease; z-index: 2;
+    }
+    .pattern-replay:hover { color: var(--text-secondary); border-color: var(--text-muted); }
+
+    /* Phase visibility for patterns */
+    .p-phase {
+      opacity: 0; transform: translateY(6px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+    .p-phase.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .p-phase + .p-phase { margin-top: 0.6rem; }
+
+    /* Pattern: Staggered Spawn */
+    .p-agent-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.35rem 0; font-size: 0.82rem;
+      position: relative;
+      opacity: 0; transform: translateY(6px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .p-agent-row.visible { opacity: 1; transform: translateY(0); }
+    .p-agent-row.completed { opacity: 0.45; transition: opacity 0.5s ease; }
+    .p-spinner-wrap { transition: opacity 0.3s ease; }
+    .p-check {
+      color: var(--green); font-weight: 600; font-size: 0.78rem;
+      width: 16px; text-align: center; flex-shrink: 0;
+      opacity: 0; position: absolute; top: 50%; transform: translateY(-50%);
+      transition: opacity 0.3s ease;
+    }
+    .p-agent-row.completed .p-check { opacity: 1; }
+    .p-agent-row.completed .p-spinner-wrap { opacity: 0; }
+    .p-role { font-weight: 600; color: var(--text); }
+    .p-role.shimmer {
+      background: linear-gradient(90deg, var(--text) 0%, var(--text) 35%, var(--text-muted) 50%, var(--text) 65%, var(--text) 100%);
+      background-size: 300% 100%; -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent; animation: textShimmer 2.4s linear infinite;
+    }
+    .p-agent-row.completed .p-role.shimmer {
+      background: none; -webkit-text-fill-color: var(--text); animation: none;
+    }
+    .p-task {
+      font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);
+    }
+
+    /* Pattern: Grid Cards */
+    .p-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
+    .p-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.55rem 0.7rem;
+      opacity: 0; transform: translateY(6px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .p-card.visible { opacity: 1; transform: translateY(0); }
+    .p-card.completed { opacity: 0.35; transition: opacity 0.6s ease; }
+    .p-card-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 0.2rem;
+    }
+    .p-card-status { position: relative; display: flex; align-items: center; }
+    .p-card-spinner-wrap { transition: opacity 0.3s ease; }
+    .p-card-check {
+      color: var(--green); font-weight: 600; font-size: 0.72rem;
+      opacity: 0; position: absolute; transition: opacity 0.3s ease;
+    }
+    .p-card.completed .p-card-check { opacity: 1; }
+    .p-card.completed .p-card-spinner-wrap { opacity: 0; }
+    .p-card-role {
+      font-size: 0.7rem; font-weight: 600; color: var(--text);
+    }
+    .p-card-role.shimmer {
+      background: linear-gradient(90deg, var(--text) 0%, var(--text) 35%, var(--text-muted) 50%, var(--text) 65%, var(--text) 100%);
+      background-size: 300% 100%; -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent; animation: textShimmer 2.4s linear infinite;
+    }
+    .p-card.completed .p-card-role.shimmer {
+      background: none; -webkit-text-fill-color: var(--text); animation: none;
+    }
+    .p-card-task { font-family: var(--font-mono); font-size: 0.6rem; color: var(--text-muted); }
+
+    /* Pattern: Interleaved Log */
+    .p-log-row {
+      display: flex; align-items: center; gap: 0.4rem;
+      padding: 0.3rem 0; font-size: 0.72rem;
+      opacity: 0; transform: translateY(4px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .p-log-row.visible { opacity: 1; transform: translateY(0); }
+    .p-log-row.completed { opacity: 0.4; transition: opacity 0.4s ease; }
+    .p-log-check {
+      color: var(--green); font-weight: 600; font-size: 0.68rem;
+      width: 14px; text-align: center; flex-shrink: 0;
+      opacity: 0; transition: opacity 0.3s ease;
+    }
+    .p-log-row.completed .p-log-check { opacity: 1; }
+    .p-log-row.completed .p-log-spinner { display: none; }
+    .p-log-badge {
+      font-size: 0.52rem; font-weight: 600;
+      padding: 0.1rem 0.35rem; border-radius: 3px; white-space: nowrap;
+    }
+    .p-log-tool {
+      font-family: var(--font-mono); font-weight: 500;
+      color: var(--text-secondary); font-size: 0.7rem;
+    }
+    .p-log-arg {
+      font-family: var(--font-mono); color: var(--text-muted); font-size: 0.65rem;
+    }
+
+    /* Pattern: Floating Panel */
+    .p-floating {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 0.65rem 1rem;
+      display: flex; align-items: center; gap: 0.75rem;
+      box-shadow: var(--shadow-md);
+      opacity: 0; transform: translateY(8px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .p-floating.visible { opacity: 1; transform: translateY(0); }
+    .p-floating-label {
+      font-size: 0.72rem; font-weight: 500; color: var(--text-secondary);
+    }
+    .p-floating-count {
+      font-family: var(--font-mono); font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+    .p-floating-agents {
+      display: flex; gap: 0.35rem; flex: 1;
+    }
+    .p-floating-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      transition: background 0.4s ease, opacity 0.4s ease;
+    }
+    .p-floating-dot.active { background: var(--blue); opacity: 1; }
+    .p-floating-dot.done { background: var(--green); opacity: 0.5; }
+    .p-floating-dot.queued { background: var(--text-muted); opacity: 0.3; }
+
+    /* Pattern: Synthesis transition */
+    .p-synth {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.35rem 0; font-size: 0.8rem;
+      opacity: 0; transform: translateY(4px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .p-synth.visible { opacity: 1; transform: translateY(0); }
+
+    /* ==========================================
+       Responsive
+       ========================================== */
+    @media (max-width: 640px) {
+      .page-container { padding: 4.5rem 1rem 4rem; }
+      .agent-grid { grid-template-columns: 1fr; }
+      .skel-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ==========================================
+       Footer
+       ========================================== */
+    .page-footer {
+      text-align: center; padding: 2rem;
+      color: var(--text-muted); font-size: 0.68rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <nav class="topbar">
+    <div class="topbar-left">
+      <div style="position:relative;">
+        <button class="menu-btn" id="menu-btn" aria-label="Menu">
+          <svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+        </button>
+        <div class="menu-dropdown" id="menu-dropdown">
+          <a href="components.html">Design System</a>
+          <a href="streaming.html">Streaming Components</a>
+          <a href="asi-v0-scope.html">Wide Research</a>
+          <a href="asi.html">Subagents - List</a>
+          <a href="asi-mega.html">Subagents - Grid</a>
+          <a href="asi-condensed.html">Condensed</a>
+          <a href="asi-floating.html">Floating Agents</a>
+          <a href="asi-async.html">Async Agents</a>
+          <a href="asi-async-v2.html">Workspace</a>
+        </div>
+      </div>
+      <span class="topbar-title">Streaming Components</span>
+    </div>
+    <div class="topbar-right">
+      <button class="theme-btn" id="themeToggle" aria-label="Toggle theme">&#x263E;</button>
+    </div>
+  </nav>
+
+  <div class="page-container">
+
+    <header class="page-header">
+      <h1>Streaming Components</h1>
+      <p>Every animated and streaming pattern used across the ASI demos.</p>
+    </header>
+
+    <!-- ==================== 1. TEXT SHIMMER ==================== -->
+    <section class="section">
+      <div class="section-label">Text Shimmer</div>
+      <p class="section-desc">Gradient sweep applied to text via background-clip. Used on active spinners, agent roles, orchestrator labels, and synthesis text to indicate in-progress state.</p>
+      <div class="demo-panel">
+        <div class="shimmer-row">
+          <span class="shimmer-text shimmer-sm">Searching documentation for streaming API</span>
+        </div>
+        <div class="shimmer-row">
+          <span class="shimmer-text shimmer-md">Synthesizing results from 3 agents...</span>
+        </div>
+        <div class="shimmer-row">
+          <span class="shimmer-text shimmer-lg">Flight Research</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 2. BRAILLE SPINNERS ==================== -->
+    <section class="section">
+      <div class="section-label">Braille Spinners</div>
+      <p class="section-desc">Unicode braille characters animated frame-by-frame. Single-char for inline use, multi-char grids for wider contexts. All rendered with the shimmer gradient.</p>
+      <div class="demo-panel">
+        <div class="demo-label">Single Character</div>
+        <div style="display:flex; gap:2rem; align-items:center; flex-wrap:wrap; margin-bottom:1.25rem;">
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="shimmer-text loader text-spinner" data-spinner="braille" style="font-size:1rem;"></span>
+            <span style="font-size:0.72rem; color:var(--text-muted);">braille</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="shimmer-text loader text-spinner" data-spinner="orbit" style="font-size:1rem;"></span>
+            <span style="font-size:0.72rem; color:var(--text-muted);">orbit</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="shimmer-text loader text-spinner" data-spinner="breathe" style="font-size:1rem;"></span>
+            <span style="font-size:0.72rem; color:var(--text-muted);">breathe</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="shimmer-text loader text-spinner" data-spinner="arc" style="font-size:1rem;"></span>
+            <span style="font-size:0.72rem; color:var(--text-muted);">arc</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="shimmer-text loader text-spinner" data-spinner="halfmoon" style="font-size:1rem;"></span>
+            <span style="font-size:0.72rem; color:var(--text-muted);">halfmoon</span>
+          </div>
+        </div>
+        <div class="demo-label">Multi-Character Grid</div>
+        <div style="display:flex; gap:2rem; align-items:center; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="shimmer-text loader text-spinner" data-spinner="scan" style="font-size:1rem;"></span>
+            <span style="font-size:0.72rem; color:var(--text-muted);">scan</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="shimmer-text loader text-spinner" data-spinner="rain" style="font-size:1rem;"></span>
+            <span style="font-size:0.72rem; color:var(--text-muted);">rain</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="shimmer-text loader text-spinner" data-spinner="snake" style="font-size:1rem;"></span>
+            <span style="font-size:0.72rem; color:var(--text-muted);">snake</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="shimmer-text loader text-spinner" data-spinner="pulse" style="font-size:1rem;"></span>
+            <span style="font-size:0.72rem; color:var(--text-muted);">pulse</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="shimmer-text loader text-spinner" data-spinner="cascade" style="font-size:1rem;"></span>
+            <span style="font-size:0.72rem; color:var(--text-muted);">cascade</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="shimmer-text loader text-spinner" data-spinner="columns" style="font-size:1rem;"></span>
+            <span style="font-size:0.72rem; color:var(--text-muted);">columns</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="shimmer-text loader text-spinner" data-spinner="helix" style="font-size:1rem;"></span>
+            <span style="font-size:0.72rem; color:var(--text-muted);">helix</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="shimmer-text loader text-spinner" data-spinner="sparkle" style="font-size:1rem;"></span>
+            <span style="font-size:0.72rem; color:var(--text-muted);">sparkle</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="shimmer-text loader text-spinner" data-spinner="waverows" style="font-size:1rem;"></span>
+            <span style="font-size:0.72rem; color:var(--text-muted);">waverows</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="shimmer-text loader text-spinner" data-spinner="fillsweep" style="font-size:1rem;"></span>
+            <span style="font-size:0.72rem; color:var(--text-muted);">fillsweep</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="shimmer-text loader text-spinner" data-spinner="diagswipe" style="font-size:1rem;"></span>
+            <span style="font-size:0.72rem; color:var(--text-muted);">diagswipe</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="shimmer-text loader text-spinner" data-spinner="checkerboard" style="font-size:1rem;"></span>
+            <span style="font-size:0.72rem; color:var(--text-muted);">checkerboard</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 3. CHAT BUBBLE ==================== -->
+    <section class="section">
+      <div class="section-label">Chat Bubble</div>
+      <p class="section-desc">Right-aligned user query bubble. Asymmetric border-radius gives a conversational feel.</p>
+      <div class="demo-panel">
+        <div class="chat-bubble-row">
+          <div class="chat-bubble">Research and plan a trip to Tokyo, Japan for March 15-22. Find the best flights, hotels, and build a day-by-day itinerary.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 4. ORCHESTRATOR ==================== -->
+    <section class="section">
+      <div class="section-label">Orchestrator</div>
+      <p class="section-desc">Shows the model's planning phase with a shimmer spinner and indented plan steps. Used at the top of every ASI flow.</p>
+      <div class="demo-panel">
+        <div class="orch-row">
+          <span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.85rem; width:16px; height:16px;"></span>
+          <span class="orch-label">Thinking...</span>
+        </div>
+        <div class="orch-plan">
+          <div class="orch-plan-step">Break into 3 parallel research tracks</div>
+          <div class="orch-plan-step">Spawn flight research, hotel research, and itinerary planning agents</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 5. AGENT ROW (LIST) ==================== -->
+    <section class="section">
+      <div class="section-label">Agent Row &mdash; List</div>
+      <p class="section-desc">Expandable agent rows with spinner/check state, shimmer text, and nested tool execution. Click to expand.</p>
+      <div class="demo-panel">
+        <!-- Active agent -->
+        <div class="swarm-row" onclick="this.classList.toggle('expanded')">
+          <span class="swarm-spinner-wrap"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.85rem; width:16px; height:16px;"></span></span>
+          <span class="swarm-check">&#x2713;</span>
+          <span class="swarm-icon"><svg viewBox="0 0 24 24"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.4-.1.9.3 1.1l5.5 3.2-2.7 2.7-2.1-.4c-.3-.1-.7 0-.9.2l-.4.4 2.8 1.5 1.5 2.8.4-.4c.2-.2.3-.6.2-.9l-.4-2.1 2.7-2.7 3.2 5.5c.2.4.7.5 1.1.3l.5-.3c.4-.2.6-.6.5-1.1z"/></svg></span>
+          <span class="swarm-role shimmer">Flight Research</span>
+          <span class="swarm-task shimmer">Searching flights to Tokyo</span>
+          <svg class="swarm-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+        <div class="agent-expand">
+          <div class="agent-expand-inner">
+            <div class="tool-row completed">
+              <span class="tool-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; color:var(--text-muted); width:14px; height:14px;"></span></span>
+              <span class="tool-check">&#x2713;</span>
+              <span class="tool-name">Searching direct flights</span>
+              <span class="tool-arg">ORD -> NRT, Mar 15-22</span>
+            </div>
+            <div class="tool-output">Found 8 direct flights:
+ANA NH11 -- depart 11:30 AM, arrive 3:15 PM+1 -- $1,240 RT
+JAL JL009 -- depart 12:05 PM, arrive 3:50 PM+1 -- $1,185 RT</div>
+            <div class="tool-row">
+              <span class="tool-spinner-wrap"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; width:14px; height:14px;"></span></span>
+              <span class="tool-check">&#x2713;</span>
+              <span class="tool-name">Comparing airline prices</span>
+              <span class="tool-arg">economy + premium economy</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Completed agent -->
+        <div class="swarm-row completed">
+          <span class="swarm-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.85rem; width:16px; height:16px;"></span></span>
+          <span class="swarm-check">&#x2713;</span>
+          <span class="swarm-icon"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9h1"/><path d="M9 13h1"/><path d="M9 17h1"/></svg></span>
+          <span class="swarm-role shimmer">Hotel Research</span>
+          <span class="swarm-task shimmer">Finding hotels in Tokyo</span>
+          <svg class="swarm-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 6. AGENT CARD (GRID) ==================== -->
+    <section class="section">
+      <div class="section-label">Agent Card &mdash; Grid</div>
+      <p class="section-desc">Compact card layout for parallel agents. Shows active shimmer and completed fade states.</p>
+      <div class="demo-panel" style="background:var(--bg); border-color:var(--border-subtle);">
+        <div class="agent-grid">
+          <div class="agent-card">
+            <div class="agent-card-header">
+              <div class="agent-card-icon"><svg viewBox="0 0 24 24"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.4-.1.9.3 1.1l5.5 3.2-2.7 2.7-2.1-.4c-.3-.1-.7 0-.9.2l-.4.4 2.8 1.5 1.5 2.8.4-.4c.2-.2.3-.6.2-.9l-.4-2.1 2.7-2.7 3.2 5.5c.2.4.7.5 1.1.3l.5-.3c.4-.2.6-.6.5-1.1z"/></svg></div>
+              <div class="agent-card-status">
+                <span class="agent-card-spinner-wrap"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; width:14px; height:14px;"></span></span>
+                <span class="agent-card-check">&#x2713;</span>
+              </div>
+            </div>
+            <div class="agent-card-role shimmer">Flight Research</div>
+            <div class="agent-card-task">Searching flights to NRT</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-card-header">
+              <div class="agent-card-icon"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg></div>
+              <div class="agent-card-status">
+                <span class="agent-card-spinner-wrap"><span class="shimmer-text loader text-spinner sm" data-spinner="orbit" style="font-size:0.75rem; width:14px; height:14px;"></span></span>
+                <span class="agent-card-check">&#x2713;</span>
+              </div>
+            </div>
+            <div class="agent-card-role shimmer">Hotel Research</div>
+            <div class="agent-card-task">Comparing Shinjuku hotels</div>
+          </div>
+          <div class="agent-card completed">
+            <div class="agent-card-header">
+              <div class="agent-card-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+              <div class="agent-card-status">
+                <span class="agent-card-spinner-wrap"><span class="loader text-spinner sm" data-spinner="braille" style="font-size:0.75rem; width:14px; height:14px;"></span></span>
+                <span class="agent-card-check">&#x2713;</span>
+              </div>
+            </div>
+            <div class="agent-card-role shimmer">Itinerary</div>
+            <div class="agent-card-task">7-day plan complete</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 7. LOG ROW (FLAT COT) ==================== -->
+    <section class="section">
+      <div class="section-label">Log Row &mdash; Flat Chain of Thought</div>
+      <p class="section-desc">Color-coded agent badges with tool name and arguments. Used in the mega/condensed views for a compact activity feed.</p>
+      <div class="demo-panel">
+        <div class="log-row completed">
+          <span class="log-check">&#x2713;</span>
+          <span class="log-badge blue">Flights</span>
+          <span class="log-tool">search_flights</span>
+          <span class="log-arg">ORD -> NRT, Mar 15-22</span>
+        </div>
+        <div class="log-row completed">
+          <span class="log-check">&#x2713;</span>
+          <span class="log-badge yellow">Hotels</span>
+          <span class="log-tool">search_hotels</span>
+          <span class="log-arg">Shinjuku, 7 nights, 2 guests</span>
+        </div>
+        <div class="log-row">
+          <span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.72rem; width:14px; height:14px;"></span>
+          <span class="log-badge purple">Itinerary</span>
+          <span class="log-tool">build_schedule</span>
+          <span class="log-arg">7 days, major neighborhoods</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 8. TOOL USE CARD ==================== -->
+    <section class="section">
+      <div class="section-label">Tool Use Card</div>
+      <p class="section-desc">Expandable cards showing tool execution status and output. Click headers to collapse.</p>
+      <div style="display:flex; flex-direction:column; gap:0;">
+        <div class="tool-card">
+          <div class="tool-card-header" onclick="this.parentElement.classList.toggle('collapsed')">
+            <div class="tool-card-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg></div>
+            <span class="tool-card-name">search_web</span>
+            <span class="tool-card-status done">Done</span>
+            <svg class="tool-card-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="tool-card-body">
+            <pre>Query: "direct flights Chicago to Tokyo March 2026"
+Results: 4 sources found
+  1. Google Flights -- 8 direct options
+  2. ANA official -- NH11 $1,240 RT
+  3. JAL official -- JL009 $1,185 RT
+  4. United -- UA881 $1,095 RT</pre>
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-card-header" onclick="this.parentElement.classList.toggle('collapsed')">
+            <div class="tool-card-icon"><svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+            <span class="tool-card-name">compare_prices</span>
+            <span class="shimmer-text loader text-spinner sm" data-spinner="orbit" style="font-size:0.8rem; width:16px; height:16px;"></span>
+            <span class="tool-card-status running">Running</span>
+            <svg class="tool-card-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="tool-card-body">
+            <pre>Comparing economy + premium across 5 carriers...
+ANA NH11   Economy $1,240  Premium $1,890
+JAL JL009  Economy $1,185  Premium $1,820<span class="stream-cursor"></span></pre>
+          </div>
+        </div>
+        <div class="tool-card collapsed">
+          <div class="tool-card-header" onclick="this.parentElement.classList.toggle('collapsed')">
+            <div class="tool-card-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+            <span class="tool-card-name">read_file</span>
+            <span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.8rem; width:16px; height:16px;"></span>
+            <span class="tool-card-status running">Reading</span>
+            <svg class="tool-card-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="tool-card-body">
+            <pre>Path: cache/hotel_ratings.json</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 9. SYNTHESIS ==================== -->
+    <section class="section">
+      <div class="section-label">Synthesis</div>
+      <p class="section-desc">Transition state between agent execution and final answer. Shows active shimmer then resolves to a completion message.</p>
+      <div class="demo-panel">
+        <div class="demo-label">Active</div>
+        <div class="synthesis-row">
+          <span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.85rem; width:16px; height:16px;"></span>
+          <span class="synthesis-label shimmer">Synthesizing results from 3 agents...</span>
+        </div>
+        <div style="height:0.75rem;"></div>
+        <div class="demo-label">Complete</div>
+        <div class="synthesis-row">
+          <span style="color:var(--green); font-weight:600; font-size:0.85rem;">&#x2713;</span>
+          <span class="synthesis-done">Synthesis complete -- 3 agents, 9 tools, full itinerary ready</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 10. STREAMING TEXT ==================== -->
+    <section class="section">
+      <div class="section-label">Streaming Text</div>
+      <p class="section-desc">Word-by-word blur reveal animation. Each word fades in from blur(4px) to sharp with a 0.25s ease-out.</p>
+      <div class="stream-card">
+        <div class="stream-output" id="stream-demo"></div>
+      </div>
+    </section>
+
+    <!-- ==================== 11. DOCUMENT ARTIFACT ==================== -->
+    <section class="section">
+      <div class="section-label">Document Artifact</div>
+      <p class="section-desc">Generated document card that appears after synthesis. Clickable with hover state.</p>
+      <div class="doc-artifact">
+        <div class="doc-artifact-header">
+          <div class="doc-artifact-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 2C4.9 2 4 2.9 4 4v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6H6zm7 1.5L18.5 9H13V3.5zM7 13h10v1.5H7V13zm0 3h10v1.5H7V16zm0 3h7v1.5H7V19zm0-9h4v1.5H7V10z"/></svg>
+          </div>
+          <div class="doc-artifact-meta">
+            <div class="doc-artifact-title">Tokyo Trip Plan -- Complete Itinerary</div>
+            <div class="doc-artifact-subtitle">Document &middot; 7 days &middot; flights, hotels, activities</div>
+          </div>
+          <button class="doc-artifact-open">Open</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 12. COMPACT AGENT ==================== -->
+    <section class="section">
+      <div class="section-label">Compact Agent</div>
+      <p class="section-desc">Claude Code-style expandable agent rows with inline output. Click to expand.</p>
+      <div style="display:flex; flex-direction:column; gap:0;">
+        <div class="compact-agent expanded" onclick="this.classList.toggle('expanded')">
+          <div class="compact-agent-header">
+            <span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.85rem; width:16px; height:16px;"></span>
+            <span class="compact-agent-icon"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M16 7V5a4 4 0 0 0-8 0v2"/></svg></span>
+            <span class="compact-agent-role">Agent</span>
+            <span class="compact-agent-task">Audit type styles</span>
+            <svg class="compact-agent-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+          </div>
+          <div class="compact-agent-body" onclick="event.stopPropagation()">
+            <div class="agent-output">
+              <p>Async agent launched successfully.</p>
+              <p><code>agentId: ae924d8</code></p>
+              <p>The agent is working in the background. You will be notified when it completes.</p>
+            </div>
+          </div>
+        </div>
+        <div class="compact-agent" onclick="this.classList.toggle('expanded')">
+          <div class="compact-agent-header">
+            <span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.85rem; width:16px; height:16px;"></span>
+            <span class="compact-agent-icon"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M16 7V5a4 4 0 0 0-8 0v2"/></svg></span>
+            <span class="compact-agent-role">Agent</span>
+            <span class="compact-agent-task">Audit color system</span>
+            <svg class="compact-agent-chevron" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+          </div>
+          <div class="compact-agent-body" onclick="event.stopPropagation()">
+            <div class="agent-output">
+              <p>Scanning CSS custom properties for contrast compliance.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 13. TASK ROW (WORKSPACE) ==================== -->
+    <section class="section">
+      <div class="section-label">Task Row &mdash; Workspace</div>
+      <p class="section-desc">Sidebar task list from the workspace layout. Shows running (spinner), completed (check), queued (circle), and new (dot) states.</p>
+      <div class="task-list">
+        <div class="task-row active">
+          <div class="task-status">
+            <span class="shimmer-text loader text-spinner" data-spinner="braille" style="font-size:0.72rem; width:14px; height:14px;"></span>
+          </div>
+          <span class="task-name">Search direct flights ORD to NRT</span>
+          <span class="task-meta">12s</span>
+        </div>
+        <div class="task-row">
+          <div class="task-status"><span class="check-icon">&#x2713;</span></div>
+          <span class="task-name">Parse hotel availability data</span>
+          <span class="task-meta">8s</span>
+        </div>
+        <div class="task-row">
+          <div class="task-status"><div class="queued-dot"></div></div>
+          <span class="task-name">Generate day-by-day itinerary</span>
+          <span class="task-meta">queued</span>
+        </div>
+        <div class="task-row">
+          <div class="task-status"><div class="new-dot"></div></div>
+          <span class="task-name">Optimize transit routes with JR Pass</span>
+          <span class="task-meta">new</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 14. SEARCH BAR ==================== -->
+    <section class="section">
+      <div class="section-label">Search Bar</div>
+      <p class="section-desc">Bottom-fixed input bar with attach, search, model selector, and submit button.</p>
+      <div class="search-bar-demo">
+        <div class="search-bar-inner">
+          <div class="search-bar-input">
+            <input type="text" placeholder="Ask a follow-up...">
+          </div>
+          <div class="search-bar-footer">
+            <div class="search-bar-left">
+              <button class="sb-icon-btn" title="Attach">
+                <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+              <button class="sb-icon-btn" title="Search">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+              </button>
+            </div>
+            <div class="search-bar-right">
+              <span class="sb-model">Opus 4.5 <svg viewBox="0 0 24 24" style="width:12px; height:12px;"><polyline points="6 9 12 15 18 9"/></svg></span>
+              <button class="sb-submit">
+                <svg viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 15. SKELETON LOADERS ==================== -->
+    <section class="section">
+      <div class="section-label">Skeleton Loaders</div>
+      <p class="section-desc">Shimmer placeholder shapes for content that hasn't loaded yet.</p>
+      <div class="skel-grid">
+        <div class="skel-card">
+          <div class="skel-card-label">Text content</div>
+          <div class="skel-line w100"></div>
+          <div class="skel-line w100"></div>
+          <div class="skel-line w80"></div>
+          <div style="height:0.6rem"></div>
+          <div class="skel-line w100"></div>
+          <div class="skel-line w60"></div>
+        </div>
+        <div class="skel-card">
+          <div class="skel-card-label">Card + Avatar</div>
+          <div class="skel-row">
+            <div class="skel-circle" style="margin-bottom:0"></div>
+            <div style="flex:1">
+              <div class="skel-line w60" style="margin-bottom:0.35rem"></div>
+              <div class="skel-line w40" style="margin-bottom:0"></div>
+            </div>
+          </div>
+          <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+            <div class="skel-pill"></div>
+            <div class="skel-pill" style="width:60px"></div>
+            <div class="skel-pill" style="width:100px"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 16. PLAN STEPS (TODO LIST) ==================== -->
+    <section class="section">
+      <div class="section-label">Plan Steps &mdash; Todo List</div>
+      <p class="section-desc">Checkbox-style plan from the wide research demo. Steps check off as the model confirms each part of the plan. Vertical rail connects them visually.</p>
+      <div class="demo-panel">
+        <div class="orch-row" style="margin-bottom:0.5rem;">
+          <span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.85rem; width:16px; height:16px;"></span>
+          <span class="orch-label">Planning research approach...</span>
+        </div>
+        <div class="cmp-plan-steps">
+          <div class="cmp-plan-step completed">
+            <span class="cmp-plan-circle"><svg viewBox="0 0 12 12"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg></span>
+            <span class="cmp-plan-text">Identify one premier marathon per state</span>
+          </div>
+          <div class="cmp-plan-step completed">
+            <span class="cmp-plan-circle"><svg viewBox="0 0 12 12"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg></span>
+            <span class="cmp-plan-text">Search race databases and official websites</span>
+          </div>
+          <div class="cmp-plan-step">
+            <span class="cmp-plan-circle"><svg viewBox="0 0 12 12"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg></span>
+            <span class="cmp-plan-text">Collect race name, date, location, and course details</span>
+          </div>
+          <div class="cmp-plan-step">
+            <span class="cmp-plan-circle"><svg viewBox="0 0 12 12"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg></span>
+            <span class="cmp-plan-text">Compile into a structured 50-state guide</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 17. WIDE RESEARCH ROWS ==================== -->
+    <section class="section">
+      <div class="section-label">Wide Research Rows</div>
+      <p class="section-desc">Grouped agent chain-of-thought from the wide research demo. Each row is an agent with an expandable substep list. Active rows shimmer, completed rows fade. Click to expand.</p>
+      <div class="demo-panel">
+        <div class="cmp-agent-group expanded">
+          <div class="cmp-ag-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="cmp-ag-spinner"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.72rem; width:14px; height:14px;"></span></span>
+            <span class="cmp-ag-label">California</span>
+            <span class="cmp-ag-task">Researching Big Sur Marathon &mdash; browsing race details</span>
+            <svg class="cmp-ag-chevron" viewBox="0 0 12 12"><polyline points="4 2 8 6 4 10"/></svg>
+          </div>
+          <div class="cmp-ag-body">
+            <div class="cmp-ag-body-inner">
+              <div class="cmp-ag-step"><span class="cmp-ag-step-icon done">&#x2713;</span> Searching race databases</div>
+              <div class="cmp-ag-step"><span class="cmp-ag-step-icon done">&#x2713;</span> Found Big Sur International Marathon</div>
+              <div class="cmp-ag-step"><span class="cmp-ag-step-icon">&#x25CB;</span> Collecting course elevation data</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cmp-agent-group completed">
+          <div class="cmp-ag-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="cmp-ag-check">&#x2713;</span>
+            <span class="cmp-ag-label" style="background:none; -webkit-text-fill-color:var(--text); animation:none;">New York</span>
+            <span class="cmp-ag-task">NYC Marathon &mdash; collected all details</span>
+            <svg class="cmp-ag-chevron" viewBox="0 0 12 12"><polyline points="4 2 8 6 4 10"/></svg>
+          </div>
+          <div class="cmp-ag-body">
+            <div class="cmp-ag-body-inner">
+              <div class="cmp-ag-step"><span class="cmp-ag-step-icon done">&#x2713;</span> Found TCS New York City Marathon</div>
+              <div class="cmp-ag-step"><span class="cmp-ag-step-icon done">&#x2713;</span> Collected date, route, and registration</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cmp-agent-group">
+          <div class="cmp-ag-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="cmp-ag-spinner"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.72rem; width:14px; height:14px;"></span></span>
+            <span class="cmp-ag-label">Texas</span>
+            <span class="cmp-ag-task">Searching marathon databases</span>
+            <svg class="cmp-ag-chevron" viewBox="0 0 12 12"><polyline points="4 2 8 6 4 10"/></svg>
+          </div>
+          <div class="cmp-ag-body">
+            <div class="cmp-ag-body-inner">
+              <div class="cmp-ag-step"><span class="cmp-ag-step-icon">&#x25CB;</span> Querying race sites...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 18. RESEARCH CARDS (PROGRESS RING GRID) ==================== -->
+    <section class="section">
+      <div class="section-label">Research Cards &mdash; Progress Ring Grid</div>
+      <p class="section-desc">Compact card grid from the 50-state research demo. Each card has a numbered progress ring that fills via conic-gradient as the agent works, then shows a check when complete.</p>
+      <div class="demo-panel">
+        <div class="cmp-research-grid">
+          <div class="cmp-research-card completed">
+            <div class="cmp-rc-num"><span class="cmp-rc-ring"></span><span class="cmp-rc-num-text">1</span><span class="cmp-rc-check">&#x2713;</span></div>
+            <div class="cmp-rc-info"><div class="cmp-rc-role">Alabama</div><div class="cmp-rc-task">Mercedes Marathon</div></div>
+          </div>
+          <div class="cmp-research-card completed">
+            <div class="cmp-rc-num"><span class="cmp-rc-ring"></span><span class="cmp-rc-num-text">2</span><span class="cmp-rc-check">&#x2713;</span></div>
+            <div class="cmp-rc-info"><div class="cmp-rc-role">Alaska</div><div class="cmp-rc-task">Prior collected</div></div>
+          </div>
+          <div class="cmp-research-card active">
+            <div class="cmp-rc-num"><span class="cmp-rc-ring"></span><span class="cmp-rc-num-text">3</span><span class="cmp-rc-check">&#x2713;</span></div>
+            <div class="cmp-rc-info"><div class="cmp-rc-role">Arizona</div><div class="cmp-rc-task">Browsing race sites</div></div>
+          </div>
+          <div class="cmp-research-card active">
+            <div class="cmp-rc-num"><span class="cmp-rc-ring"></span><span class="cmp-rc-num-text">4</span><span class="cmp-rc-check">&#x2713;</span></div>
+            <div class="cmp-rc-info"><div class="cmp-rc-role">Arkansas</div><div class="cmp-rc-task">Searching databases</div></div>
+          </div>
+          <div class="cmp-research-card">
+            <div class="cmp-rc-num"><span class="cmp-rc-ring"></span><span class="cmp-rc-num-text">5</span><span class="cmp-rc-check">&#x2713;</span></div>
+            <div class="cmp-rc-info"><div class="cmp-rc-role">California</div><div class="cmp-rc-task">Waiting</div></div>
+          </div>
+          <div class="cmp-research-card">
+            <div class="cmp-rc-num"><span class="cmp-rc-ring"></span><span class="cmp-rc-num-text">6</span><span class="cmp-rc-check">&#x2713;</span></div>
+            <div class="cmp-rc-info"><div class="cmp-rc-role">Colorado</div><div class="cmp-rc-task">Waiting</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 19. PROJECT GROUP (TODO LIST + BADGES) ==================== -->
+    <section class="section">
+      <div class="section-label">Project Group &mdash; Task List with Badges</div>
+      <p class="section-desc">Collapsible project groups from the workspace demo. Each task row shows a status badge (Running, Done, Queued, New) and an active indicator border. Click the header to collapse.</p>
+      <div class="demo-panel" style="padding:0; overflow:hidden; border-radius:12px;">
+        <div class="cmp-project-group">
+          <div class="cmp-proj-header" onclick="this.parentElement.classList.toggle('collapsed')">
+            <svg class="cmp-proj-chevron" viewBox="0 0 12 12"><polyline points="4 2 8 6 4 10"/></svg>
+            <span class="cmp-proj-name">Japan Trip Planning</span>
+            <span class="cmp-proj-count">4 tasks</span>
+          </div>
+          <div class="cmp-proj-tasks">
+            <div class="cmp-task-row active">
+              <div class="cmp-task-icon"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.68rem; width:12px; height:12px;"></span></div>
+              <div class="cmp-task-body">
+                <span class="cmp-task-name">Search direct flights ORD → NRT</span>
+                <span class="cmp-task-stat">12s</span>
+                <span class="cmp-task-badge running">Running</span>
+              </div>
+            </div>
+            <div class="cmp-task-row">
+              <div class="cmp-task-icon"><span class="check-icon" style="color:var(--green); font-size:0.68rem;">&#x2713;</span></div>
+              <div class="cmp-task-body">
+                <span class="cmp-task-name">Parse hotel availability data</span>
+                <span class="cmp-task-stat">8s</span>
+                <span class="cmp-task-badge completed">Done</span>
+              </div>
+            </div>
+            <div class="cmp-task-row">
+              <div class="cmp-task-icon"><div class="cmp-queued-dot"></div></div>
+              <div class="cmp-task-body">
+                <span class="cmp-task-name">Generate day-by-day itinerary</span>
+                <span class="cmp-task-badge queued">Queued</span>
+              </div>
+            </div>
+            <div class="cmp-task-row">
+              <div class="cmp-task-icon"><div class="cmp-new-dot"></div></div>
+              <div class="cmp-task-body">
+                <span class="cmp-task-name">Optimize transit routes with JR Pass</span>
+                <span class="cmp-task-badge new">New</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cmp-project-group collapsed">
+          <div class="cmp-proj-header" onclick="this.parentElement.classList.toggle('collapsed')">
+            <svg class="cmp-proj-chevron" viewBox="0 0 12 12"><polyline points="4 2 8 6 4 10"/></svg>
+            <span class="cmp-proj-name">Q4 Financial Analysis</span>
+            <span class="cmp-proj-count">2 tasks</span>
+          </div>
+          <div class="cmp-proj-tasks">
+            <div class="cmp-task-row">
+              <div class="cmp-task-icon"><span class="check-icon" style="color:var(--green); font-size:0.68rem;">&#x2713;</span></div>
+              <div class="cmp-task-body">
+                <span class="cmp-task-name">Pull revenue data from SEC filings</span>
+                <span class="cmp-task-stat">15s</span>
+                <span class="cmp-task-badge completed">Done</span>
+              </div>
+            </div>
+            <div class="cmp-task-row">
+              <div class="cmp-task-icon"><div class="cmp-queued-dot"></div></div>
+              <div class="cmp-task-body">
+                <span class="cmp-task-name">Build competitor comparison chart</span>
+                <span class="cmp-task-badge queued">Queued</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         CHAIN OF THOUGHT PIPELINE
+         ================================================================ -->
+    <div style="margin-top:1.5rem; margin-bottom:3.5rem; border-top:1px solid var(--border-subtle); padding-top:3.5rem;">
+      <header class="page-header" style="margin-bottom:2.5rem;">
+        <h1 style="font-size:1.6rem;">Chain of Thought Pipeline</h1>
+        <p>The full reasoning pipeline from the artboard spec: thinking, clarification, skills, memory, connectors, subagent coordination, build, validation, delivery, and scheduling.</p>
+      </header>
+    </div>
+
+    <!-- ==================== COT 1. THINKING (CYCLING TEXT) ==================== -->
+    <section class="section">
+      <div class="section-label">Chain of Thought (Thinking)</div>
+      <p class="section-desc">Before calling any tools, the model thinks internally. A single line of shimmer text cycles through reasoning phases — what the user needs, dependencies, parallel vs serial, risk. The text fades between thoughts.</p>
+      <div class="demo-panel">
+        <div class="orch-row">
+          <span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.85rem; width:16px; height:16px;"></span>
+          <span class="shimmer-text thinking-cycle" id="thinkingCycle">Checking — do I understand the goal?</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== COT 2. CLARIFYING QUESTION ==================== -->
+    <section class="section">
+      <div class="section-label">Clarifying Question (Optional)</div>
+      <p class="section-desc">If the request is underspecified, the model asks before doing work. Prevents wasting an entire research + build cycle on the wrong scope. Uses a structured multiple-choice UI, not a free-text reply.</p>
+      <div class="clarify-card">
+        <div class="clarify-title">What aspects interest you the most?</div>
+
+        <div class="clarify-field">
+          <div class="clarify-label">Revenue Breakdown</div>
+          <div class="clarify-chips">
+            <span class="clarify-chip selected">Profit Margins</span>
+            <span class="clarify-chip">Growth</span>
+          </div>
+        </div>
+
+        <div class="clarify-field">
+          <div class="clarify-label">What time period should we analyze?</div>
+          <div class="clarify-chips">
+            <span class="clarify-chip">Last Quarter</span>
+            <span class="clarify-chip selected">Last Fiscal Year</span>
+            <span class="clarify-chip">5-year trend</span>
+          </div>
+        </div>
+
+        <div class="clarify-field">
+          <div class="clarify-label">Would you like competitor comparison?</div>
+          <div class="clarify-chips">
+            <span class="clarify-chip selected">Yes</span>
+            <span class="clarify-chip">No</span>
+          </div>
+        </div>
+
+        <div class="clarify-field">
+          <div class="clarify-label">Other</div>
+          <input class="clarify-input" type="text" placeholder="Anything else to include...">
+        </div>
+
+        <div class="clarify-actions">
+          <button class="clarify-btn primary">Submit</button>
+          <button class="clarify-btn secondary">Skip</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== COT 3. SKILLS (LOADED PLAYBOOKS) ==================== -->
+    <section class="section">
+      <div class="section-label">Skills (Loaded Playbooks) + Parallel Tool Calls</div>
+      <p class="section-desc">Skills are pre-written expert guides loaded on demand -- like python, pdf, website building, finance markets, etc. They give the model battle-tested instructions for specific domains. Essentially design tokens for behavior -- standardized patterns for how to approach a category of work.</p>
+      <div class="demo-panel">
+        <div class="demo-label">Loading skills...</div>
+        <div class="skill-list">
+          <div class="skill-row">
+            <span class="skill-icon check">&#x2713;</span>
+            <span class="skill-name">Loading python</span>
+          </div>
+          <div class="skill-row">
+            <span class="skill-icon check">&#x2713;</span>
+            <span class="skill-name">Loading web research</span>
+          </div>
+          <div class="skill-row">
+            <span class="skill-icon check">&#x2713;</span>
+            <span class="skill-name">Loading financial analysis</span>
+          </div>
+          <div class="skill-row">
+            <span class="skill-icon loading"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.72rem; width:12px; height:12px;"></span></span>
+            <span class="skill-name active">Loading data visualization</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== COT 4. MEMORY SEARCH ==================== -->
+    <section class="section">
+      <div class="section-label">Memory Search</div>
+      <p class="section-desc">The model searches persistent memory for relevant context from past conversations: the user's preferences, active projects, or prior research on the topic. This isn't visible as a message -- it informs how the model works, not what it says.</p>
+      <div class="demo-panel">
+        <div class="memory-row">
+          <span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.72rem; width:12px; height:12px;"></span>
+          <span class="memory-label">Recalling preferences...</span>
+        </div>
+        <div style="margin-left:26px; margin-top:0.25rem;">
+          <div class="memory-row" style="padding:0.15rem 0;">
+            <span class="memory-detail">This user prefers long-form detailed reports with embedded charts</span>
+          </div>
+          <div class="memory-row" style="padding:0.15rem 0;">
+            <span class="memory-detail">Previous analysis of AAPL in Q3...</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== COT 5. CONNECTORS ==================== -->
+    <section class="section">
+      <div class="section-label">Connectors</div>
+      <p class="section-desc">Connectors present themselves to connect applications and each have their own auth flows. When the task needs external data (email, calendar, brokerage), the model prompts the user to link accounts before proceeding.</p>
+      <div class="connector-row">
+        <div class="connector-card">
+          <div class="connector-head">
+            <div class="connector-icon" style="background:var(--blue-bg);">&#x2709;</div>
+            <span class="connector-name">Connect your Email</span>
+          </div>
+          <div class="connector-desc">Allow access to read emails and organize your inbox.</div>
+          <div class="connector-actions">
+            <button class="connector-btn connect">Connect Account</button>
+            <button class="connector-btn skip">Skip</button>
+          </div>
+        </div>
+        <div class="connector-card">
+          <div class="connector-head">
+            <div class="connector-icon" style="background:var(--green-bg);">&#x1F4B9;</div>
+            <span class="connector-name">Connect Brokerage</span>
+          </div>
+          <div class="connector-desc">Link your investment account to check balances and holdings.</div>
+          <div class="connector-actions">
+            <button class="connector-btn connect">Connect Account</button>
+            <button class="connector-btn skip">Skip</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== COT 6. FILESYSTEM COORDINATION ==================== -->
+    <section class="section">
+      <div class="section-label">Filesystem Coordination (Synthesis)</div>
+      <p class="section-desc">Once all subagents complete, the model reads their output files from the shared workspace. This is the handoff point: subagents are gone, their content is distilled, and the model now has full research data to compile into a single unified dataset before the build phase.</p>
+      <div class="demo-panel">
+        <div class="file-row">
+          <span class="file-icon check">&#x2713;</span>
+          <span class="file-name">Reading research_GOOG_shutdown.md</span>
+          <span class="file-meta">4.2 KB</span>
+        </div>
+        <div class="file-row">
+          <span class="file-icon check">&#x2713;</span>
+          <span class="file-name">Reading research_labor_data.csv</span>
+          <span class="file-meta">12.8 KB</span>
+        </div>
+        <div class="file-row">
+          <span class="file-icon"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; width:12px; height:12px;"></span></span>
+          <span class="file-name">Compiling into unified_research.md</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== COT 7. BUILD SUBAGENT ==================== -->
+    <section class="section">
+      <div class="section-label">Build Subagent</div>
+      <p class="section-desc">A specialized subagent to build the website. This subagent loads the website-building skill itself, reads the compiled research data from the filesystem, and creates all HTML/CSS/JS files. It runs in isolation so the creative work doesn't clutter the main conversation context.</p>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+        <div class="demo-panel" style="padding:1rem;">
+          <div class="demo-label">Generating output...</div>
+          <div class="file-row">
+            <span class="file-icon check">&#x2713;</span>
+            <span class="file-name">Generated index.html</span>
+          </div>
+          <div class="file-row">
+            <span class="file-icon check">&#x2713;</span>
+            <span class="file-name">Generated styles.css</span>
+          </div>
+          <div class="file-row">
+            <span class="file-icon"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; width:12px; height:12px;"></span></span>
+            <span class="file-name">Generating charts.js</span>
+          </div>
+        </div>
+        <div>
+          <div class="demo-label">Live preview for the Grid</div>
+          <div class="build-preview">
+            <div class="build-preview-bar">
+              <div class="build-dot" style="background:#ff5f57;"></div>
+              <div class="build-dot" style="background:#febc2e;"></div>
+              <div class="build-dot" style="background:#28c840;"></div>
+            </div>
+            <div class="build-preview-body">
+              &lt;div class="dashboard"&gt;<br>
+              &nbsp;&nbsp;&lt;h1&gt;Government Shutdowns<br>
+              &nbsp;&nbsp;&amp; the U.S. Economy&lt;/h1&gt;<br>
+              &nbsp;&nbsp;&lt;canvas id="chart"&gt;&lt;/canvas&gt;<br>
+              &lt;/div&gt;
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== COT 8. VISUAL VALIDATION ==================== -->
+    <section class="section">
+      <div class="section-label">Visual Validation</div>
+      <p class="section-desc">Before sharing anything, the model takes a screenshot of the deployed site (or rendered PDF/slide) and inspects it for layout issues: broken text, truncated content, color contrast problems, or misaligned elements. If something looks wrong, it edits the files and rebuilds. The user never sees a broken first draft.</p>
+      <div class="demo-panel">
+        <div class="validation-row">
+          <span class="validation-icon"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; width:12px; height:12px;"></span></span>
+          <span class="validation-label">Taking screenshot of live render...</span>
+        </div>
+        <div class="validation-row">
+          <span class="validation-icon pass">&#x2713;</span>
+          <span class="validation-label">Layout check passed</span>
+        </div>
+        <div class="validation-row">
+          <span class="validation-icon pass">&#x2713;</span>
+          <span class="validation-label">Color contrast WCAG AA</span>
+        </div>
+        <div class="validation-row">
+          <span class="validation-icon checking" style="color:var(--yellow);">&#x25CB;</span>
+          <span class="validation-label" style="color:var(--text-muted);">Checking responsive breakpoints...</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== COT 9. DELIVERY ==================== -->
+    <!-- (Already have Document Artifact above — this section is covered) -->
+
+    <!-- ==================== COT 10. SCHEDULING + MEMORY ==================== -->
+    <section class="section">
+      <div class="section-label">Scheduling + Memory (Persistence Layer)</div>
+      <p class="section-desc">Beyond a single session: Memory stores durable facts about the user across conversations (preferences, projects, context). Cron scheduling lets the model set up recurring autonomous tasks that run even when you're not here. Pause-and-wait lets it sleep and resume for time-gated work.</p>
+      <div style="display:flex; flex-direction:column; gap:0;">
+        <div class="schedule-row">
+          <span class="schedule-icon">&#x23F8;</span>
+          <span class="schedule-label">Monitoring paused</span>
+          <span class="schedule-time">resuming tomorrow at 8:01 PM</span>
+        </div>
+        <div class="schedule-row">
+          <span class="schedule-icon" style="color:var(--green);">&#x21BB;</span>
+          <span class="schedule-label">Monitoring resumed</span>
+          <span class="schedule-time">8:02 PM CST Today</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== COT 11. MONITORING PICKS UP ==================== -->
+    <section class="section">
+      <div class="section-label">Monitoring Picks Up</div>
+      <p class="section-desc">Agent wakes from a scheduled pause and resumes work. This is the re-entry point for time-gated or long-running tasks — the model picks up context from memory and continues where it left off.</p>
+      <div class="demo-panel">
+        <div class="schedule-row" style="background:transparent; border:none; padding:0;">
+          <span style="color:var(--green); font-size:0.75rem;">&#x2699;</span>
+          <span style="font-size:0.78rem; font-weight:500; color:var(--text);">Resumed</span>
+          <span class="schedule-time">8:02 PM CST Today</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         PARALLEL AGENT PATTERNS
+         ================================================================ -->
+    <div style="margin-top:1.5rem; margin-bottom:3.5rem; border-top:1px solid var(--border-subtle); padding-top:3.5rem;">
+      <header class="page-header" style="margin-bottom:2.5rem;">
+        <h1 style="font-size:1.6rem;">Parallel Agent Patterns</h1>
+        <p>Animated patterns showing how agents spawn, run, interleave, and complete in parallel.</p>
+      </header>
+    </div>
+
+    <!-- ==================== P1. STAGGERED SPAWN ==================== -->
+    <section class="section">
+      <div class="section-label">Staggered Spawn</div>
+      <p class="section-desc">Agents appear one at a time with 400-600ms delays, then all run concurrently. Creates the impression of an orchestrator dispatching work. Used in the list view (asi.html).</p>
+      <div class="pattern-panel" id="pat-spawn">
+        <button class="pattern-replay" onclick="runSpawn()">Replay</button>
+        <div class="p-phase visible" style="opacity:1; transform:none;">
+          <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.4rem;">
+            <span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.78rem; width:14px; height:14px;"></span>
+            <span style="font-weight:500;">Thinking...</span>
+          </div>
+        </div>
+        <div id="spawn-agents">
+          <div class="p-agent-row" id="sp-1">
+            <span class="p-spinner-wrap"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.78rem; width:14px; height:14px;"></span></span>
+            <span class="p-check">&#x2713;</span>
+            <span class="p-role shimmer">Flight Research</span>
+            <span class="p-task">Searching flights ORD-NRT</span>
+          </div>
+          <div class="p-agent-row" id="sp-2">
+            <span class="p-spinner-wrap"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.78rem; width:14px; height:14px;"></span></span>
+            <span class="p-check">&#x2713;</span>
+            <span class="p-role shimmer">Hotel Research</span>
+            <span class="p-task">Finding hotels in Shinjuku</span>
+          </div>
+          <div class="p-agent-row" id="sp-3">
+            <span class="p-spinner-wrap"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.78rem; width:14px; height:14px;"></span></span>
+            <span class="p-check">&#x2713;</span>
+            <span class="p-role shimmer">Itinerary Planning</span>
+            <span class="p-task">Building 7-day schedule</span>
+          </div>
+          <div class="p-agent-row" id="sp-4">
+            <span class="p-spinner-wrap"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.78rem; width:14px; height:14px;"></span></span>
+            <span class="p-check">&#x2713;</span>
+            <span class="p-role shimmer">Budget Analysis</span>
+            <span class="p-task">Estimating total costs</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== P2. GRID + INTERLEAVED LOG ==================== -->
+    <section class="section">
+      <div class="section-label">Grid Cards + Interleaved Log</div>
+      <p class="section-desc">Agent cards show at-a-glance status while a flat log below interleaves tool calls from all agents. Cards complete out of order as each agent finishes. Used in mega and condensed views.</p>
+      <div class="pattern-panel" id="pat-grid">
+        <button class="pattern-replay" onclick="runGrid()">Replay</button>
+
+        <div id="grid-cards" class="p-grid" style="margin-bottom:0.75rem;">
+          <div class="p-card" id="gc-1">
+            <div class="p-card-head">
+              <span style="font-size:0.6rem; color:var(--text-muted);">1</span>
+              <div class="p-card-status">
+                <span class="p-card-spinner-wrap"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.68rem; width:12px; height:12px;"></span></span>
+                <span class="p-card-check">&#x2713;</span>
+              </div>
+            </div>
+            <div class="p-card-role shimmer">Flights</div>
+            <div class="p-card-task">Search direct routes</div>
+          </div>
+          <div class="p-card" id="gc-2">
+            <div class="p-card-head">
+              <span style="font-size:0.6rem; color:var(--text-muted);">2</span>
+              <div class="p-card-status">
+                <span class="p-card-spinner-wrap"><span class="shimmer-text loader text-spinner sm" data-spinner="orbit" style="font-size:0.68rem; width:12px; height:12px;"></span></span>
+                <span class="p-card-check">&#x2713;</span>
+              </div>
+            </div>
+            <div class="p-card-role shimmer">Hotels</div>
+            <div class="p-card-task">Compare top-rated</div>
+          </div>
+          <div class="p-card" id="gc-3">
+            <div class="p-card-head">
+              <span style="font-size:0.6rem; color:var(--text-muted);">3</span>
+              <div class="p-card-status">
+                <span class="p-card-spinner-wrap"><span class="shimmer-text loader text-spinner sm" data-spinner="snake" style="font-size:0.68rem; width:12px; height:12px;"></span></span>
+                <span class="p-card-check">&#x2713;</span>
+              </div>
+            </div>
+            <div class="p-card-role shimmer">Itinerary</div>
+            <div class="p-card-task">Build day-by-day</div>
+          </div>
+        </div>
+
+        <div id="grid-log">
+          <div class="p-log-row" id="gl-1">
+            <span class="p-log-check">&#x2713;</span>
+            <span class="p-log-spinner shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; width:12px; height:12px;"></span>
+            <span class="p-log-badge" style="color:var(--blue); background:var(--blue-bg);">Flights</span>
+            <span class="p-log-tool">search_flights</span>
+            <span class="p-log-arg">ORD-NRT, Mar 15-22</span>
+          </div>
+          <div class="p-log-row" id="gl-2">
+            <span class="p-log-check">&#x2713;</span>
+            <span class="p-log-spinner shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; width:12px; height:12px;"></span>
+            <span class="p-log-badge" style="color:var(--yellow); background:var(--yellow-bg);">Hotels</span>
+            <span class="p-log-tool">search_hotels</span>
+            <span class="p-log-arg">Shinjuku, 7 nights</span>
+          </div>
+          <div class="p-log-row" id="gl-3">
+            <span class="p-log-check">&#x2713;</span>
+            <span class="p-log-spinner shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; width:12px; height:12px;"></span>
+            <span class="p-log-badge" style="color:var(--purple); background:var(--purple-bg);">Itinerary</span>
+            <span class="p-log-tool">plan_day</span>
+            <span class="p-log-arg">Day 1: Asakusa + Ueno</span>
+          </div>
+          <div class="p-log-row" id="gl-4">
+            <span class="p-log-check">&#x2713;</span>
+            <span class="p-log-spinner shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; width:12px; height:12px;"></span>
+            <span class="p-log-badge" style="color:var(--blue); background:var(--blue-bg);">Flights</span>
+            <span class="p-log-tool">compare_prices</span>
+            <span class="p-log-arg">economy + premium, 5 carriers</span>
+          </div>
+          <div class="p-log-row" id="gl-5">
+            <span class="p-log-check">&#x2713;</span>
+            <span class="p-log-spinner shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; width:12px; height:12px;"></span>
+            <span class="p-log-badge" style="color:var(--yellow); background:var(--yellow-bg);">Hotels</span>
+            <span class="p-log-tool">check_reviews</span>
+            <span class="p-log-arg">Gracery vs Park Hyatt vs Keio</span>
+          </div>
+          <div class="p-log-row" id="gl-6">
+            <span class="p-log-check">&#x2713;</span>
+            <span class="p-log-spinner shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; width:12px; height:12px;"></span>
+            <span class="p-log-badge" style="color:var(--purple); background:var(--purple-bg);">Itinerary</span>
+            <span class="p-log-tool">plan_day</span>
+            <span class="p-log-arg">Day 2: Shibuya + Harajuku</span>
+          </div>
+          <div class="p-log-row" id="gl-7">
+            <span class="p-log-check">&#x2713;</span>
+            <span class="p-log-spinner shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; width:12px; height:12px;"></span>
+            <span class="p-log-badge" style="color:var(--blue); background:var(--blue-bg);">Flights</span>
+            <span class="p-log-tool">check_layovers</span>
+            <span class="p-log-arg">one-stop via Seoul, Taipei</span>
+          </div>
+          <div class="p-log-row" id="gl-8">
+            <span class="p-log-check">&#x2713;</span>
+            <span class="p-log-spinner shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; width:12px; height:12px;"></span>
+            <span class="p-log-badge" style="color:var(--yellow); background:var(--yellow-bg);">Hotels</span>
+            <span class="p-log-tool">check_availability</span>
+            <span class="p-log-arg">cherry blossom demand</span>
+          </div>
+          <div class="p-log-row" id="gl-9">
+            <span class="p-log-check">&#x2713;</span>
+            <span class="p-log-spinner shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; width:12px; height:12px;"></span>
+            <span class="p-log-badge" style="color:var(--purple); background:var(--purple-bg);">Itinerary</span>
+            <span class="p-log-tool">optimize_routes</span>
+            <span class="p-log-arg">JR Pass vs Suica analysis</span>
+          </div>
+        </div>
+
+        <div class="p-synth" id="grid-synth">
+          <span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.78rem; width:14px; height:14px;" id="grid-synth-spinner"></span>
+          <span class="synthesis-label shimmer" id="grid-synth-label">Synthesizing results from 3 agents...</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== P3. FLOATING PANEL ==================== -->
+    <section class="section">
+      <div class="section-label">Floating Progress Panel</div>
+      <p class="section-desc">A persistent bottom panel showing aggregate progress across many agents. Dots transition from queued to active to done. Used in the floating agents view for large swarms (9+ agents).</p>
+      <div class="pattern-panel" id="pat-float">
+        <button class="pattern-replay" onclick="runFloat()">Replay</button>
+
+        <div style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1rem;" id="float-log">
+          <div class="p-log-row" id="fl-1">
+            <span class="p-log-check">&#x2713;</span>
+            <span class="p-log-spinner shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; width:12px; height:12px;"></span>
+            <span class="p-log-badge" style="color:var(--blue); background:var(--blue-bg);">Infra</span>
+            <span class="p-log-tool">scan_services</span>
+            <span class="p-log-arg">us-east-1, 47 instances</span>
+          </div>
+          <div class="p-log-row" id="fl-2">
+            <span class="p-log-check">&#x2713;</span>
+            <span class="p-log-spinner shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; width:12px; height:12px;"></span>
+            <span class="p-log-badge" style="color:var(--yellow); background:var(--yellow-bg);">Security</span>
+            <span class="p-log-tool">audit_iam</span>
+            <span class="p-log-arg">142 roles, 38 policies</span>
+          </div>
+          <div class="p-log-row" id="fl-3">
+            <span class="p-log-check">&#x2713;</span>
+            <span class="p-log-spinner shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; width:12px; height:12px;"></span>
+            <span class="p-log-badge" style="color:var(--purple); background:var(--purple-bg);">Perf</span>
+            <span class="p-log-tool">benchmark_api</span>
+            <span class="p-log-arg">p99 latency, 12 endpoints</span>
+          </div>
+          <div class="p-log-row" id="fl-4">
+            <span class="p-log-check">&#x2713;</span>
+            <span class="p-log-spinner shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; width:12px; height:12px;"></span>
+            <span class="p-log-badge" style="color:var(--blue); background:var(--blue-bg);">Cost</span>
+            <span class="p-log-tool">analyze_billing</span>
+            <span class="p-log-arg">last 90 days by service</span>
+          </div>
+          <div class="p-log-row" id="fl-5">
+            <span class="p-log-check">&#x2713;</span>
+            <span class="p-log-spinner shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; width:12px; height:12px;"></span>
+            <span class="p-log-badge" style="color:var(--yellow); background:var(--yellow-bg);">Backup</span>
+            <span class="p-log-tool">verify_snapshots</span>
+            <span class="p-log-arg">RDS + EBS, 8 volumes</span>
+          </div>
+          <div class="p-log-row" id="fl-6">
+            <span class="p-log-check">&#x2713;</span>
+            <span class="p-log-spinner shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.65rem; width:12px; height:12px;"></span>
+            <span class="p-log-badge" style="color:var(--purple); background:var(--purple-bg);">Network</span>
+            <span class="p-log-tool">check_routes</span>
+            <span class="p-log-arg">VPC peering, 3 regions</span>
+          </div>
+        </div>
+
+        <div class="p-floating" id="float-panel">
+          <span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.72rem; width:12px; height:12px;" id="float-spinner"></span>
+          <span class="p-floating-label" id="float-label">6 agents running</span>
+          <div class="p-floating-agents" id="float-dots">
+            <div class="p-floating-dot queued" id="fd-1"></div>
+            <div class="p-floating-dot queued" id="fd-2"></div>
+            <div class="p-floating-dot queued" id="fd-3"></div>
+            <div class="p-floating-dot queued" id="fd-4"></div>
+            <div class="p-floating-dot queued" id="fd-5"></div>
+            <div class="p-floating-dot queued" id="fd-6"></div>
+          </div>
+          <span class="p-floating-count" id="float-count">0 / 6</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== P4. OUT-OF-ORDER COMPLETION ==================== -->
+    <section class="section">
+      <div class="section-label">Out-of-Order Completion</div>
+      <p class="section-desc">Agents complete in a different order than they were spawned. Faster tasks finish first regardless of position. Demonstrates true parallelism vs sequential execution.</p>
+      <div class="pattern-panel" id="pat-ooo">
+        <button class="pattern-replay" onclick="runOOO()">Replay</button>
+        <div id="ooo-agents">
+          <div class="p-agent-row" id="oo-1">
+            <span class="p-spinner-wrap"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.78rem; width:14px; height:14px;"></span></span>
+            <span class="p-check">&#x2713;</span>
+            <span class="p-role shimmer">Deep Research</span>
+            <span class="p-task" style="flex:1;">Comprehensive analysis (slow)</span>
+            <span style="font-family:var(--font-mono); font-size:0.6rem; color:var(--text-muted);" id="oo-1-time"></span>
+          </div>
+          <div class="p-agent-row" id="oo-2">
+            <span class="p-spinner-wrap"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.78rem; width:14px; height:14px;"></span></span>
+            <span class="p-check">&#x2713;</span>
+            <span class="p-role shimmer">Quick Lookup</span>
+            <span class="p-task" style="flex:1;">Cache hit, instant (fast)</span>
+            <span style="font-family:var(--font-mono); font-size:0.6rem; color:var(--text-muted);" id="oo-2-time"></span>
+          </div>
+          <div class="p-agent-row" id="oo-3">
+            <span class="p-spinner-wrap"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.78rem; width:14px; height:14px;"></span></span>
+            <span class="p-check">&#x2713;</span>
+            <span class="p-role shimmer">API Call</span>
+            <span class="p-task" style="flex:1;">External service (medium)</span>
+            <span style="font-family:var(--font-mono); font-size:0.6rem; color:var(--text-muted);" id="oo-3-time"></span>
+          </div>
+          <div class="p-agent-row" id="oo-4">
+            <span class="p-spinner-wrap"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.78rem; width:14px; height:14px;"></span></span>
+            <span class="p-check">&#x2713;</span>
+            <span class="p-role shimmer">Code Generation</span>
+            <span class="p-task" style="flex:1;">Multi-file output (slow)</span>
+            <span style="font-family:var(--font-mono); font-size:0.6rem; color:var(--text-muted);" id="oo-4-time"></span>
+          </div>
+          <div class="p-agent-row" id="oo-5">
+            <span class="p-spinner-wrap"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.78rem; width:14px; height:14px;"></span></span>
+            <span class="p-check">&#x2713;</span>
+            <span class="p-role shimmer">Validation</span>
+            <span class="p-task" style="flex:1;">Type check (fast)</span>
+            <span style="font-family:var(--font-mono); font-size:0.6rem; color:var(--text-muted);" id="oo-5-time"></span>
+          </div>
+        </div>
+        <div class="p-synth" id="ooo-synth">
+          <span style="color:var(--green); font-weight:600; font-size:0.8rem;">&#x2713;</span>
+          <span style="color:var(--green-text); font-weight:500; font-size:0.8rem;" id="ooo-synth-label">All 5 agents complete</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== P5. SERIAL HANDOFF ==================== -->
+    <section class="section">
+      <div class="section-label">Serial Handoff</div>
+      <p class="section-desc">Some agents depend on others. Agent 1 completes and hands results to Agent 2, which hands to Agent 3. Shows the pipeline pattern where parallel and serial work are mixed.</p>
+      <div class="pattern-panel" id="pat-serial">
+        <button class="pattern-replay" onclick="runSerial()">Replay</button>
+        <div id="serial-agents">
+          <div class="p-agent-row" id="sr-1">
+            <span class="p-spinner-wrap"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.78rem; width:14px; height:14px;"></span></span>
+            <span class="p-check">&#x2713;</span>
+            <span class="p-role shimmer">Research</span>
+            <span class="p-task">Gather source data</span>
+          </div>
+          <div style="margin-left:7px; padding-left:1rem; border-left:2px solid var(--border);">
+            <div class="p-agent-row" id="sr-2">
+              <span class="p-spinner-wrap"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.78rem; width:14px; height:14px;"></span></span>
+              <span class="p-check">&#x2713;</span>
+              <span class="p-role shimmer">Analysis</span>
+              <span class="p-task">Process research results</span>
+            </div>
+            <div style="margin-left:7px; padding-left:1rem; border-left:2px solid var(--border);">
+              <div class="p-agent-row" id="sr-3">
+                <span class="p-spinner-wrap"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.78rem; width:14px; height:14px;"></span></span>
+                <span class="p-check">&#x2713;</span>
+                <span class="p-role shimmer">Synthesis</span>
+                <span class="p-task">Generate final report</span>
+              </div>
+            </div>
+          </div>
+          <div class="p-agent-row" id="sr-4">
+            <span class="p-spinner-wrap"><span class="shimmer-text loader text-spinner sm" data-spinner="braille" style="font-size:0.78rem; width:14px; height:14px;"></span></span>
+            <span class="p-check">&#x2713;</span>
+            <span class="p-role shimmer">Fact Check</span>
+            <span class="p-task">Verify claims (parallel)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="page-footer">
+    Streaming components for the age of agents.
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    // --- Thinking cycle ---
+    (function() {
+      const thoughts = [
+        'Checking \u2014 do I understand the goal?',
+        'What does the user actually need?',
+        'Dependencies between steps?',
+        'Which steps can run in parallel?',
+        'What could go wrong?',
+        'Identifying tools to call...',
+        'Estimating scope and complexity...',
+      ];
+      const el = document.getElementById('thinkingCycle');
+      if (el) {
+        let i = 0;
+        setInterval(() => {
+          el.classList.add('fade-out');
+          setTimeout(() => {
+            i = (i + 1) % thoughts.length;
+            el.textContent = thoughts[i];
+            el.classList.remove('fade-out');
+          }, 350);
+        }, 2400);
+      }
+    })();
+
+    // --- Theme toggle ---
+    const themeBtn = document.getElementById('themeToggle');
+    const html = document.documentElement;
+    themeBtn.addEventListener('click', () => {
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      themeBtn.textContent = next === 'dark' ? '\u263E' : '\u2600';
+    });
+
+    // --- Menu toggle ---
+    const menuBtn = document.getElementById('menu-btn');
+    const menuDropdown = document.getElementById('menu-dropdown');
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menuDropdown.classList.toggle('open');
+    });
+    document.addEventListener('click', () => menuDropdown.classList.remove('open'));
+
+    // --- Streaming text demo ---
+    (function() {
+      const text = 'After researching flights, hotels, and attractions across Tokyo, here is your complete travel plan for 7 nights during early cherry blossom season. ANA NH11 departs 11:30 AM from ORD and arrives 3:15 PM at NRT the next day. Hotel Gracery Shinjuku at $165 per night puts you steps from Shinjuku Station with the iconic Godzilla terrace. Your first full day covers Asakusa and Senso-ji, then Ueno Park for early sakura scouting.';
+      const words = text.split(' ');
+      const el = document.getElementById('stream-demo');
+      let i = 0;
+
+      function reset() {
+        i = 0;
+        el.innerHTML = '<span class="stream-cursor"></span>';
+        setTimeout(tick, 600);
+      }
+
+      function tick() {
+        if (i < words.length) {
+          const cursor = el.querySelector('.stream-cursor');
+          const span = document.createElement('span');
+          span.className = 'word';
+          span.style.opacity = '0';
+          span.textContent = (i > 0 ? ' ' : '') + words[i];
+          el.insertBefore(span, cursor);
+          // Trigger animation
+          requestAnimationFrame(() => {
+            span.style.opacity = '';
+            span.style.animation = 'wordReveal 0.25s ease-out forwards';
+          });
+          i++;
+          setTimeout(tick, 25);
+        } else {
+          setTimeout(reset, 4000);
+        }
+      }
+
+      reset();
+    })();
+
+    // ==============================================
+    // PARALLEL PATTERN ANIMATIONS
+    // ==============================================
+    const patTimers = { spawn: [], grid: [], float: [], ooo: [], serial: [] };
+
+    function patSchedule(group, delay, fn) {
+      patTimers[group].push(setTimeout(fn, delay));
+    }
+    function patClear(group) {
+      patTimers[group].forEach(t => clearTimeout(t));
+      patTimers[group].length = 0;
+    }
+
+    function pShow(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('visible');
+    }
+    function pComplete(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('completed');
+    }
+    function pReset(selector, parent) {
+      const root = parent ? document.getElementById(parent) : document;
+      root.querySelectorAll(selector).forEach(el => {
+        el.classList.remove('visible', 'completed');
+      });
+    }
+
+    // --- P1: Staggered Spawn ---
+    function runSpawn() {
+      patClear('spawn');
+      pReset('.p-agent-row', 'spawn-agents');
+      patSchedule('spawn', 400,  () => pShow('sp-1'));
+      patSchedule('spawn', 900,  () => pShow('sp-2'));
+      patSchedule('spawn', 1400, () => pShow('sp-3'));
+      patSchedule('spawn', 1900, () => pShow('sp-4'));
+      // Staggered completion
+      patSchedule('spawn', 4500,  () => pComplete('sp-2'));
+      patSchedule('spawn', 6000,  () => pComplete('sp-1'));
+      patSchedule('spawn', 7200,  () => pComplete('sp-4'));
+      patSchedule('spawn', 8500,  () => pComplete('sp-3'));
+      // Replay
+      patSchedule('spawn', 12000, () => runSpawn());
+    }
+    runSpawn();
+
+    // --- P2: Grid + Interleaved Log ---
+    function runGrid() {
+      patClear('grid');
+      pReset('.p-card', 'grid-cards');
+      pReset('.p-log-row', 'grid-log');
+      const synthEl = document.getElementById('grid-synth');
+      const synthSpinner = document.getElementById('grid-synth-spinner');
+      const synthLabel = document.getElementById('grid-synth-label');
+      synthEl.classList.remove('visible');
+      synthSpinner.style.display = '';
+      synthLabel.textContent = 'Synthesizing results from 3 agents...';
+      synthLabel.className = 'synthesis-label shimmer';
+      synthLabel.style.color = '';
+
+      // Cards spawn
+      patSchedule('grid', 300,  () => pShow('gc-1'));
+      patSchedule('grid', 600,  () => pShow('gc-2'));
+      patSchedule('grid', 900,  () => pShow('gc-3'));
+      // Interleaved log — agents take turns
+      patSchedule('grid', 1500, () => pShow('gl-1'));
+      patSchedule('grid', 2200, () => pShow('gl-2'));
+      patSchedule('grid', 2900, () => pShow('gl-3'));
+      // Complete first round, show second
+      patSchedule('grid', 4000, () => { pComplete('gl-1'); pShow('gl-4'); });
+      patSchedule('grid', 4700, () => { pComplete('gl-2'); pShow('gl-5'); });
+      patSchedule('grid', 5400, () => { pComplete('gl-3'); pShow('gl-6'); });
+      // Complete second round, show third
+      patSchedule('grid', 6500, () => { pComplete('gl-4'); pShow('gl-7'); pComplete('gc-1'); });
+      patSchedule('grid', 7200, () => { pComplete('gl-5'); pShow('gl-8'); });
+      patSchedule('grid', 7900, () => { pComplete('gl-6'); pShow('gl-9'); pComplete('gc-2'); });
+      // Complete third round + last card
+      patSchedule('grid', 9000, () => pComplete('gl-7'));
+      patSchedule('grid', 9500, () => pComplete('gl-8'));
+      patSchedule('grid', 10000, () => { pComplete('gl-9'); pComplete('gc-3'); });
+      // Synthesis
+      patSchedule('grid', 11000, () => synthEl.classList.add('visible'));
+      patSchedule('grid', 13500, () => {
+        synthSpinner.style.display = 'none';
+        synthLabel.textContent = 'Complete -- 3 agents, 9 tools';
+        synthLabel.className = 'synthesis-label';
+        synthLabel.style.color = 'var(--green-text)';
+      });
+      patSchedule('grid', 17000, () => runGrid());
+    }
+    runGrid();
+
+    // --- P3: Floating Panel ---
+    function runFloat() {
+      patClear('float');
+      pReset('.p-log-row', 'float-log');
+      const panel = document.getElementById('float-panel');
+      const label = document.getElementById('float-label');
+      const count = document.getElementById('float-count');
+      const spinner = document.getElementById('float-spinner');
+      panel.classList.remove('visible');
+      spinner.style.display = '';
+      let done = 0;
+      const total = 6;
+
+      function updateFloat() {
+        done++;
+        count.textContent = done + ' / ' + total;
+        label.textContent = done < total ? (total - done) + ' agents running' : 'All agents complete';
+        for (let i = 1; i <= total; i++) {
+          const dot = document.getElementById('fd-' + i);
+          dot.className = 'p-floating-dot ' + (i <= done ? 'done' : 'active');
+        }
+        if (done >= total) {
+          spinner.style.display = 'none';
+        }
+      }
+
+      // Reset dots
+      for (let i = 1; i <= total; i++) {
+        document.getElementById('fd-' + i).className = 'p-floating-dot queued';
+      }
+      count.textContent = '0 / 6';
+      label.textContent = '6 agents queued';
+
+      // Show panel + activate dots
+      patSchedule('float', 300, () => {
+        panel.classList.add('visible');
+        for (let i = 1; i <= total; i++) {
+          document.getElementById('fd-' + i).className = 'p-floating-dot active';
+        }
+        label.textContent = '6 agents running';
+      });
+      // Log rows appear
+      patSchedule('float', 800,  () => pShow('fl-1'));
+      patSchedule('float', 1500, () => pShow('fl-2'));
+      patSchedule('float', 2200, () => pShow('fl-3'));
+      patSchedule('float', 2900, () => pShow('fl-4'));
+      patSchedule('float', 3600, () => pShow('fl-5'));
+      patSchedule('float', 4300, () => pShow('fl-6'));
+      // Complete in waves
+      patSchedule('float', 5500,  () => { pComplete('fl-1'); updateFloat(); });
+      patSchedule('float', 6200,  () => { pComplete('fl-3'); updateFloat(); });
+      patSchedule('float', 7000,  () => { pComplete('fl-2'); updateFloat(); });
+      patSchedule('float', 8000,  () => { pComplete('fl-5'); updateFloat(); });
+      patSchedule('float', 9000,  () => { pComplete('fl-4'); updateFloat(); });
+      patSchedule('float', 10000, () => { pComplete('fl-6'); updateFloat(); });
+      patSchedule('float', 14000, () => runFloat());
+    }
+    runFloat();
+
+    // --- P4: Out-of-Order Completion ---
+    function runOOO() {
+      patClear('ooo');
+      const ids = ['oo-1','oo-2','oo-3','oo-4','oo-5'];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.remove('visible', 'completed');
+        document.getElementById(id + '-time').textContent = '';
+      });
+      const synthEl = document.getElementById('ooo-synth');
+      synthEl.classList.remove('visible');
+
+      const startTime = Date.now();
+      // Completion order: 2 (fast), 5 (fast), 3 (medium), 1 (slow), 4 (slow)
+      const completions = [
+        { id: 'oo-2', delay: 1500 },
+        { id: 'oo-5', delay: 2200 },
+        { id: 'oo-3', delay: 4000 },
+        { id: 'oo-1', delay: 6500 },
+        { id: 'oo-4', delay: 7500 },
+      ];
+
+      // Spawn all at once
+      patSchedule('ooo', 200, () => {
+        ids.forEach(id => pShow(id));
+      });
+
+      // Complete out of order with elapsed time
+      completions.forEach(c => {
+        patSchedule('ooo', c.delay, () => {
+          pComplete(c.id);
+          document.getElementById(c.id + '-time').textContent = ((c.delay - 200) / 1000).toFixed(1) + 's';
+        });
+      });
+
+      patSchedule('ooo', 8500, () => synthEl.classList.add('visible'));
+      patSchedule('ooo', 12000, () => runOOO());
+    }
+    runOOO();
+
+    // --- P5: Serial Handoff ---
+    function runSerial() {
+      patClear('serial');
+      ['sr-1','sr-2','sr-3','sr-4'].forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.remove('visible', 'completed');
+      });
+
+      // Research + Fact Check start in parallel
+      patSchedule('serial', 300, () => { pShow('sr-1'); pShow('sr-4'); });
+      // Research completes -> Analysis starts
+      patSchedule('serial', 3000, () => { pComplete('sr-1'); pShow('sr-2'); });
+      // Fact Check completes (parallel)
+      patSchedule('serial', 3800, () => pComplete('sr-4'));
+      // Analysis completes -> Synthesis starts
+      patSchedule('serial', 5500, () => { pComplete('sr-2'); pShow('sr-3'); });
+      // Synthesis completes
+      patSchedule('serial', 8000, () => pComplete('sr-3'));
+      patSchedule('serial', 11500, () => runSerial());
+    }
+    runSerial();
+  </script>
+</body>
+</html>
