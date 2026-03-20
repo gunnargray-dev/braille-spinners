@@ -1,0 +1,149 @@
+/* ============================================
+   Theme Layer — Design Token Integration
+   Maps Perplexity design tokens to project variables
+   ============================================ */
+
+@import url('token-colors.css');
+@import url('token-semantic-colors.css');
+@import url('token-dimensions.css');
+
+/* ===== DARK THEME ===== */
+[data-theme="dark"] {
+  /* Force dark semantic colors (bypasses prefers-color-scheme) */
+  --fg-primary: rgba(214, 213, 212, 1);
+  --fg-secondary: rgba(214, 213, 212, 0.65);
+  --fg-tertiary: rgba(214, 213, 212, 0.4);
+  --fg-inverse: rgba(23, 22, 21, 1);
+  --bg-inverse: rgba(214, 213, 212, 1);
+  --bg-soft: rgba(214, 213, 212, 0.07);
+  --bg-subtle: rgba(214, 213, 212, 0.035);
+  --bg-base: rgba(23, 22, 21, 1);
+  --bg-raised: rgba(30, 29, 28, 1);
+  --accent-fg-primary: rgba(78, 153, 163, 1);
+  --accent-fg-secondary: rgba(78, 153, 163, 0.65);
+  --accent-bg-base: rgba(78, 153, 163, 1);
+  --accent-bg-subtle: rgba(78, 153, 163, 0.055);
+  --accent-border-heavy: rgba(78, 153, 163, 1);
+  --accent-border-subtle: rgba(78, 153, 163, 0.055);
+  --border-heavy: rgba(214, 213, 212, 1);
+  --border-base: rgba(214, 213, 212, 0.14);
+  --border-soft: rgba(214, 213, 212, 0.07);
+  --border-focus: rgba(78, 153, 163, 1);
+  --positive-fg-primary: rgba(83, 158, 85, 1);
+  --positive-fg-secondary: rgba(83, 158, 85, 0.65);
+  --positive-bg-subtle: rgba(83, 158, 85, 0.055);
+  --negative-fg-primary: rgba(220, 105, 115, 1);
+  --negative-fg-secondary: rgba(220, 105, 115, 0.65);
+  --negative-bg-subtle: rgba(220, 105, 115, 0.055);
+  --warning-fg-primary: rgba(213, 113, 65, 1);
+  --warning-fg-secondary: rgba(213, 113, 65, 0.65);
+  --warning-bg-subtle: rgba(213, 113, 65, 0.055);
+
+  /* ---- Project variable aliases ---- */
+  --bg: var(--bg-base);
+  --surface: var(--bg-raised);
+  --surface-raised: var(--bg-soft);
+  --text: var(--fg-primary);
+  --text-secondary: var(--fg-secondary);
+  --text-muted: var(--fg-tertiary);
+  --border: var(--border-base);
+  --border-subtle: var(--border-soft);
+  --green: var(--positive-fg-primary);
+  --green-text: var(--garuda-dark-400);
+  --green-bg: var(--positive-bg-subtle);
+  --red: var(--negative-fg-primary);
+  --accent: var(--accent-fg-primary);
+  --blue: var(--leviathan-dark-400);
+  --blue-bg: var(--leviathan-dark-400-a-9);
+  --yellow: var(--titan-dark-400);
+  --yellow-bg: var(--titan-dark-400-a-9);
+  --purple: var(--ramuh-dark-400);
+  --purple-bg: var(--ramuh-dark-400-a-9);
+  --muted-bg: var(--bg-soft);
+
+  /* Agent palette */
+  --agent-1: var(--leviathan-dark-400);
+  --agent-2: var(--phoenix-dark-300);
+  --agent-3: var(--garuda-dark-400);
+  --agent-4: var(--ramuh-dark-400);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+  --shadow-md: 0 2px 10px rgba(0,0,0,0.18);
+  --shadow-lg: 0 6px 24px rgba(0,0,0,0.25);
+
+  /* Fonts */
+  --font-body: 'PPLX Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'PPLX Mono', 'SF Mono', monospace;
+}
+
+/* ===== LIGHT THEME ===== */
+[data-theme="light"] {
+  /* Light semantic colors are already the :root defaults from tokens,
+     but we force them here for explicit theme switching */
+  --fg-primary: rgba(39, 37, 30, 1);
+  --fg-secondary: rgba(39, 37, 30, 0.65);
+  --fg-tertiary: rgba(39, 37, 30, 0.4);
+  --fg-inverse: rgba(253, 251, 250, 1);
+  --bg-inverse: rgba(39, 37, 30, 1);
+  --bg-soft: rgba(39, 26, 0, 0.07);
+  --bg-subtle: rgba(39, 26, 0, 0.035);
+  --bg-base: rgba(250, 248, 245, 1);
+  --bg-raised: rgba(253, 251, 250, 1);
+  --accent-fg-primary: rgba(1, 106, 113, 1);
+  --accent-fg-secondary: rgba(1, 106, 113, 0.65);
+  --accent-bg-base: rgba(1, 106, 113, 1);
+  --accent-bg-subtle: rgba(1, 106, 113, 0.055);
+  --accent-border-heavy: rgba(1, 106, 113, 1);
+  --accent-border-subtle: rgba(1, 106, 113, 0.055);
+  --border-heavy: rgba(39, 37, 30, 1);
+  --border-base: rgba(39, 26, 0, 0.14);
+  --border-soft: rgba(39, 26, 0, 0.07);
+  --border-focus: rgba(1, 106, 113, 1);
+  --positive-fg-primary: rgba(1, 107, 29, 1);
+  --positive-fg-secondary: rgba(1, 107, 29, 0.65);
+  --positive-bg-subtle: rgba(1, 107, 29, 0.055);
+  --negative-fg-primary: rgba(162, 53, 68, 1);
+  --negative-fg-secondary: rgba(162, 53, 68, 0.65);
+  --negative-bg-subtle: rgba(162, 53, 68, 0.055);
+  --warning-fg-primary: rgba(151, 67, 26, 1);
+  --warning-fg-secondary: rgba(151, 67, 26, 0.65);
+  --warning-bg-subtle: rgba(151, 67, 26, 0.055);
+
+  /* ---- Project variable aliases (light) ---- */
+  --c-bg: var(--bg-base);
+  --c-surface-0: var(--bg-soft);
+  --c-surface: var(--bg-raised);
+  --c-surface-raised: var(--bg-raised);
+  --c-surface-overlay: var(--bg-raised);
+  --c-border: var(--border-base);
+  --c-border-subtle: var(--border-soft);
+  --c-text: var(--fg-primary);
+  --c-text-secondary: var(--fg-secondary);
+  --c-text-muted: var(--fg-tertiary);
+  --c-accent: var(--accent-fg-primary);
+  --c-accent-hover: var(--accent-fg-secondary);
+  --c-green: var(--positive-fg-primary);
+  --c-green-bg: var(--positive-bg-subtle);
+  --c-green-text: var(--garuda-light-600);
+  --c-red: var(--negative-fg-primary);
+  --c-red-bg: var(--negative-bg-subtle);
+  --c-red-text: var(--ifrit-light-600);
+  --c-yellow: var(--titan-light-300);
+  --c-panel-inset: var(--bg-soft);
+  --c-code-bg: var(--bg-soft);
+  --c-shimmer-base: var(--fg-tertiary);
+  --c-shimmer-peak: var(--fg-primary);
+  --c-spinner: var(--fg-secondary);
+  --c-btn-primary: var(--bg-inverse);
+  --c-btn-primary-hover: var(--fg-secondary);
+
+  /* Shadows (light) */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.025);
+  --shadow-md: 0 2px 10px rgba(0,0,0,0.035);
+  --shadow-lg: 0 6px 24px rgba(0,0,0,0.05);
+
+  /* Fonts */
+  --font-body: 'PPLX Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'PPLX Mono', 'SF Mono', monospace;
+}

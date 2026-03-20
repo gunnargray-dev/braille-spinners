@@ -41,21 +41,21 @@
 }
 
 :root {
-  --color-bg: #f6f6f9;
-  --color-text: #1a1a2e;
-  --color-text-muted: #888;
-  --color-accent: #b0b0b8;
-  --color-green: #4ade80;
+  --color-bg: var(--bg-base, #f6f6f9);
+  --color-text: var(--fg-primary, #1a1a2e);
+  --color-text-muted: var(--fg-tertiary, #888);
+  --color-accent: var(--accent-fg-primary, #b0b0b8);
+  --color-green: var(--positive-fg-primary, #4ade80);
 
-  --panel-bg: #1a1a1e;
-  --panel-text: #d4d4d8;
-  --panel-muted: #71717a;
-  --panel-border: #27272a;
+  --panel-bg: var(--bg-base, #1a1a1e);
+  --panel-text: var(--fg-primary, #d4d4d8);
+  --panel-muted: var(--fg-tertiary, #71717a);
+  --panel-border: var(--border-base, #27272a);
 
-  --light-bg: #ffffff;
-  --light-text: #18181b;
-  --light-muted: #a1a1aa;
-  --light-border: #e4e4e7;
+  --light-bg: var(--bg-raised, #ffffff);
+  --light-text: var(--fg-primary, #18181b);
+  --light-muted: var(--fg-tertiary, #a1a1aa);
+  --light-border: var(--border-base, #e4e4e7);
 
   --font-body: 'PPLX Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --tracking-body: -0.01em;
@@ -66,6 +66,8 @@ html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--font-body);
+  font-style: normal;
+  font-variation-settings: 'ital' 0, 'slnt' 0;
   letter-spacing: var(--tracking-body);
   background: var(--color-bg);
   color: var(--color-text);

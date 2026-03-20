@@ -1,0 +1,41 @@
+/**
+ * Do not edit directly, this file was auto-generated.
+ */
+
+:root {
+  --fg-primary: rgba(39, 37, 30, 1);
+  --fg-secondary: rgba(39, 37, 30, 0.65);
+  --fg-tertiary: rgba(39, 37, 30, 0.4);
+  --fg-inverse: rgba(253, 251, 250, 1);
+  --bg-inverse: rgba(39, 37, 30, 1);
+  --bg-soft: rgba(39, 26, 0, 0.07);
+  --bg-subtle: rgba(39, 26, 0, 0.035);
+  --bg-base: rgba(250, 248, 245, 1);
+  --bg-raised: rgba(253, 251, 250, 1);
+  --accent-fg-primary: rgba(1, 106, 113, 1);
+  --accent-fg-secondary: rgba(1, 106, 113, 0.65);
+  --accent-bg-base: rgba(1, 106, 113, 1);
+  --accent-bg-subtle: rgba(1, 106, 113, 0.055);
+  --accent-border-heavy: rgba(1, 106, 113, 1);
+  --accent-border-subtle: rgba(1, 106, 113, 0.055);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fg-primary: rgba(214, 213, 212, 1);
+    --fg-secondary: rgba(214, 213, 212, 0.65);
+    --fg-tertiary: rgba(214, 213, 212, 0.4);
+    --fg-inverse: rgba(23, 22, 21, 1);
+    --bg-inverse: rgba(214, 213, 212, 1);
+    --bg-soft: rgba(214, 213, 212, 0.07);
+    --bg-subtle: rgba(214, 213, 212, 0.035);
+    --bg-base: rgba(23, 22, 21, 1);
+    --bg-raised: rgba(30, 29, 28, 1);
+    --accent-fg-primary: rgba(78, 153, 163, 1);
+    --accent-fg-secondary: rgba(78, 153, 163, 0.65);
+    --accent-bg-base: rgba(78, 153, 163, 1);
+    --accent-bg-subtle: rgba(78, 153, 163, 0.055);
+    --accent-border-heavy: rgba(78, 153, 163, 1);
+    --accent-border-subtle: rgba(78, 153, 163, 0.055);
+  }
+}

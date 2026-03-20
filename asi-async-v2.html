@@ -1,36 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Async Agents v2 — Workspace</title>
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/theme.css">
   <style>
-    :root {
-      --bg: #0c0c0f;
-      --surface: #151518;
-      --surface-raised: #1c1c21;
-      --border: #2a2a32;
-      --border-subtle: #222228;
-      --text: #e0e0e6;
-      --text-secondary: #a4a4b0;
-      --text-muted: #6e6e80;
-      --green: #3dba72;
-      --green-text: #6dcea0;
-      --accent: #b8b8c0;
-      --blue: #7ca4d4;
-      --blue-bg: rgba(124,164,212,0.1);
-      --green-bg: rgba(61,186,114,0.1);
-      --muted-bg: rgba(110,110,128,0.1);
-      --yellow: #d4a84c;
-      --yellow-bg: rgba(212,168,76,0.1);
-      --purple: #b07cd4;
-      --purple-bg: rgba(176,124,212,0.08);
-      --font-body: 'PPLX Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-mono: 'PPLX Mono', 'SF Mono', monospace;
-    }
-
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    em, i, cite, dfn, var, address { font-style: normal !important; }
+    * { font-variation-settings: 'ital' 0, 'slnt' 0; }
 
     body {
       font-family: var(--font-body);
@@ -54,19 +33,18 @@
 
     /* --- Left Sidebar --- */
     .sidebar {
-      width: 300px;
-      min-width: 300px;
+      width: 280px;
+      min-width: 280px;
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      background: var(--surface);
+      background: color-mix(in srgb, var(--surface) 60%, var(--bg));
       overflow: hidden;
     }
     .sidebar-menu-bar {
       display: flex;
       align-items: center;
       padding: 0.5rem 0.75rem;
-      border-bottom: 1px solid var(--border-subtle);
     }
     .sidebar-menu-bar .menu-btn {
       width: 32px;
@@ -123,43 +101,41 @@
     }
     .sidebar-nav {
       display: flex;
-      align-items: stretch;
-      border-bottom: 1px solid var(--border-subtle);
+      flex-direction: column;
+      padding: 0.5rem 0.65rem;
+      gap: 0.1rem;
     }
     .sidebar-nav-item {
-      flex: 1;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 0.25rem;
-      padding: 0.75rem 0;
+      gap: 0.65rem;
+      padding: 0.55rem 0.75rem;
       cursor: pointer;
       border: none;
       background: none;
       color: var(--text-muted);
       font-family: var(--font-body);
-      font-size: 0.58rem;
-      font-weight: 500;
-      letter-spacing: 0.03em;
+      font-size: 0.75rem;
+      font-weight: 450;
+      letter-spacing: -0.01em;
       transition: color 0.15s ease, background 0.15s ease;
-      position: relative;
+      border-radius: 8px;
+      width: 100%;
+      text-align: left;
     }
-    .sidebar-nav-item:hover { color: var(--text-secondary); background: var(--surface-raised); }
-    .sidebar-nav-item.active { color: var(--text); }
-    .sidebar-nav-item.active::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      left: 20%; right: 20%;
-      height: 1.5px;
-      background: var(--text);
-      border-radius: 1px;
+    .sidebar-nav-item:hover {
+      color: var(--text-secondary);
+      background: var(--surface-raised);
+    }
+    .sidebar-nav-item.active {
+      color: var(--text);
+      background: var(--surface-raised);
     }
     .sidebar-nav-item svg {
-      width: 16px; height: 16px;
+      width: 18px; height: 18px;
       stroke: currentColor; fill: none;
-      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+      stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+      flex-shrink: 0;
     }
 
     /* Sidebar panels (skills, sources) */
@@ -231,9 +207,7 @@
     .panel-item-badge.connected { color: var(--green-text); background: var(--green-bg); }
     .panel-item-badge.disconnected { color: var(--text-muted); background: var(--muted-bg); }
     .panel-divider {
-      height: 1px;
-      background: var(--border-subtle);
-      margin: 0.5rem 1.15rem;
+      display: none;
     }
 
     .sidebar-header {
@@ -241,7 +215,6 @@
       align-items: center;
       justify-content: space-between;
       padding: 1.1rem 1.15rem;
-      border-bottom: 1px solid var(--border-subtle);
     }
     .sidebar-title {
       font-size: 0.72rem;
@@ -250,14 +223,6 @@
       letter-spacing: 0.06em;
       color: var(--text-muted);
     }
-    .sidebar-stats {
-      display: flex;
-      gap: 0.6rem;
-      font-family: var(--font-mono);
-      font-size: 0.62rem;
-      color: var(--text-muted);
-    }
-    .sidebar-stats .s-val { color: var(--text-secondary); font-weight: 600; }
     .sidebar-list {
       flex: 1;
       overflow-y: auto;
@@ -268,7 +233,6 @@
 
     /* Project groups */
     .project-group {
-      border-bottom: 1px solid var(--border-subtle);
     }
     .project-header {
       display: flex;
@@ -280,14 +244,16 @@
       user-select: none;
     }
     .project-header:hover { background: var(--surface-raised); }
-    .project-chevron {
-      width: 14px; height: 14px;
+    .project-folder-icon {
+      width: 15px; height: 15px;
       stroke: var(--text-muted); fill: none;
-      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-      transition: transform 0.2s ease;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
       flex-shrink: 0;
+      transition: stroke 0.15s ease;
     }
-    .project-group.collapsed .project-chevron { transform: rotate(-90deg); }
+    .project-group:not(.collapsed) .project-folder-icon {
+      stroke: var(--text-secondary);
+    }
     .project-name {
       font-size: 0.72rem;
       font-weight: 600;
@@ -296,14 +262,6 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-    }
-    .project-count {
-      font-size: 0.6rem;
-      color: var(--text-muted);
-      background: var(--muted-bg);
-      padding: 0.1rem 0.35rem;
-      border-radius: 4px;
-      font-weight: 500;
     }
     .project-tasks {
       overflow: hidden;
@@ -318,15 +276,15 @@
       display: flex;
       align-items: center;
       gap: 0.6rem;
-      padding: 0.55rem 1.15rem 0.55rem 2rem;
+      padding: 0.5rem 1rem 0.5rem 1.75rem;
       cursor: pointer;
       transition: background 0.12s ease;
       border-left: 2px solid transparent;
     }
     .task-row:hover { background: rgba(255,255,255,0.02); }
     .task-row.active {
-      background: rgba(61,186,114,0.04);
-      border-left-color: var(--green);
+      background: var(--bg-soft);
+      border-left-color: var(--accent);
     }
     .task-status-icon {
       width: 16px; height: 16px;
@@ -365,37 +323,15 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      flex: 1;
       min-width: 0;
     }
     .task-row.active .task-row-name { color: var(--text); }
-    .task-row-badge {
-      font-size: 0.55rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      padding: 0.12rem 0.4rem;
-      border-radius: 3px;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .task-row-badge.running { color: var(--blue); background: var(--blue-bg); }
-    .task-row-badge.completed { color: var(--green-text); background: var(--green-bg); }
-    .task-row-badge.queued { color: var(--text-muted); background: var(--muted-bg); }
-    .task-row-badge.new { color: var(--purple); background: var(--purple-bg); }
-    .task-row-stat {
-      font-size: 0.6rem;
-      color: var(--text-muted);
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
 
     /* Sidebar footer actions */
     .sidebar-footer {
-      border-top: 1px solid var(--border-subtle);
-      padding: 0.75rem 1.15rem;
+      padding: 0.65rem 1rem;
       display: flex;
-      gap: 0.5rem;
+      gap: 0.4rem;
     }
     .sidebar-action {
       flex: 1;
@@ -590,32 +526,42 @@
       overflow-y: auto;
       scrollbar-width: none;
       -ms-overflow-style: none;
-      padding: 1.25rem 0;
+      padding: 1.5rem 0 2rem;
     }
     .conversation::-webkit-scrollbar { display: none; }
 
     .msg {
       max-width: 720px;
       margin: 0 auto;
-      padding: 0 1.5rem;
+      padding: 0 2rem;
     }
 
     /* User message */
     .msg-user {
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.5rem;
     }
     .msg-user-label {
-      font-size: 0.62rem;
+      font-size: 0.6rem;
       font-weight: 600;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.3rem;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .msg-user-avatar {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.5rem; font-weight: 700; color: #fff;
     }
     .msg-user-text {
-      font-size: 0.88rem;
+      font-size: 0.92rem;
       color: var(--text);
-      line-height: 1.6;
+      line-height: 1.65;
       font-weight: 450;
     }
 
@@ -682,7 +628,7 @@
       grid-template-rows: 1fr; opacity: 1;
       padding-top: 0.15rem; padding-bottom: 0.4rem;
     }
-    .agent-group.completed .agent-group-body { opacity: 0.6; }
+    .agent-group.completed .agent-group-body { opacity: 0.5; }
 
     .ag-step {
       display: flex; align-items: center; gap: 0.4rem;
@@ -706,77 +652,113 @@
 
     /* Assistant message */
     .msg-assistant {
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.5rem;
     }
     .msg-assistant-label {
-      font-size: 0.62rem;
+      font-size: 0.6rem;
       font-weight: 600;
-      color: var(--blue);
+      color: var(--accent);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.35rem;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.4rem;
       display: flex;
       align-items: center;
       gap: 0.35rem;
     }
     .msg-assistant-text {
-      font-size: 0.82rem;
+      font-size: 0.85rem;
       color: var(--text-secondary);
-      line-height: 1.75;
+      line-height: 1.8;
     }
-    .msg-assistant-text p { margin-bottom: 0.6rem; }
+    .msg-assistant-text p { margin-bottom: 0.65rem; }
     .msg-assistant-text p:last-child { margin-bottom: 0; }
     .msg-assistant-text strong { color: var(--text); font-weight: 600; }
     .msg-assistant-text ul {
       padding-left: 1.2rem;
-      margin-bottom: 0.6rem;
+      margin-bottom: 0.65rem;
     }
     .msg-assistant-text li {
-      margin-bottom: 0.3rem;
-      font-size: 0.82rem;
+      margin-bottom: 0.35rem;
+      font-size: 0.85rem;
+      line-height: 1.7;
+    }
+    .msg-assistant-text li::marker {
+      color: var(--text-muted);
     }
 
     /* Source cards */
     .msg-sources {
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .sources-label {
+      font-size: 0.6rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .sources-label svg {
+      width: 12px; height: 12px;
+      stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
     }
     .sources-grid {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 0.5rem;
-      flex-wrap: wrap;
     }
     .source-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.6rem 0.75rem;
-      width: calc(50% - 0.25rem);
-      min-width: 200px;
-      transition: border-color 0.15s ease;
-      cursor: default;
+      border-radius: 10px;
+      padding: 0.65rem 0.85rem;
+      transition: border-color 0.15s ease, background 0.15s ease;
+      cursor: pointer;
     }
-    .source-card:hover { border-color: var(--text-muted); }
+    .source-card:hover {
+      border-color: var(--text-muted);
+      background: color-mix(in srgb, var(--surface) 80%, var(--bg));
+    }
+    .source-card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      margin-bottom: 0.3rem;
+    }
+    .source-card-favicon {
+      width: 14px; height: 14px;
+      border-radius: 3px;
+      background: var(--surface-raised);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.5rem;
+      flex-shrink: 0;
+    }
     .source-card-title {
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       font-weight: 500;
       color: var(--text);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      margin-bottom: 0.2rem;
+      flex: 1;
     }
     .source-card-url {
-      font-size: 0.6rem;
+      font-size: 0.58rem;
       color: var(--text-muted);
+      font-family: var(--font-mono);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       margin-bottom: 0.3rem;
     }
     .source-card-snippet {
-      font-size: 0.62rem;
+      font-size: 0.65rem;
       color: var(--text-muted);
-      line-height: 1.5;
+      line-height: 1.55;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
@@ -785,40 +767,83 @@
 
     /* Artifact card */
     .msg-artifact {
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.5rem;
     }
     .artifact-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 12px;
       overflow: hidden;
+      transition: border-color 0.15s ease;
+      cursor: pointer;
     }
+    .artifact-card:hover { border-color: var(--text-muted); }
     .artifact-header {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.6rem 0.85rem;
+      gap: 0.55rem;
+      padding: 0.7rem 0.95rem;
       border-bottom: 1px solid var(--border-subtle);
     }
-    .artifact-icon {
-      width: 16px; height: 16px;
-      stroke: var(--text-muted); fill: none;
-      stroke-width: 1.5;
+    .artifact-icon-wrap {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      background: var(--accent-bg-subtle);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
     }
+    .artifact-icon {
+      width: 14px; height: 14px;
+      stroke: var(--accent); fill: none;
+      stroke-width: 1.8;
+    }
+    .artifact-meta { flex: 1; min-width: 0; }
     .artifact-title {
-      font-size: 0.72rem;
+      font-size: 0.75rem;
+      font-weight: 550;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .artifact-subtitle {
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      margin-top: 0.05rem;
+    }
+    .artifact-open-btn {
+      font-size: 0.62rem;
       font-weight: 500;
+      color: var(--text-muted);
+      padding: 0.25rem 0.55rem;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background: none;
+      cursor: pointer;
+      transition: color 0.15s ease, border-color 0.15s ease;
+      flex-shrink: 0;
+    }
+    .artifact-open-btn:hover {
       color: var(--text-secondary);
+      border-color: var(--text-muted);
     }
     .artifact-preview {
-      padding: 0.75rem 0.85rem;
+      padding: 0.85rem 1rem;
       font-family: var(--font-mono);
-      font-size: 0.62rem;
+      font-size: 0.64rem;
       color: var(--text-muted);
-      line-height: 1.6;
-      max-height: 200px;
+      line-height: 1.65;
+      max-height: 220px;
       overflow-y: auto;
       white-space: pre;
+      scrollbar-width: none;
+      position: relative;
+    }
+    .artifact-preview::-webkit-scrollbar { display: none; }
+    .artifact-fade {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 40px;
+      background: linear-gradient(to top, var(--surface) 10%, transparent);
+      pointer-events: none;
     }
 
     /* =============================================
@@ -861,266 +886,1024 @@
     .view-toggle-spacer { flex: 1; }
 
     /* =============================================
-       CANVAS VIEW
+       CANVAS VIEW — Artifact Workspace
        ============================================= */
     .canvas-view {
       flex: 1;
       position: relative;
       overflow: hidden;
       display: none;
+      flex-direction: column;
     }
     .canvas-view.visible { display: flex; }
 
-    .canvas-area {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* SVG lines layer */
-    .canvas-lines {
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      pointer-events: none;
-    }
-    .canvas-line {
-      stroke-width: 1.2;
-      fill: none;
-      transition: stroke 0.3s ease, stroke-width 0.3s ease, opacity 0.3s ease;
-    }
-    .canvas-line.connected {
-      stroke: var(--green);
-      opacity: 0.35;
-    }
-    .canvas-line.active {
-      stroke: var(--green);
-      opacity: 0.7;
-      stroke-width: 1.8;
-      stroke-dasharray: 6 4;
-      animation: dashFlow 1.2s linear infinite;
-    }
-    .canvas-line.disconnected {
-      stroke: var(--text-muted);
-      opacity: 0.12;
-      stroke-dasharray: 3 5;
-    }
-    @keyframes dashFlow {
-      to { stroke-dashoffset: -20; }
-    }
-
-    /* Nodes layer */
-    .canvas-nodes {
-      position: absolute;
-      inset: 0;
-      z-index: 2;
-    }
-
-    /* Central agent node */
-    .canvas-center-node {
-      position: absolute;
+    /* Artifact toolbar */
+    .artifact-toolbar {
       display: flex;
-      flex-direction: column;
       align-items: center;
       gap: 0.5rem;
-      transform: translate(-50%, -50%);
-      z-index: 3;
-    }
-    .center-node-circle {
-      width: 72px; height: 72px;
-      border-radius: 50%;
-      background: var(--surface-raised);
-      border: 2px solid var(--green);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-    .center-node-circle svg {
-      width: 28px; height: 28px;
-      stroke: var(--green);
-      fill: none;
-      stroke-width: 1.5;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-    .center-node-glow {
-      position: absolute;
-      inset: -8px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(61,186,114,0.15) 0%, transparent 70%);
-      animation: nodePulse 3s ease-in-out infinite;
-    }
-    @keyframes nodePulse {
-      0%, 100% { opacity: 0.4; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.12); }
-    }
-    .center-node-label {
-      font-size: 0.68rem;
-      font-weight: 600;
-      color: var(--text);
-      letter-spacing: 0.02em;
-    }
-
-    /* Service nodes */
-    .canvas-service-node {
-      position: absolute;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.35rem;
-      transform: translate(-50%, -50%);
-      transition: opacity 0.3s ease;
-      cursor: default;
-    }
-    .canvas-service-node.disconnected { opacity: 0.35; }
-    .service-node-circle {
-      width: 44px; height: 44px;
-      border-radius: 50%;
-      background: var(--surface);
-      border: 1.5px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-      transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-    .canvas-service-node.connected .service-node-circle {
-      border-color: rgba(61,186,114,0.3);
-    }
-    .canvas-service-node.active .service-node-circle {
-      border-color: var(--green);
-      box-shadow: 0 0 12px rgba(61,186,114,0.2);
-    }
-    .service-node-label {
-      font-size: 0.55rem;
-      font-weight: 500;
-      color: var(--text-muted);
-      white-space: nowrap;
-      letter-spacing: 0.02em;
-    }
-    .canvas-service-node.active .service-node-label {
-      color: var(--text-secondary);
-    }
-
-    /* Activity Feed */
-    .activity-feed {
-      width: 260px;
-      min-width: 260px;
-      border-left: 1px solid var(--border-subtle);
-      background: var(--surface);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .activity-feed-header {
-      padding: 0.85rem 1rem;
-      font-size: 0.62rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-muted);
+      padding: 0.5rem 1rem;
       border-bottom: 1px solid var(--border-subtle);
+      background: var(--surface);
+      min-height: 40px;
     }
-    .activity-feed-body {
-      flex: 1;
-      overflow-y: auto;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-    .activity-feed-body::-webkit-scrollbar { display: none; }
-    .activity-section-title {
-      padding: 0.7rem 1rem 0.3rem;
-      font-size: 0.58rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-muted);
-    }
-    .activity-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.55rem;
-      padding: 0.55rem 1rem;
-      cursor: pointer;
-      transition: background 0.12s ease;
-    }
-    .activity-item:hover { background: rgba(255,255,255,0.02); }
-    .activity-item-icon {
-      width: 16px; height: 16px;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-    .activity-item-icon .spinner-char {
-      font-size: 0.68rem;
-      color: var(--blue);
-    }
-    .activity-item-icon .check-icon {
-      font-size: 0.65rem;
-      color: var(--green);
-    }
-    .activity-item-body {
+    .artifact-toolbar-title {
+      font-size: 0.75rem;
+      font-weight: 550;
+      color: var(--text);
       flex: 1;
       min-width: 0;
-    }
-    .activity-item-name {
-      font-size: 0.7rem;
-      font-weight: 450;
-      color: var(--text);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      line-height: 1.3;
     }
-    .activity-item-meta {
+    .artifact-toolbar-type {
+      font-size: 0.58rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--muted-bg);
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .artifact-toolbar-actions {
+      display: flex;
+      gap: 2px;
+    }
+    .artifact-toolbar-btn {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: none;
+      color: var(--text-muted); cursor: pointer;
+      border-radius: 5px;
+      transition: background 0.12s ease, color 0.12s ease;
+    }
+    .artifact-toolbar-btn:hover {
+      background: var(--surface-raised);
+      color: var(--text-secondary);
+    }
+    .artifact-toolbar-btn svg {
+      width: 14px; height: 14px;
+      stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .artifact-toolbar-divider {
+      width: 1px;
+      height: 16px;
+      background: var(--border);
+      margin: 0 0.25rem;
+    }
+    .artifact-toolbar-version {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .artifact-toolbar-version-btn {
+      width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: 1px solid var(--border);
+      color: var(--text-muted); cursor: pointer;
+      border-radius: 5px;
+      font-size: 0.7rem;
+      transition: background 0.12s ease, color 0.12s ease;
+    }
+    .artifact-toolbar-version-btn:hover {
+      background: var(--surface-raised); color: var(--text-secondary);
+    }
+    .artifact-toolbar-version-btn:disabled {
+      opacity: 0.3; cursor: default;
+    }
+    .artifact-toolbar-version-label {
+      font-size: 0.6rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      min-width: 32px;
+      text-align: center;
+    }
+
+    /* Artifact rendering area */
+    .artifact-workspace {
+      flex: 1;
+      overflow: auto;
+      scrollbar-width: none;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2.5rem 2rem 3rem;
+      background: var(--bg);
+      background-image:
+        radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--surface) 30%, transparent) 0%, transparent 50%);
+    }
+    .artifact-workspace::-webkit-scrollbar { display: none; }
+
+    /* Document artifact */
+    .artifact-doc {
+      width: 100%;
+      max-width: 680px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2.75rem 3rem 3.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 8px 40px rgba(0,0,0,0.18);
+      min-height: 500px;
+    }
+    .artifact-doc h1 {
+      font-size: 1.4rem;
+      font-weight: 650;
+      color: var(--text);
+      letter-spacing: -0.03em;
+      line-height: 1.3;
+      margin-bottom: 0.35rem;
+    }
+    .artifact-doc .doc-subtitle {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 1.75rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .artifact-doc h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      margin: 1.5rem 0 0.5rem;
+    }
+    .artifact-doc h3 {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin: 1.1rem 0 0.4rem;
+    }
+    .artifact-doc p {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.75;
+      margin-bottom: 0.65rem;
+    }
+    .artifact-doc ul, .artifact-doc ol {
+      padding-left: 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+    .artifact-doc li {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 0.3rem;
+    }
+    .artifact-doc li::marker { color: var(--text-muted); }
+    .artifact-doc strong { color: var(--text); font-weight: 600; }
+    .artifact-doc em { color: var(--text-muted); font-style: normal; }
+    .artifact-doc .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.85rem 0 1.25rem;
+      font-size: 0.75rem;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .artifact-doc .doc-table th {
+      text-align: left;
+      font-weight: 600;
+      color: var(--text);
+      padding: 0.55rem 0.75rem;
+      background: var(--bg-soft);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .artifact-doc .doc-table td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+    }
+    .artifact-doc .doc-table tr:last-child td { border-bottom: none; }
+    .artifact-doc .doc-table tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--bg-soft) 50%, transparent); }
+    .artifact-doc .doc-table tr:hover td { background: var(--accent-bg-subtle); }
+    .artifact-doc .doc-callout {
+      padding: 0.85rem 1.1rem;
+      border-left: 3px solid var(--accent);
+      background: var(--accent-bg-subtle);
+      border-radius: 0 10px 10px 0;
+      margin: 1rem 0;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+    .artifact-doc .doc-stat-row {
+      display: flex;
+      gap: 0.75rem;
+      margin: 1.25rem 0 1.5rem;
+    }
+    .artifact-doc .doc-stat {
+      flex: 1;
+      background: var(--bg-soft);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      text-align: center;
+    }
+    .artifact-doc .doc-stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.03em;
+    }
+    .artifact-doc .doc-stat-label {
       font-size: 0.58rem;
       color: var(--text-muted);
-      margin-top: 0.1rem;
+      margin-top: 0.2rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    /* Slide deck artifact */
+    .artifact-slides {
+      width: 100%;
+      max-width: 780px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .slide {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      aspect-ratio: 16 / 9;
+      padding: 2.75rem 3.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 8px 40px rgba(0,0,0,0.18);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+    .slide::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 40%, var(--purple)));
+    }
+    .slide-number {
+      position: absolute;
+      bottom: 0.85rem;
+      right: 1.25rem;
+      font-size: 0.58rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+    .slide-title {
+      font-size: 1.4rem;
+      font-weight: 650;
+      color: var(--text);
+      letter-spacing: -0.03em;
+      line-height: 1.25;
+      margin-bottom: 0.5rem;
+    }
+    .slide-subtitle {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: auto;
+      line-height: 1.5;
+    }
+    .slide-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .slide-body h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.85rem;
+    }
+    .slide-body p {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 0.5rem;
+    }
+    .slide-body ul {
+      padding-left: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+    .slide-body li {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      line-height: 1.9;
+      margin-bottom: 0.15rem;
+    }
+    .slide-body li::marker { color: var(--text-muted); }
+    .slide-body strong { color: var(--text); font-weight: 600; }
+    .slide-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+    .slide-col {
+      padding: 0.75rem;
+      background: var(--bg-soft);
+      border-radius: 8px;
+    }
+    .slide-col h3 {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .slide-col p, .slide-col li {
+      font-size: 0.72rem;
+    }
+    .slide-col ul {
+      padding-left: 1rem;
+    }
+    .slide-big-number {
+      font-size: 2.6rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+    .slide-big-label {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .slide-stats {
+      display: flex;
+      gap: 2.5rem;
+      margin-top: 1rem;
+    }
+    .slide-stat-item {
+      text-align: center;
+      flex: 1;
+    }
+
+    /* Spreadsheet artifact */
+    .artifact-spreadsheet {
+      width: 100%;
+      max-width: 880px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 8px 40px rgba(0,0,0,0.18);
+    }
+    .sheet-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: color-mix(in srgb, var(--surface) 70%, var(--bg));
+    }
+    .sheet-tab {
+      padding: 0.45rem 1rem;
+      font-size: 0.65rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      border-right: 1px solid var(--border-subtle);
+      cursor: pointer;
+    }
+    .sheet-tab.active {
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 600;
+    }
+    .sheet-grid {
+      display: grid;
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+    }
+    .sheet-header-row {
+      display: contents;
+    }
+    .sheet-header-row .sheet-cell {
+      background: color-mix(in srgb, var(--surface) 60%, var(--bg));
+      font-weight: 600;
+      color: var(--text);
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      font-family: var(--font-body);
+      position: sticky;
+      top: 0;
+    }
+    .sheet-row {
+      display: contents;
+    }
+    .sheet-row:hover .sheet-cell {
+      background: color-mix(in srgb, var(--accent-bg-subtle) 50%, var(--surface));
+    }
+    .sheet-cell {
+      padding: 0.45rem 0.75rem;
+      border-bottom: 1px solid var(--border-subtle);
+      border-right: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sheet-cell:last-child { border-right: none; }
+    .sheet-cell.row-num {
+      color: var(--text-muted);
+      text-align: center;
+      background: color-mix(in srgb, var(--surface) 60%, var(--bg));
+      font-size: 0.58rem;
+      min-width: 32px;
+      font-family: var(--font-body);
+    }
+    .sheet-cell.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .sheet-cell.positive { color: var(--green); }
+    .sheet-cell.negative { color: var(--red); }
+    .sheet-cell.bold { font-weight: 600; color: var(--text); }
+    .sheet-formula-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.65rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.62rem;
+      color: var(--text-muted);
+    }
+    .sheet-formula-label {
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+      background: color-mix(in srgb, var(--surface) 60%, var(--bg));
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      border: 1px solid var(--border-subtle);
+    }
+    .sheet-formula-text {
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+
+    /* Website artifact */
+    .artifact-website {
+      width: 100%;
+      max-width: none;
+      background: #141414;
+      border: none;
+      border-radius: 0;
+      overflow: auto;
+      box-shadow: none;
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+    }
+    /* Override workspace padding when showing website */
+    .artifact-workspace:has(.artifact-website) {
+      padding: 0;
+    }
+    .browser-chrome {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.6rem 0.85rem;
+      background: color-mix(in srgb, var(--surface) 70%, var(--bg));
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .browser-dots {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .browser-dot {
+      width: 11px; height: 11px;
+      border-radius: 50%;
+    }
+    .browser-dot.red { background: #ff5f57; }
+    .browser-dot.yellow { background: #febc2e; }
+    .browser-dot.green { background: #28c840; }
+    .browser-nav-btns {
+      display: flex;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+    .browser-nav-btn {
+      width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: none;
+      color: var(--text-muted); cursor: default;
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+    .browser-url {
+      flex: 1;
+      background: var(--bg-soft);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.65rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
       display: flex;
       align-items: center;
       gap: 0.4rem;
     }
-    .activity-item-services {
-      display: flex;
-      gap: 0.2rem;
+    .browser-url-lock {
       font-size: 0.6rem;
+      opacity: 0.5;
     }
-    .activity-divider {
-      height: 1px;
-      background: var(--border-subtle);
-      margin: 0.3rem 1rem;
+    .browser-viewport {
+      height: 540px;
+      background: #141414;
+      overflow: hidden;
     }
-
-    /* Zoom controls */
-    .canvas-zoom {
-      position: absolute;
-      bottom: 1rem;
-      left: 1rem;
+    .browser-viewport iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    /* Rendered website content — dark mode */
+    .site-nav {
       display: flex;
-      gap: 1px;
-      z-index: 5;
-      background: var(--surface);
-      border: 1px solid var(--border);
+      align-items: center;
+      gap: 1.5rem;
+      padding: 0.65rem 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: #141414;
+    }
+    .site-nav-brand {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #e8e8e6;
+      letter-spacing: -0.02em;
+    }
+    .site-nav-links {
+      display: flex;
+      gap: 1rem;
+    }
+    .site-nav-links a {
+      font-size: 0.68rem;
+      color: #777;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .site-hero {
+      padding: 3.5rem 2.5rem;
+      text-align: center;
+      background: linear-gradient(135deg, #0d2626, #141414);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .site-hero h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #e8e8e6;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+    }
+    .site-hero p {
+      font-size: 0.82rem;
+      color: #999;
+      max-width: 420px;
+      margin: 0 auto;
+      line-height: 1.65;
+    }
+    .site-hero-btn {
+      display: inline-block;
+      margin-top: 1.25rem;
+      padding: 0.55rem 1.4rem;
+      background: #0a7a7a;
+      color: #fff;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-decoration: none;
+      letter-spacing: -0.01em;
+    }
+    .site-features {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.5rem;
+      padding: 2rem 1.5rem;
+      background: #141414;
+    }
+    .site-feature {
+      text-align: center;
+      padding: 1.15rem 0.75rem;
+      border-radius: 10px;
+      transition: background 0.15s ease;
+    }
+    .site-feature:hover { background: rgba(255,255,255,0.03); }
+    .site-feature-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: rgba(10,122,122,0.15);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 0.6rem;
+      font-size: 1.1rem;
+    }
+    .site-feature h3 {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #e8e8e6;
+      margin-bottom: 0.3rem;
+    }
+    .site-feature p {
+      font-size: 0.65rem;
+      color: #777;
+      line-height: 1.55;
+    }
+    .site-section {
+      padding: 2.5rem 2rem;
+      background: #141414;
+    }
+    .site-section h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #e8e8e6;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.3rem;
+    }
+    .site-section-sub {
+      font-size: 0.78rem;
+      color: #777;
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .site-timeline {
+      border-left: 2px solid rgba(255,255,255,0.08);
+      margin-left: 0.5rem;
+      padding-left: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .site-tl-item {
+      position: relative;
+    }
+    .site-tl-item::before {
+      content: '';
+      position: absolute;
+      left: -1.85rem;
+      top: 0.35rem;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #0a7a7a;
+      border: 2px solid #141414;
+    }
+    .site-tl-date {
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: #0a7a7a;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.2rem;
+    }
+    .site-tl-body {
+      font-size: 0.75rem;
+      color: #999;
+      line-height: 1.65;
+    }
+    .site-tl-body strong { color: #e8e8e6; }
+    .site-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.72rem;
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 8px;
       overflow: hidden;
     }
-    .canvas-zoom-btn {
-      width: 32px; height: 32px;
+    .site-table th {
+      text-align: left;
+      font-weight: 600;
+      color: #e8e8e6;
+      padding: 0.6rem 0.75rem;
+      background: rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      font-size: 0.65rem;
+    }
+    .site-table td {
+      padding: 0.55rem 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: #999;
+    }
+    .site-table td strong { color: #e8e8e6; font-weight: 600; }
+    .site-table tr:last-child td { border-bottom: none; }
+    .site-table tbody tr:hover td { background: rgba(255,255,255,0.03); }
+    .site-enforcement-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    .site-enforcement-card {
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 1rem 1.15rem;
+      background: rgba(255,255,255,0.02);
+    }
+    .site-enforcement-tag {
+      display: inline-block;
+      font-size: 0.55rem;
+      font-weight: 600;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.45rem;
+    }
+    .site-enforcement-card h4 {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #e8e8e6;
+      margin-bottom: 0.3rem;
+    }
+    .site-enforcement-card p {
+      font-size: 0.68rem;
+      color: #888;
+      line-height: 1.55;
+      margin-bottom: 0.4rem;
+    }
+    .site-enforcement-date {
+      font-size: 0.58rem;
+      color: #666;
+      font-weight: 500;
+    }
+    .site-footer {
+      padding: 1.5rem 2rem;
+      text-align: center;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      background: #111;
+    }
+    .site-footer p {
+      font-size: 0.62rem;
+      color: #555;
+    }
+
+    /* Canvas prompt bar */
+    .canvas-prompt {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 0 1.25rem 0.85rem;
+      padding-top: 4rem;
+      background: linear-gradient(to bottom, transparent, var(--bg) 70%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 5;
+      pointer-events: none;
+    }
+    .canvas-prompt > * {
+      pointer-events: auto;
+    }
+    .canvas-view:has(.artifact-website) .canvas-prompt {
+      background: linear-gradient(to bottom, transparent, #141414 70%);
+    }
+    /* Make canvas-view the positioning parent */
+    .canvas-view { position: relative; }
+    .canvas-prompt-inner {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 0.55rem 0.65rem 0.55rem 1rem;
+      max-width: 680px;
+      width: 100%;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .canvas-prompt-inner:focus-within {
+      border-color: var(--border-base);
+      box-shadow: 0 0 0 1px var(--border-soft);
+    }
+    .canvas-prompt-input {
+      flex: 1;
+      background: none; border: none;
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      color: var(--text);
+      outline: none;
+      letter-spacing: -0.01em;
+    }
+    .canvas-prompt-input::placeholder { color: var(--text-muted); }
+    .canvas-prompt-send {
+      width: 30px; height: 30px;
       display: flex; align-items: center; justify-content: center;
-      background: none;
-      border: none;
+      background: var(--text); border: none; border-radius: 50%;
+      cursor: pointer; transition: opacity 0.15s ease; flex-shrink: 0;
+    }
+    .canvas-prompt-send:hover { opacity: 0.8; }
+    .canvas-prompt-send svg {
+      width: 14px; height: 14px;
+      stroke: var(--bg); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    /* Selectable artifact elements */
+    .artifact-selectable {
+      cursor: pointer;
+      position: relative;
+      transition: outline 0.15s ease, outline-offset 0.15s ease;
+      outline: 2px solid transparent;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+    .artifact-selectable:hover {
+      outline-color: color-mix(in srgb, var(--accent) 35%, transparent);
+    }
+    .artifact-selectable.selected {
+      outline-color: var(--accent);
+      background: var(--accent-bg-subtle);
+    }
+    /* Website version */
+    .artifact-website .artifact-selectable:hover {
+      outline-color: rgba(10,122,122,0.4);
+    }
+    .artifact-website .artifact-selectable.selected {
+      outline-color: #0a7a7a;
+      background: rgba(10,122,122,0.1);
+    }
+
+    /* Spreadsheet row selection — rows use display:contents so style cells */
+    .sheet-row.artifact-selectable:hover .sheet-cell {
+      outline: none;
+      background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+    }
+    .sheet-row.artifact-selectable.selected .sheet-cell {
+      background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+    }
+    .sheet-row.artifact-selectable {
+      outline: none;
+    }
+
+    /* Context chips above prompt */
+    .canvas-prompt-context {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      max-width: 680px;
+      width: 100%;
+      margin-bottom: 0.4rem;
+    }
+    .canvas-prompt-context:empty {
+      display: none;
+    }
+    .context-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      background: var(--accent-bg-subtle);
+      border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+      border-radius: 6px;
+      padding: 0.3rem 0.45rem 0.3rem 0.6rem;
+      font-size: 0.62rem;
+      color: var(--text-secondary);
+      max-width: 280px;
+      animation: chipIn 0.2s ease;
+    }
+    @keyframes chipIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .context-chip-label {
+      font-weight: 600;
+      color: var(--accent);
+      flex-shrink: 0;
+      font-size: 0.58rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .context-chip-text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+    .context-chip-close {
+      width: 16px; height: 16px;
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: none;
       color: var(--text-muted);
       cursor: pointer;
-      font-size: 0.8rem;
+      border-radius: 3px;
+      font-size: 0.65rem;
+      flex-shrink: 0;
       transition: background 0.12s ease, color 0.12s ease;
     }
-    .canvas-zoom-btn:hover {
-      background: var(--surface-raised);
+    .context-chip-close:hover {
+      background: color-mix(in srgb, var(--accent) 15%, transparent);
+      color: var(--text);
+    }
+
+    /* Updating overlay with chain-of-thought */
+    .artifact-updating {
+      position: absolute;
+      inset: 0;
+      background: color-mix(in srgb, var(--bg) 70%, transparent);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .artifact-updating.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .artifact-updating-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+      width: 340px;
+      max-width: 90%;
+    }
+    .artifact-updating-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.85rem;
+    }
+    .artifact-updating-header .spinner-char {
+      font-size: 0.85rem;
+      color: var(--accent);
+    }
+    .artifact-updating-title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .artifact-updating-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+      margin-left: 0.15rem;
+      padding-left: 1rem;
+      border-left: 1.5px solid var(--border);
+    }
+    .artifact-cot-step {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      padding: 0.2rem 0;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.35s ease, transform 0.35s ease, color 0.35s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .artifact-cot-step.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .artifact-cot-step.active {
       color: var(--text-secondary);
     }
-    .canvas-zoom-btn + .canvas-zoom-btn {
-      border-left: 1px solid var(--border);
+    .artifact-cot-step.completed {
+      color: var(--text-muted);
+      opacity: 0.5;
+    }
+    .artifact-cot-icon {
+      width: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .artifact-cot-icon .spinner-char {
+      font-size: 0.62rem;
+      color: var(--accent);
+    }
+    .artifact-cot-icon .check {
+      font-size: 0.62rem;
+      color: var(--green);
+    }
+    .artifact-updating-progress {
+      margin-top: 0.85rem;
+      height: 2px;
+      background: var(--border);
+      border-radius: 1px;
+      overflow: hidden;
+    }
+    .artifact-updating-progress-bar {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 1px;
+      width: 0%;
+      transition: width 0.4s ease;
     }
 
     /* Streaming text animation */
@@ -1148,34 +1931,65 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 0.4rem;
+      gap: 0.5rem;
       padding: 2rem;
     }
+    .conv-empty-icon {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      background: var(--accent-bg-subtle);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 0.25rem;
+    }
+    .conv-empty-icon svg {
+      width: 20px; height: 20px;
+      stroke: var(--accent); fill: none;
+      stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+    }
     .conv-empty-heading {
-      font-size: 1rem;
+      font-size: 1.05rem;
       font-weight: 600;
       color: var(--text);
+      letter-spacing: -0.02em;
     }
     .conv-empty-sub {
       font-size: 0.78rem;
       color: var(--text-muted);
+      max-width: 280px;
+      text-align: center;
+      line-height: 1.5;
     }
 
     /* --- Chat Input Bar --- */
     .chat-input-bar {
-      border-top: 1px solid var(--border-subtle);
-      padding: 0.65rem 1.25rem;
+      padding: 0.5rem 1.25rem 0.85rem;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+    }
+    .chat-input-inner {
       display: flex;
       align-items: center;
       gap: 0.6rem;
       background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 0.55rem 0.65rem 0.55rem 1rem;
+      max-width: 720px;
+      margin: 0 auto;
+      width: 100%;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .chat-input-inner:focus-within {
+      border-color: var(--border-base);
+      box-shadow: 0 0 0 1px var(--border-soft);
     }
     .model-badge {
-      font-size: 0.6rem;
+      font-size: 0.58rem;
       font-weight: 600;
-      color: var(--purple);
-      background: var(--purple-bg);
-      padding: 0.2rem 0.5rem;
+      color: var(--accent);
+      background: var(--accent-bg-subtle);
+      padding: 0.18rem 0.45rem;
       border-radius: 4px;
       white-space: nowrap;
       flex-shrink: 0;
@@ -1186,25 +2000,44 @@
       background: none;
       border: none;
       font-family: var(--font-body);
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       color: var(--text);
       outline: none;
+      letter-spacing: -0.01em;
     }
     .chat-input::placeholder { color: var(--text-muted); }
     .chat-send {
-      width: 28px; height: 28px;
+      width: 30px; height: 30px;
       display: flex; align-items: center; justify-content: center;
-      background: #fff;
-      border: none; border-radius: 6px;
+      background: var(--text);
+      border: none; border-radius: 50%;
       cursor: pointer;
       transition: opacity 0.15s ease;
       flex-shrink: 0;
     }
-    .chat-send:hover { opacity: 0.85; }
+    .chat-send:hover { opacity: 0.8; }
     .chat-send svg {
       width: 14px; height: 14px;
       stroke: var(--bg); fill: none;
       stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .chat-input-meta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding-top: 0.35rem;
+      font-size: 0.58rem;
+      color: var(--text-muted);
+    }
+    .chat-input-meta kbd {
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 3px;
+      padding: 0.08rem 0.3rem;
+      color: var(--text-muted);
     }
   </style>
 </head>
@@ -1232,27 +2065,27 @@
         </div>
       </div>
       <div class="sidebar-nav" id="sidebar-nav">
+        <button class="sidebar-nav-item" id="nav-new-task">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Task
+        </button>
         <button class="sidebar-nav-item active" data-panel="files">
           <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           Files
         </button>
-        <button class="sidebar-nav-item" data-panel="skills">
-          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-          Skills
-        </button>
         <button class="sidebar-nav-item" data-panel="sources">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          Sources
+          <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          Connectors
+        </button>
+        <button class="sidebar-nav-item" data-panel="skills">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Skills
         </button>
       </div>
       <!-- FILES PANEL (default) -->
       <div class="sidebar-panel visible" id="panel-files">
         <div class="sidebar-header">
           <span class="sidebar-title">Projects</span>
-          <div class="sidebar-stats">
-            <span><span class="s-val" id="stat-running">5</span> running</span>
-            <span><span class="s-val" id="stat-done">3</span> done</span>
-          </div>
         </div>
         <div class="sidebar-list" id="sidebar-list"></div>
         <div class="sidebar-footer">
@@ -1476,7 +2309,7 @@
       <div class="view-toggle-bar" id="view-toggle-bar">
         <div class="view-toggle">
           <button class="view-toggle-btn active" data-view="workspace">Workspace</button>
-          <button class="view-toggle-btn" data-view="canvas">Canvas</button>
+          <button class="view-toggle-btn" data-view="canvas">Artifact</button>
         </div>
         <div class="view-toggle-spacer"></div>
         <!-- Tab items injected here when in workspace mode -->
@@ -1485,31 +2318,60 @@
       <div class="tab-bar" id="tab-bar" style="display:none;"></div>
       <div class="conversation" id="conversation"></div>
 
-      <!-- CANVAS VIEW -->
+      <!-- CANVAS VIEW — Artifact Workspace -->
       <div class="canvas-view" id="canvas-view">
-        <div class="canvas-area" id="canvas-area">
-          <svg class="canvas-lines" id="canvas-lines"></svg>
-          <div class="canvas-nodes" id="canvas-nodes"></div>
-          <div class="canvas-zoom">
-            <button class="canvas-zoom-btn">&#x2212;</button>
-            <button class="canvas-zoom-btn">&#x2b;</button>
-            <button class="canvas-zoom-btn">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
-            </button>
+        <div class="artifact-toolbar" id="artifact-toolbar">
+          <span class="artifact-toolbar-title" id="artifact-toolbar-title">EV Market Analysis 2024</span>
+          <div class="artifact-toolbar-version">
+            <button class="artifact-toolbar-version-btn" id="artifact-ver-prev" disabled>&#x2039;</button>
+            <span class="artifact-toolbar-version-label" id="artifact-ver-label">v3</span>
+            <button class="artifact-toolbar-version-btn" id="artifact-ver-next" disabled>&#x203A;</button>
+          </div>
+          <div class="artifact-toolbar-divider"></div>
+          <div class="artifact-toolbar-actions">
+            <button class="artifact-toolbar-btn" title="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+            <button class="artifact-toolbar-btn" title="Download"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+            <button class="artifact-toolbar-btn" title="Expand"><svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
           </div>
         </div>
-        <div class="activity-feed" id="activity-feed">
-          <div class="activity-feed-header">Activity</div>
-          <div class="activity-feed-body" id="activity-feed-body"></div>
+        <div class="artifact-workspace" id="artifact-workspace" style="position:relative;">
+          <div class="artifact-doc" id="artifact-doc"></div>
+          <div class="artifact-updating" id="artifact-updating">
+            <div class="artifact-updating-card">
+              <div class="artifact-updating-header">
+                <span class="spinner-char">&#x280B;</span>
+                <span class="artifact-updating-title" id="artifact-updating-title">Editing artifact...</span>
+              </div>
+              <div class="artifact-updating-steps" id="artifact-updating-steps"></div>
+              <div class="artifact-updating-progress">
+                <div class="artifact-updating-progress-bar" id="artifact-updating-progress"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="canvas-prompt">
+          <div class="canvas-prompt-context" id="canvas-prompt-context"></div>
+          <div class="canvas-prompt-inner">
+            <input type="text" class="canvas-prompt-input" id="canvas-prompt-input" placeholder="Iterate on this artifact..." autocomplete="off">
+            <button class="canvas-prompt-send" id="canvas-prompt-send">
+              <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </div>
         </div>
       </div>
 
       <div class="chat-input-bar">
-        <span class="model-badge">Sonnet 4.5</span>
-        <input type="text" class="chat-input" id="chat-input" placeholder="Ask a follow-up..." autocomplete="off">
-        <button class="chat-send" id="chat-send">
-          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        </button>
+        <div class="chat-input-inner">
+          <span class="model-badge">Sonnet 4.5</span>
+          <input type="text" class="chat-input" id="chat-input" placeholder="Ask a follow-up..." autocomplete="off">
+          <button class="chat-send" id="chat-send">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+        <div class="chat-input-meta">
+          <span><kbd>Enter</kbd> to send</span>
+          <span><kbd>Shift+Enter</kbd> new line</span>
+        </div>
       </div>
     </div>
   </div>
@@ -1558,7 +2420,7 @@
             startTime: now - 480000,
             messages: [
               { type: 'user', text: 'Analyze global EV market share trends over the past 3 years, broken down by region and manufacturer.' },
-              { type: 'thinking', label: 'Research', task: 'Analyzing global EV market data', lines: ['Searching for global EV sales data from 2021\u20132024', 'Pulling IEA Global EV Outlook datasets', 'Cross-referencing with BloombergNEF and CleanTechnica reports', 'Comparing BYD, Tesla, VW Group, Hyundai-Kia, Stellantis', 'Regional breakdown: China, Europe, North America, Rest of World', 'Calculating YoY growth rates and market share shifts'], collapsed: true, done: true },
+              { type: 'thinking', label: 'Deep Research', task: 'Analyzed 24 sources across IEA, Bloomberg, and industry reports', lines: ['Searching IEA Global EV Outlook and OICA datasets for 2021\u20132024', 'Pulling BloombergNEF Electric Vehicle Outlook quarterly reports', 'Cross-referencing CleanTechnica delivery tracker with OEM filings', 'Comparing BYD, Tesla, VW Group, Hyundai-Kia, Stellantis by region', 'Regional segmentation: China, EU27+UK, North America, SE Asia, RoW', 'Calculating compound annual growth rates and market share shifts', 'Normalizing PHEV vs BEV figures across different reporting standards'], collapsed: true, done: true },
               { type: 'assistant', html: '<p><strong>Key findings on global EV market share (2021-2024):</strong></p><ul><li><strong>BYD overtook Tesla</strong> as the world\'s largest EV seller in Q4 2023, selling 526k vehicles vs Tesla\'s 484k in that quarter alone.</li><li><strong>China dominates</strong> with 60% of global EV sales. The domestic market is intensely competitive with BYD, NIO, Li Auto, and XPeng leading.</li><li><strong>European adoption</strong> hit 24% of new car sales in 2024, led by Norway (90%), Sweden (54%), and Germany (23%).</li><li><strong>US market</strong> grew 47% YoY but still represents only 9.2% of new car sales. Tesla holds 51% US EV share, down from 65% in 2022.</li><li><strong>Global total:</strong> 14.2M EVs sold in 2024, up from 10.5M in 2023, representing 18% of all new car sales.</li></ul><p>The market is rapidly shifting from a Tesla-dominated landscape to a multi-polar competition, with Chinese manufacturers increasingly exporting to Southeast Asia, Latin America, and Europe.</p>' },
               { type: 'sources', items: [
                 { title: 'IEA Global EV Outlook 2024', url: 'iea.org/reports/global-ev-outlook-2024', snippet: 'Electric car sales neared 14 million in 2024, with China accounting for around 60% of global sales.' },
@@ -1576,7 +2438,7 @@
             startTime: now - 154000,
             messages: [
               { type: 'user', text: 'Find and catalog all major US marathon events in 2024 with dates, locations, and registration info.' },
-              { type: 'thinking', label: 'Research', task: 'Cataloging marathon events', lines: ['Crawling RunningUSA event calendar for 2024 marathons', 'Cross-referencing with MarathonGuide.com database', 'Filtering for 26.2mi distance events only', 'Found 847 event listings, categorizing by state'], collapsed: false, done: false, streaming: true },
+              { type: 'thinking', label: 'Web Crawl', task: 'Cataloging marathon events across 50 states', lines: ['Crawling RunningUSA.org 2024 event calendar', 'Cross-referencing MarathonGuide.com and ARRS databases', 'Filtering for 26.2mi certified distance events only', 'Found 847 event listings — deduplicating and categorizing by state', 'Extracting registration windows, field limits, and course profiles'], collapsed: false, done: false, streaming: true },
             ],
           },
           {
@@ -1586,9 +2448,9 @@
             startTime: now - 212000,
             messages: [
               { type: 'user', text: 'Compare the top 5 cloud providers (AWS, Azure, GCP, Oracle, IBM) across pricing, services, and market position.' },
-              { type: 'thinking', label: 'Research', task: 'Comparing cloud provider pricing', lines: ['Scraping AWS pricing page and service catalog', 'Querying Azure API for service listings', 'Pulling GCP pricing data from cloud.google.com', 'Normalizing pricing models across all providers', 'Building feature comparison matrix'], collapsed: true, done: true },
+              { type: 'thinking', label: 'Analysis', task: 'Compared pricing across 5 cloud providers', lines: ['Scraping AWS pricing page — 200+ service catalog', 'Querying Azure pricing calculator and service listings', 'Pulling GCP pricing from cloud.google.com/pricing', 'Collecting Oracle Cloud Infrastructure pricing tiers', 'Normalizing on-demand vs reserved pricing models', 'Building multi-axis feature comparison matrix'], collapsed: true, done: true },
               { type: 'assistant', html: '<p><strong>Initial findings — pricing comparison:</strong></p><ul><li><strong>AWS</strong> has the broadest catalog (200+ services) but complex pricing. Compute costs average $0.042/hr for comparable instances.</li><li><strong>Azure</strong> offers strongest enterprise integration. 15-20% discount for Microsoft ecosystem customers.</li><li><strong>GCP</strong> leads in sustained use discounts (up to 30%) and BigQuery pricing model.</li></ul><p>Still analyzing Oracle and IBM. Building the full comparison matrix now...</p>' },
-              { type: 'thinking', label: 'Research', task: 'Analyzing Oracle and IBM offerings', lines: ['Comparing Oracle Cloud Infrastructure pricing', 'Analyzing IBM Cloud Pak offerings and pricing tiers'], collapsed: false, done: false, streaming: true },
+              { type: 'thinking', label: 'Deep Dive', task: 'Analyzing Oracle and IBM enterprise offerings', lines: ['Comparing OCI Ampere A1 vs Flex pricing to AWS Graviton', 'Analyzing IBM Cloud Pak licensing and Red Hat integration', 'Reviewing Oracle autonomous database vs AWS Aurora serverless'], collapsed: false, done: false, streaming: true },
             ],
           },
         ],
@@ -1605,7 +2467,7 @@
             startTime: now - 98000,
             messages: [
               { type: 'user', text: 'Create a comprehensive map of AI regulations by country, including enforcement status and key provisions.' },
-              { type: 'thinking', label: 'Research', task: 'Mapping global AI regulations', lines: ['Crawling EU AI Act documentation portal', 'Extracting China AIGC management regulations', 'Reviewing US executive order on AI safety', 'Categorizing by regulation type: binding law, executive order, guidelines'], collapsed: false, done: false, streaming: true },
+              { type: 'thinking', label: 'Regulatory Scan', task: 'Mapping AI governance frameworks by jurisdiction', lines: ['Crawling EUR-Lex for EU AI Act full text and annexes', 'Extracting China AIGC and deep synthesis management provisions', 'Reviewing US Executive Order 14110 on AI safety', 'Scanning UK AI Safety Institute publications and DSIT guidance', 'Categorizing by type: binding law, executive order, soft guidelines'], collapsed: false, done: false, streaming: true },
             ],
           },
           {
@@ -1629,7 +2491,7 @@
             startTime: now - 62000,
             messages: [
               { type: 'user', text: 'Analyze Q4 2024 earnings for all FAANG companies. Focus on revenue growth, AI spending, and forward guidance.' },
-              { type: 'thinking', label: 'Research', task: 'Analyzing FAANG earnings filings', lines: ['Pulling SEC EDGAR filings for Meta, Apple, Amazon, Netflix, Google', 'Extracting revenue figures and YoY comparisons', 'Analyzing earnings call transcripts for AI spending mentions'], collapsed: false, done: false, streaming: true },
+              { type: 'thinking', label: 'Financial Analysis', task: 'Processing FAANG Q4 2024 10-Q filings', lines: ['Pulling SEC EDGAR 10-Q filings for Meta, Apple, Amazon, Netflix, Alphabet', 'Extracting revenue, operating income, and FCF by segment', 'Analyzing earnings call transcripts — flagging AI capex mentions', 'Cross-referencing analyst consensus estimates vs actuals'], collapsed: false, done: false, streaming: true },
             ],
           },
           {
@@ -1653,7 +2515,7 @@
             startTime: now - 420000,
             messages: [
               { type: 'user', text: 'Survey renewable energy adoption across all US states. Include capacity, generation mix, and growth trends.' },
-              { type: 'thinking', label: 'Research', task: 'Surveying state energy data', lines: ['Connecting to EIA.gov energy database', 'Querying NREL solar and wind capacity data', 'Processing 50-state energy generation mix', 'Calculating year-over-year growth rates', 'Cross-referencing with IRA incentive data'], collapsed: true, done: true },
+              { type: 'thinking', label: 'Data Pipeline', task: 'Processed EIA and NREL datasets across 50 states', lines: ['Connecting to EIA State Energy Data System (SEDS)', 'Querying NREL solar/wind capacity and cost data', 'Processing 50-state electricity generation mix from Form EIA-923', 'Calculating compound annual growth rates by technology', 'Cross-referencing with IRA Section 45/48 incentive allocations', 'Geocoding utility-scale installations for regional analysis'], collapsed: true, done: true },
               { type: 'assistant', html: '<p><strong>Renewable energy adoption varies significantly across US states:</strong></p><ul><li><strong>Texas leads in wind</strong> with 41.6 GW capacity, generating 28.3% of state electricity.</li><li><strong>California dominates solar</strong> at 39.7 GW, reaching 33.6% renewable generation.</li><li><strong>Vermont</strong> has the highest renewable penetration at 99.9% (primarily hydro + wind).</li><li><strong>Southeastern states lag</strong> — Mississippi at just 6.2% renewable share, though growing 34% YoY from a low base.</li><li><strong>National trend:</strong> Solar adoption grew 28% in 2024, driven by IRA incentives. Wind grew 12%.</li></ul>' },
               { type: 'sources', items: [
                 { title: 'EIA State Energy Data System', url: 'eia.gov/electricity/data/state', snippet: 'Comprehensive state-level electricity generation data by fuel source.' },
@@ -1670,7 +2532,7 @@
             startTime: now - 135000,
             messages: [
               { type: 'user', text: 'Analyze the current state of voluntary and compliance carbon credit markets globally.' },
-              { type: 'thinking', label: 'Research', task: 'Analyzing carbon credit markets', lines: ['Reviewing Verra and Gold Standard registries', 'Pulling carbon credit pricing data from major exchanges', 'Analyzing EU ETS vs voluntary market dynamics'], collapsed: false, done: false, streaming: true },
+              { type: 'thinking', label: 'Market Scan', task: 'Analyzing voluntary and compliance carbon markets', lines: ['Reviewing Verra VCS and Gold Standard registry data', 'Pulling spot and futures pricing from ICE and CBL exchanges', 'Analyzing EU ETS Phase IV pricing trends vs voluntary offsets', 'Comparing CORSIA eligibility criteria across registry standards'], collapsed: false, done: false, streaming: true },
             ],
           },
         ],
@@ -1687,7 +2549,7 @@
             startTime: now - 600000,
             messages: [
               { type: 'user', text: 'Map AI startup funding rounds in 2024. Focus on Series A+ rounds, key investors, and emerging categories.' },
-              { type: 'thinking', label: 'Research', task: 'Mapping AI startup funding', lines: ['Querying Crunchbase and PitchBook databases', 'Filtering for AI/ML tagged companies, Series A+', 'Categorizing by vertical: LLM infra, AI agents, vertical AI, AI safety', 'Identifying top investors by deal count'], collapsed: true, done: true },
+              { type: 'thinking', label: 'Database Query', task: 'Mapped 3,200+ AI funding rounds from Crunchbase and PitchBook', lines: ['Querying Crunchbase Pro and PitchBook for AI/ML tagged companies', 'Filtering for Series A+ rounds closed in 2024', 'Categorizing by vertical: LLM infrastructure, AI agents, vertical AI, AI safety', 'Identifying top investors by deal count and capital deployed', 'Building funding heatmap by geography and category'], collapsed: true, done: true },
               { type: 'assistant', html: '<p><strong>AI startup funding in 2024 reached unprecedented levels:</strong></p><ul><li><strong>Total AI funding:</strong> $97.8B globally across 3,200+ rounds (Series A+).</li><li><strong>LLM infrastructure</strong> dominated with $42B — led by OpenAI ($6.6B), Anthropic ($4B), xAI ($6B).</li><li><strong>AI agents</strong> emerged as the hottest category with 340% YoY growth in funding.</li><li><strong>Top investors:</strong> a16z (142 deals), Sequoia (98 deals), Lightspeed (76 deals).</li><li><strong>Vertical AI</strong> saw strong traction in healthcare ($8.2B), legal ($3.1B), and finance ($5.7B).</li></ul>' },
               { type: 'sources', items: [
                 { title: 'Crunchbase AI Funding Report 2024', url: 'crunchbase.com/research/ai-funding-2024', snippet: 'AI startups raised $97.8B in 2024, with foundation model companies capturing the lion\'s share.' },
@@ -1713,21 +2575,693 @@
     // View mode
     let viewMode = 'workspace';
 
-    // Service nodes for canvas
-    const SERVICES = [
-      { id: 'slack', name: 'Slack', icon: '\uD83D\uDCAC', status: 'connected' },
-      { id: 'notion', name: 'Notion', icon: '\uD83D\uDCDD', status: 'connected' },
-      { id: 'github', name: 'GitHub', icon: '\uD83D\uDC19', status: 'connected' },
-      { id: 'gmail', name: 'Gmail', icon: '\uD83D\uDCE7', status: 'connected' },
-      { id: 'gdrive', name: 'Drive', icon: '\uD83D\uDCC1', status: 'connected' },
-      { id: 'snowflake', name: 'Snowflake', icon: '\u2744\uFE0F', status: 'connected' },
-      { id: 'bigquery', name: 'BigQuery', icon: '\uD83D\uDCCA', status: 'disconnected' },
-      { id: 'linear', name: 'Linear', icon: '\uD83D\uDD37', status: 'connected' },
-      { id: 'figma', name: 'Figma', icon: '\uD83C\uDFA8', status: 'disconnected' },
-      { id: 'salesforce', name: 'Salesforce', icon: '\uD83D\uDCC8', status: 'disconnected' },
-      { id: 'confluence', name: 'Confluence', icon: '\uD83D\uDD04', status: 'disconnected' },
-      { id: 'calendar', name: 'Calendar', icon: '\uD83D\uDCC5', status: 'connected' },
-    ];
+    // Artifact data for canvas view
+    const ARTIFACTS = {
+      'ev-market': {
+        title: 'EV Market Analysis 2024',
+        type: 'Report',
+        container: 'doc',
+        version: 3,
+        html: `<h1>Global EV Market Share Analysis</h1>
+<div class="doc-subtitle">2024 Annual Review — Prepared by Research Agent</div>
+<div class="doc-stat-row">
+  <div class="doc-stat"><div class="doc-stat-value">14.2M</div><div class="doc-stat-label">EVs Sold Globally</div></div>
+  <div class="doc-stat"><div class="doc-stat-value">18%</div><div class="doc-stat-label">New Car Market Share</div></div>
+  <div class="doc-stat"><div class="doc-stat-value">+35%</div><div class="doc-stat-label">YoY Growth</div></div>
+</div>
+<h2>Executive Summary</h2>
+<p>The global EV market reached an inflection point in 2024, with total sales hitting <strong>14.2 million units</strong> — representing 18% of all new car sales worldwide. This marks a 35% increase over 2023 and signals the transition from early adoption to mainstream.</p>
+<div class="doc-callout">BYD overtook Tesla as the world's largest EV seller in Q4 2023, selling 526K vehicles vs Tesla's 484K in that quarter. This shift reflects the intensifying competition in the Chinese domestic market.</div>
+<h2>Regional Breakdown</h2>
+<table class="doc-table">
+  <thead><tr><th>Region</th><th>2022 Share</th><th>2024 Share</th><th>Growth</th><th>Top OEM</th></tr></thead>
+  <tbody>
+    <tr><td><strong>China</strong></td><td>29%</td><td>45%</td><td>+55%</td><td>BYD</td></tr>
+    <tr><td><strong>Europe</strong></td><td>21%</td><td>24%</td><td>+14%</td><td>VW Group</td></tr>
+    <tr><td><strong>North America</strong></td><td>7%</td><td>9.2%</td><td>+47%</td><td>Tesla</td></tr>
+    <tr><td><strong>SE Asia</strong></td><td>2%</td><td>5.8%</td><td>+190%</td><td>BYD / MG</td></tr>
+    <tr><td><strong>Rest of World</strong></td><td>3%</td><td>4.1%</td><td>+37%</td><td>Various</td></tr>
+  </tbody>
+</table>
+<h2>Key Findings</h2>
+<h3>1. China Dominates</h3>
+<p>China accounted for <strong>60% of global EV sales</strong> in 2024. The domestic market features fierce competition among BYD, NIO, Li Auto, XPeng, and dozens of smaller players. Average selling prices have dropped 22% since 2022, driven by a price war initiated by Tesla and matched by domestic OEMs.</p>
+<h3>2. European Adoption Accelerates</h3>
+<p>EV penetration hit <strong>24% of new car sales</strong> across the EU, led by Norway (90%), Sweden (54%), and Germany (23%). The EU's 2035 ICE ban continues to drive manufacturer investment, with VW Group committing €180B to electrification through 2030.</p>
+<h3>3. US Market Matures</h3>
+<p>US EV sales grew 47% YoY to 1.8M units, but Tesla's domestic market share declined from 65% (2022) to 51% (2024) as legacy OEMs and Hyundai/Kia gained ground. The IRA's $7,500 tax credit remains a key demand driver.</p>
+<h2>Outlook</h2>
+<p>We project global EV sales will reach <strong>18-20M units in 2025</strong>, driven by continued price declines, expanding charging infrastructure, and new model launches. The key risk is a potential slowdown in European demand if subsidy programs are scaled back.</p>`
+      },
+      'energy': {
+        title: 'Renewable Energy by State — 2024',
+        type: 'Report',
+        container: 'doc',
+        version: 2,
+        html: `<h1>US Renewable Energy Adoption</h1>
+<div class="doc-subtitle">50-State Survey — 2024 Data from EIA and NREL</div>
+<div class="doc-stat-row">
+  <div class="doc-stat"><div class="doc-stat-value">28%</div><div class="doc-stat-label">US Renewable Share</div></div>
+  <div class="doc-stat"><div class="doc-stat-value">+22%</div><div class="doc-stat-label">Solar YoY Growth</div></div>
+  <div class="doc-stat"><div class="doc-stat-value">412 GW</div><div class="doc-stat-label">Total Capacity</div></div>
+</div>
+<h2>Top States by Renewable Capacity</h2>
+<table class="doc-table">
+  <thead><tr><th>State</th><th>Primary Source</th><th>Capacity</th><th>% of Generation</th><th>YoY Growth</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Texas</strong></td><td>Wind</td><td>41.6 GW</td><td>28.3%</td><td>+12%</td></tr>
+    <tr><td><strong>California</strong></td><td>Solar</td><td>39.7 GW</td><td>33.6%</td><td>+18%</td></tr>
+    <tr><td><strong>Iowa</strong></td><td>Wind</td><td>12.4 GW</td><td>62.1%</td><td>+8%</td></tr>
+    <tr><td><strong>Oklahoma</strong></td><td>Wind</td><td>11.2 GW</td><td>44.8%</td><td>+15%</td></tr>
+    <tr><td><strong>Kansas</strong></td><td>Wind</td><td>8.1 GW</td><td>47.2%</td><td>+11%</td></tr>
+  </tbody>
+</table>
+<h2>IRA Impact</h2>
+<p>The Inflation Reduction Act continues to be the primary growth catalyst. Section 45 production tax credits and Section 48 investment tax credits drove an estimated <strong>$62B in new renewable energy investment</strong> in 2024, a 38% increase over pre-IRA levels.</p>
+<div class="doc-callout">Vermont leads the nation with 99.9% renewable electricity generation, primarily from hydropower and wind. Mississippi lags at 6.2% but showed the fastest growth rate at +34% YoY.</div>`
+      },
+      'ai-funding': {
+        title: 'AI Startup Funding Landscape 2024',
+        type: 'Report',
+        container: 'doc',
+        version: 1,
+        html: `<h1>AI Startup Funding 2024</h1>
+<div class="doc-subtitle">Series A+ Funding Analysis — Crunchbase & PitchBook Data</div>
+<div class="doc-stat-row">
+  <div class="doc-stat"><div class="doc-stat-value">$97.8B</div><div class="doc-stat-label">Total AI Funding</div></div>
+  <div class="doc-stat"><div class="doc-stat-value">3,200+</div><div class="doc-stat-label">Rounds Closed</div></div>
+  <div class="doc-stat"><div class="doc-stat-value">+340%</div><div class="doc-stat-label">Agent Funding Growth</div></div>
+</div>
+<h2>Category Breakdown</h2>
+<table class="doc-table">
+  <thead><tr><th>Category</th><th>2024 Funding</th><th>Deals</th><th>YoY Change</th><th>Top Company</th></tr></thead>
+  <tbody>
+    <tr><td><strong>LLM Infrastructure</strong></td><td>$42.0B</td><td>180</td><td>+85%</td><td>OpenAI ($6.6B)</td></tr>
+    <tr><td><strong>AI Agents</strong></td><td>$12.4B</td><td>420</td><td>+340%</td><td>Cognition ($175M)</td></tr>
+    <tr><td><strong>Vertical AI — Healthcare</strong></td><td>$8.2B</td><td>310</td><td>+62%</td><td>Hippocratic AI</td></tr>
+    <tr><td><strong>Vertical AI — Finance</strong></td><td>$5.7B</td><td>245</td><td>+44%</td><td>Ramp AI</td></tr>
+    <tr><td><strong>AI Safety / Alignment</strong></td><td>$2.1B</td><td>48</td><td>+120%</td><td>Anthropic ($4B)</td></tr>
+  </tbody>
+</table>
+<h2>Investor Activity</h2>
+<p>The top three investors by deal volume were <strong>a16z (142 deals)</strong>, <strong>Sequoia (98 deals)</strong>, and <strong>Lightspeed (76 deals)</strong>. Notable: SoftBank returned aggressively to AI investing after a cautious 2023, deploying $8.2B across 34 deals.</p>
+<div class="doc-callout">AI agents emerged as the breakout category with 340% YoY funding growth. The thesis: agents that can autonomously complete multi-step workflows represent the next platform shift after chatbots.</div>`
+      },
+      'marathon': {
+        title: 'US Marathon Events 2024',
+        type: 'Spreadsheet',
+        container: 'spreadsheet',
+        version: 2,
+        html: `<div class="sheet-formula-bar"><span class="sheet-formula-label">D4</span><span class="sheet-formula-text">=TEXT(C4,"MMMM D, YYYY")</span></div>
+<div class="sheet-tabs"><span class="sheet-tab active">All Events</span><span class="sheet-tab">By State</span><span class="sheet-tab">Registration</span></div>
+<div class="sheet-grid" style="grid-template-columns: 32px 1.8fr 1.2fr 1fr 0.7fr 0.7fr 1.4fr;">
+<div class="sheet-header-row"><div class="sheet-cell row-num"></div><div class="sheet-cell">Race Name</div><div class="sheet-cell">Location</div><div class="sheet-cell">Date</div><div class="sheet-cell">Field</div><div class="sheet-cell">Course</div><div class="sheet-cell">Notes</div></div>
+<div class="sheet-row"><div class="sheet-cell row-num">1</div><div class="sheet-cell bold">Boston Marathon</div><div class="sheet-cell">Hopkinton → Boston, MA</div><div class="sheet-cell">Apr 21, 2025</div><div class="sheet-cell num">30,000</div><div class="sheet-cell">Point-to-point</div><div class="sheet-cell">BQ required. World's oldest (est. 1897)</div></div>
+<div class="sheet-row"><div class="sheet-cell row-num">2</div><div class="sheet-cell bold">NYC Marathon</div><div class="sheet-cell">New York, NY</div><div class="sheet-cell">Nov 2, 2025</div><div class="sheet-cell num">50,000</div><div class="sheet-cell">5-borough</div><div class="sheet-cell">World's largest marathon. Lottery entry.</div></div>
+<div class="sheet-row"><div class="sheet-cell row-num">3</div><div class="sheet-cell bold">Chicago Marathon</div><div class="sheet-cell">Chicago, IL</div><div class="sheet-cell">Oct 12, 2025</div><div class="sheet-cell num">45,000</div><div class="sheet-cell">Flat loop</div><div class="sheet-cell">World Major. Fast course through 29 neighborhoods</div></div>
+<div class="sheet-row"><div class="sheet-cell row-num">4</div><div class="sheet-cell bold">LA Marathon</div><div class="sheet-cell">Dodger Stadium → Santa Monica</div><div class="sheet-cell">Mar 16, 2025</div><div class="sheet-cell num">25,000</div><div class="sheet-cell">Point-to-point</div><div class="sheet-cell">"Stadium to the Sea" — net downhill</div></div>
+<div class="sheet-row"><div class="sheet-cell row-num">5</div><div class="sheet-cell bold">Houston Marathon</div><div class="sheet-cell">Houston, TX</div><div class="sheet-cell">Jan 19, 2025</div><div class="sheet-cell num">12,000</div><div class="sheet-cell">Flat</div><div class="sheet-cell">Top BQ qualifying race. Fast flat course.</div></div>
+<div class="sheet-row"><div class="sheet-cell row-num">6</div><div class="sheet-cell bold">Honolulu Marathon</div><div class="sheet-cell">Honolulu, HI</div><div class="sheet-cell">Dec 14, 2025</div><div class="sheet-cell num">25,000</div><div class="sheet-cell">Coastal loop</div><div class="sheet-cell">No time limit. Scenic ocean course.</div></div>
+<div class="sheet-row"><div class="sheet-cell row-num">7</div><div class="sheet-cell bold">Marine Corps Marathon</div><div class="sheet-cell">Arlington, VA → DC</div><div class="sheet-cell">Oct 26, 2025</div><div class="sheet-cell num">30,000</div><div class="sheet-cell">Loop</div><div class="sheet-cell">"The People's Marathon" — no prize money</div></div>
+<div class="sheet-row"><div class="sheet-cell row-num">8</div><div class="sheet-cell bold">Twin Cities Marathon</div><div class="sheet-cell">Minneapolis → St. Paul, MN</div><div class="sheet-cell">Oct 5, 2025</div><div class="sheet-cell num">10,500</div><div class="sheet-cell">Point-to-point</div><div class="sheet-cell">"Most Beautiful Urban Marathon in America"</div></div>
+<div class="sheet-row"><div class="sheet-cell row-num">9</div><div class="sheet-cell bold">Philadelphia Marathon</div><div class="sheet-cell">Philadelphia, PA</div><div class="sheet-cell">Nov 23, 2025</div><div class="sheet-cell num">12,000</div><div class="sheet-cell">Loop</div><div class="sheet-cell">Fast, flat course along Schuylkill River</div></div>
+<div class="sheet-row"><div class="sheet-cell row-num">10</div><div class="sheet-cell bold">Columbus Marathon</div><div class="sheet-cell">Columbus, OH</div><div class="sheet-cell">Oct 19, 2025</div><div class="sheet-cell num">15,000</div><div class="sheet-cell">Loop</div><div class="sheet-cell">Largest marathon in Ohio. Great crowd support.</div></div>
+<div class="sheet-row"><div class="sheet-cell row-num">11</div><div class="sheet-cell bold">Grandma's Marathon</div><div class="sheet-cell">Two Harbors → Duluth, MN</div><div class="sheet-cell">Jun 21, 2025</div><div class="sheet-cell num">9,000</div><div class="sheet-cell">Point-to-point</div><div class="sheet-cell">Scenic North Shore of Lake Superior</div></div>
+<div class="sheet-row"><div class="sheet-cell row-num">12</div><div class="sheet-cell bold">Mayor's Marathon</div><div class="sheet-cell">Anchorage, AK</div><div class="sheet-cell">Jun 21, 2025</div><div class="sheet-cell num">3,500</div><div class="sheet-cell">Loop</div><div class="sheet-cell">Summer solstice. Near 24hr daylight.</div></div>
+</div>`
+      },
+      'cloud': {
+        title: 'Cloud Provider Comparison',
+        type: 'Slide Deck',
+        container: 'slides',
+        version: 4,
+        html: `<div class="slide">
+  <div class="slide-title">Cloud Provider Comparison 2024</div>
+  <div class="slide-subtitle">AWS vs Azure vs GCP vs Oracle vs IBM — Pricing, Services & Market Position</div>
+  <div class="slide-body">
+    <div class="slide-stats">
+      <div class="slide-stat-item"><div class="slide-big-number">$600B+</div><div class="slide-big-label">Total Cloud Market</div></div>
+      <div class="slide-stat-item"><div class="slide-big-number">5</div><div class="slide-big-label">Major Providers</div></div>
+      <div class="slide-stat-item"><div class="slide-big-number">31%</div><div class="slide-big-label">AWS Market Share</div></div>
+    </div>
+  </div>
+  <span class="slide-number">1 / 4</span>
+</div>
+<div class="slide">
+  <div class="slide-body">
+    <h2>Pricing Comparison — Compute (per hour, on-demand)</h2>
+    <div class="slide-cols">
+      <div class="slide-col">
+        <h3>General Purpose (4 vCPU, 16 GB)</h3>
+        <ul>
+          <li><strong>AWS</strong> m7i.xlarge — $0.2016/hr</li>
+          <li><strong>Azure</strong> D4s v5 — $0.192/hr</li>
+          <li><strong>GCP</strong> n2-standard-4 — $0.194/hr</li>
+          <li><strong>Oracle</strong> VM.Standard.E4 — $0.10/hr</li>
+          <li><strong>IBM</strong> bx2-4x16 — $0.188/hr</li>
+        </ul>
+      </div>
+      <div class="slide-col">
+        <h3>Key Differentiators</h3>
+        <ul>
+          <li><strong>Oracle</strong> is 50% cheaper on compute</li>
+          <li><strong>GCP</strong> sustained-use discounts up to 30%</li>
+          <li><strong>Azure</strong> best for Microsoft shops (15-20% off)</li>
+          <li><strong>AWS</strong> broadest catalog (200+ services)</li>
+          <li><strong>IBM</strong> strongest hybrid cloud play</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <span class="slide-number">2 / 4</span>
+</div>
+<div class="slide">
+  <div class="slide-body">
+    <h2>Market Share & Growth (2024)</h2>
+    <div class="slide-cols">
+      <div class="slide-col">
+        <h3>Current Share</h3>
+        <ul>
+          <li><strong>AWS</strong> — 31% ($105B revenue)</li>
+          <li><strong>Azure</strong> — 25% ($85B revenue)</li>
+          <li><strong>GCP</strong> — 11% ($37B revenue)</li>
+          <li><strong>Oracle</strong> — 3% ($10B cloud rev)</li>
+          <li><strong>IBM</strong> — 2% ($7B cloud rev)</li>
+        </ul>
+      </div>
+      <div class="slide-col">
+        <h3>YoY Growth Rate</h3>
+        <ul>
+          <li><strong>Oracle</strong> — +49% (fastest growing)</li>
+          <li><strong>GCP</strong> — +35%</li>
+          <li><strong>Azure</strong> — +29%</li>
+          <li><strong>AWS</strong> — +17%</li>
+          <li><strong>IBM</strong> — +12%</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <span class="slide-number">3 / 4</span>
+</div>
+<div class="slide">
+  <div class="slide-body">
+    <h2>Recommendation</h2>
+    <p><strong>For most workloads:</strong> AWS remains the safest choice with the deepest ecosystem. Azure is compelling for enterprises already invested in Microsoft 365 / Dynamics.</p>
+    <p><strong>For cost optimization:</strong> Oracle OCI offers the most aggressive pricing, especially for database-heavy workloads. GCP's sustained-use discounts make it attractive for always-on compute.</p>
+    <p><strong>For AI/ML:</strong> GCP leads with TPU access and Vertex AI. AWS SageMaker has the broadest model zoo. Azure benefits from the OpenAI partnership.</p>
+  </div>
+  <span class="slide-number">4 / 4</span>
+</div>`
+      },
+      'faang': {
+        title: 'FAANG Q4 2024 Earnings',
+        type: 'Slide Deck',
+        container: 'slides',
+        version: 2,
+        html: `<div class="slide">
+  <div class="slide-title">FAANG Q4 2024 Earnings Review</div>
+  <div class="slide-subtitle">Revenue Growth, AI Capex, and Forward Guidance</div>
+  <div class="slide-body">
+    <div class="slide-stats">
+      <div class="slide-stat-item"><div class="slide-big-number">$440B</div><div class="slide-big-label">Combined Revenue</div></div>
+      <div class="slide-stat-item"><div class="slide-big-number">+14%</div><div class="slide-big-label">Avg. YoY Growth</div></div>
+      <div class="slide-stat-item"><div class="slide-big-number">$62B</div><div class="slide-big-label">Combined AI Capex</div></div>
+    </div>
+  </div>
+  <span class="slide-number">1 / 3</span>
+</div>
+<div class="slide">
+  <div class="slide-body">
+    <h2>Revenue & Growth Summary</h2>
+    <div class="slide-cols">
+      <div class="slide-col">
+        <h3>Revenue (Q4 2024)</h3>
+        <ul>
+          <li><strong>Apple</strong> — $124.3B (+4%)</li>
+          <li><strong>Amazon</strong> — $187.8B (+12%)</li>
+          <li><strong>Alphabet</strong> — $96.5B (+15%)</li>
+          <li><strong>Meta</strong> — $48.4B (+25%)</li>
+          <li><strong>Netflix</strong> — $10.2B (+16%)</li>
+        </ul>
+      </div>
+      <div class="slide-col">
+        <h3>AI Capex Guidance</h3>
+        <ul>
+          <li><strong>Meta</strong> — $37-40B (2025 plan)</li>
+          <li><strong>Alphabet</strong> — $75B (2025 plan)</li>
+          <li><strong>Amazon</strong> — $100B+ (AWS infra)</li>
+          <li><strong>Apple</strong> — Not disclosed</li>
+          <li><strong>Netflix</strong> — $1.2B (content AI)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <span class="slide-number">2 / 3</span>
+</div>
+<div class="slide">
+  <div class="slide-body">
+    <h2>Key Takeaways</h2>
+    <ul>
+      <li><strong>Meta</strong> delivered the strongest beat — revenue +25% YoY driven by Reels monetization and AI-powered ad targeting improvements</li>
+      <li><strong>Alphabet</strong> guided for $75B AI capex in 2025, the largest single-year investment commitment in tech history</li>
+      <li><strong>Amazon</strong> AWS re-accelerated to +19% growth after three quarters of deceleration, fueled by AI workload migration</li>
+      <li><strong>Apple</strong> showed modest growth (+4%) but Services hit a record $26.3B, now 24% of total revenue</li>
+      <li><strong>Netflix</strong> added 19M subscribers in Q4, the strongest quarter since the password-sharing crackdown</li>
+    </ul>
+  </div>
+  <span class="slide-number">3 / 3</span>
+</div>`
+      },
+      'ai-regs': {
+        title: 'Global AI Regulation Tracker',
+        type: 'Website',
+        container: 'website',
+        version: 3,
+        html: `<div class="site-nav">
+  <span class="site-nav-brand">AI Regulation Tracker</span>
+  <div class="site-nav-links">
+    <a href="#">Dashboard</a>
+    <a href="#">By Country</a>
+    <a href="#">Timeline</a>
+    <a href="#">Compare</a>
+  </div>
+</div>
+<div class="site-hero">
+  <h1>Global AI Governance Map</h1>
+  <p>Tracking AI regulations, executive orders, and guidelines across 42 jurisdictions. Updated in real-time.</p>
+  <a class="site-hero-btn" href="#">Explore the Map</a>
+</div>
+<div class="site-features">
+  <div class="site-feature">
+    <div class="site-feature-icon">📜</div>
+    <h3>EU AI Act</h3>
+    <p>Comprehensive risk-based framework. Effective Aug 2025. Covers high-risk AI systems, foundation models, and prohibited practices.</p>
+  </div>
+  <div class="site-feature">
+    <div class="site-feature-icon">🇺🇸</div>
+    <h3>US EO 14110</h3>
+    <p>Executive order on AI safety. Requires reporting for large training runs. NIST AI Safety Institute established.</p>
+  </div>
+  <div class="site-feature">
+    <div class="site-feature-icon">🇨🇳</div>
+    <h3>China AIGC Rules</h3>
+    <p>Mandatory content labeling, algorithm registration, and security assessments for generative AI services.</p>
+  </div>
+  <div class="site-feature">
+    <div class="site-feature-icon">🇬🇧</div>
+    <h3>UK Pro-Innovation</h3>
+    <p>Sector-specific approach via existing regulators. AI Safety Institute for frontier model evaluation.</p>
+  </div>
+  <div class="site-feature">
+    <div class="site-feature-icon">🇨🇦</div>
+    <h3>Canada AIDA</h3>
+    <p>Artificial Intelligence and Data Act. Penalties up to 5% of global revenue for non-compliance.</p>
+  </div>
+  <div class="site-feature">
+    <div class="site-feature-icon">🇧🇷</div>
+    <h3>Brazil AI Bill</h3>
+    <p>Rights-based framework modeled on LGPD. Risk classification system with mandatory impact assessments.</p>
+  </div>
+</div>
+<div class="site-section">
+  <h2>Regulation Timeline</h2>
+  <p class="site-section-sub">Key milestones in global AI governance — from early guidelines to binding legislation.</p>
+  <div class="site-timeline">
+    <div class="site-tl-item">
+      <div class="site-tl-date">May 2019</div>
+      <div class="site-tl-body"><strong>OECD AI Principles</strong> — First intergovernmental standard on AI. 46 countries adopt principles on transparency, accountability, and human-centered values.</div>
+    </div>
+    <div class="site-tl-item">
+      <div class="site-tl-date">Apr 2021</div>
+      <div class="site-tl-body"><strong>EU AI Act proposed</strong> — European Commission publishes draft regulation establishing risk-based framework. High-risk systems face mandatory conformity assessments.</div>
+    </div>
+    <div class="site-tl-item">
+      <div class="site-tl-date">Jul 2023</div>
+      <div class="site-tl-body"><strong>China AIGC Measures</strong> — Interim measures for generative AI take effect. Providers must register algorithms, label AI content, and conduct security assessments.</div>
+    </div>
+    <div class="site-tl-item">
+      <div class="site-tl-date">Oct 2023</div>
+      <div class="site-tl-body"><strong>US Executive Order 14110</strong> — President Biden signs sweeping AI safety order. Requires dual-use foundation model developers to share safety test results with the federal government.</div>
+    </div>
+    <div class="site-tl-item">
+      <div class="site-tl-date">Dec 2023</div>
+      <div class="site-tl-body"><strong>EU AI Act finalized</strong> — Parliament and Council reach political agreement. Bans social scoring, real-time biometric surveillance (with exceptions), and emotion recognition in schools/workplaces.</div>
+    </div>
+    <div class="site-tl-item">
+      <div class="site-tl-date">Feb 2024</div>
+      <div class="site-tl-body"><strong>UK AI Safety Summit outcomes</strong> — 28 countries sign the Bletchley Declaration. UK AI Safety Institute begins evaluating frontier models from leading labs.</div>
+    </div>
+    <div class="site-tl-item">
+      <div class="site-tl-date">Aug 2025</div>
+      <div class="site-tl-body"><strong>EU AI Act enforcement begins</strong> — Prohibited practices become enforceable. Fines up to €35M or 7% of global annual turnover for violations.</div>
+    </div>
+  </div>
+</div>
+<div class="site-section" style="background:rgba(255,255,255,0.02);">
+  <h2>Comparison Matrix</h2>
+  <p class="site-section-sub">How the major frameworks differ across key regulatory dimensions.</p>
+  <table class="site-table">
+    <thead><tr><th>Dimension</th><th>EU AI Act</th><th>US (EO 14110)</th><th>China</th><th>UK</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Approach</strong></td><td>Risk-based regulation</td><td>Executive order + sector guidance</td><td>Technology-specific rules</td><td>Sector-led, principles-based</td></tr>
+      <tr><td><strong>Binding?</strong></td><td>Yes — law</td><td>Partially — EO + NIST</td><td>Yes — regulations</td><td>No — guidance</td></tr>
+      <tr><td><strong>Scope</strong></td><td>All AI systems by risk tier</td><td>Dual-use foundation models</td><td>GenAI, algorithms, deepfakes</td><td>Cross-sector principles</td></tr>
+      <tr><td><strong>Max Penalty</strong></td><td>€35M / 7% revenue</td><td>N/A (compliance-based)</td><td>Service suspension</td><td>N/A (regulator-specific)</td></tr>
+      <tr><td><strong>Transparency</strong></td><td>Mandatory for high-risk</td><td>Safety reporting for large models</td><td>Content labeling required</td><td>Voluntary disclosure</td></tr>
+      <tr><td><strong>Foundation Models</strong></td><td>GPAI provisions, tiered</td><td>Reporting thresholds</td><td>Algorithm registration</td><td>AISI evaluation (voluntary)</td></tr>
+    </tbody>
+  </table>
+</div>
+<div class="site-section">
+  <h2>Enforcement Tracker</h2>
+  <p class="site-section-sub">Notable enforcement actions and compliance milestones across jurisdictions.</p>
+  <div class="site-enforcement-grid">
+    <div class="site-enforcement-card">
+      <div class="site-enforcement-tag" style="background:rgba(220,105,115,0.12);color:#dc6973;">Enforcement</div>
+      <h4>Italy bans ChatGPT (temporary)</h4>
+      <p>Italian DPA blocks ChatGPT over GDPR concerns. Service restored after OpenAI implements age verification and privacy disclosures.</p>
+      <span class="site-enforcement-date">Mar 2023 — Apr 2023</span>
+    </div>
+    <div class="site-enforcement-card">
+      <div class="site-enforcement-tag" style="background:rgba(96,165,250,0.12);color:#60a5fa;">Investigation</div>
+      <h4>FTC investigates OpenAI</h4>
+      <p>Federal Trade Commission opens inquiry into whether OpenAI engaged in unfair or deceptive practices related to data collection and AI-generated content.</p>
+      <span class="site-enforcement-date">Jul 2023 — Ongoing</span>
+    </div>
+    <div class="site-enforcement-card">
+      <div class="site-enforcement-tag" style="background:rgba(52,211,153,0.12);color:#34d399;">Compliance</div>
+      <h4>Major labs submit safety reports</h4>
+      <p>OpenAI, Anthropic, Google, and Meta submit initial safety evaluations to NIST AI Safety Institute under EO 14110 requirements.</p>
+      <span class="site-enforcement-date">Jan 2024</span>
+    </div>
+    <div class="site-enforcement-card">
+      <div class="site-enforcement-tag" style="background:rgba(220,105,115,0.12);color:#dc6973;">Enforcement</div>
+      <h4>China fines algorithm violations</h4>
+      <p>Cyberspace Administration of China issues penalties to 12 companies for failing to register recommendation algorithms under the Algorithm Regulation.</p>
+      <span class="site-enforcement-date">Mar 2024</span>
+    </div>
+  </div>
+</div>
+<div class="site-footer">
+  <p>AI Regulation Tracker · Last updated March 2026 · Data sourced from official government publications</p>
+</div>`
+      },
+      'carbon': {
+        title: 'Carbon Credit Market Analysis',
+        type: 'Document',
+        container: 'doc',
+        version: 1,
+        html: `<h1>Carbon Credit Market Analysis</h1>
+<div class="doc-subtitle">Voluntary & Compliance Markets — Q4 2024 Review</div>
+<div class="doc-stat-row">
+  <div class="doc-stat"><div class="doc-stat-value">$948B</div><div class="doc-stat-label">Compliance Market</div></div>
+  <div class="doc-stat"><div class="doc-stat-value">$1.7B</div><div class="doc-stat-label">Voluntary Market</div></div>
+  <div class="doc-stat"><div class="doc-stat-value">€68</div><div class="doc-stat-label">EU ETS Price / tCO₂</div></div>
+</div>
+<h2>Market Overview</h2>
+<p>The global carbon market reached a combined <strong>$950B in 2024</strong>, overwhelmingly driven by compliance markets (EU ETS, China ETS, California Cap-and-Trade). The voluntary carbon market (VCM) contracted 15% to $1.7B amid ongoing integrity concerns.</p>
+<div class="doc-callout">The EU ETS Phase IV remains the gold standard for carbon pricing, with allowance prices stabilizing around €68/tCO₂ after peaking at €100 in February 2023. This price level is considered sufficient to drive most industrial decarbonization decisions.</div>
+<h2>Compliance Markets</h2>
+<h3>EU Emissions Trading System</h3>
+<p>The EU ETS covered 36% of EU greenhouse gas emissions across power generation, industry, and aviation. The Carbon Border Adjustment Mechanism (CBAM) began its transitional reporting phase in October 2023, requiring importers to declare embedded emissions in steel, cement, aluminum, fertilizers, and electricity.</p>
+<h3>China National ETS</h3>
+<p>China's ETS expanded to cover <strong>2,200 power plants</strong> responsible for 4.5 billion tonnes of CO₂. Average allowance prices reached ¥82/tCO₂ ($11.50), still far below EU levels but trending upward.</p>
+<h2>Voluntary Market Challenges</h2>
+<p>The VCM faced continued headwinds from quality concerns. Key developments:</p>
+<ul>
+  <li><strong>Verra</strong> announced retirement of 41M credits from contested REDD+ methodologies</li>
+  <li><strong>ICVCM</strong> Core Carbon Principles launched, creating a quality benchmark</li>
+  <li><strong>CORSIA</strong> eligibility criteria tightened, excluding older vintage credits</li>
+  <li>Average VCM credit price fell to <strong>$5.20/tCO₂</strong>, down from $7.40 in 2023</li>
+</ul>
+<h2>Outlook</h2>
+<p>We expect compliance market expansion to continue, with South Korea, Japan, and Mexico all advancing domestic ETS plans. The voluntary market will likely bifurcate into high-integrity credits ($15-30/tCO₂) and commodity-grade offsets ($2-5/tCO₂).</p>`
+      }
+    };
+
+    // Build version histories — earlier versions are less complete drafts
+    const VERSION_HISTORY = {
+      'ev-market': [
+        // v1 — initial draft, just stats and summary
+        `<h1>Global EV Market Share Analysis</h1>
+<div class="doc-subtitle">2024 Annual Review — Draft</div>
+<div class="doc-stat-row">
+  <div class="doc-stat"><div class="doc-stat-value">14.2M</div><div class="doc-stat-label">EVs Sold Globally</div></div>
+  <div class="doc-stat"><div class="doc-stat-value">18%</div><div class="doc-stat-label">New Car Market Share</div></div>
+  <div class="doc-stat"><div class="doc-stat-value">+35%</div><div class="doc-stat-label">YoY Growth</div></div>
+</div>
+<h2>Executive Summary</h2>
+<p>The global EV market reached an inflection point in 2024, with total sales hitting <strong>14.2 million units</strong> — representing 18% of all new car sales worldwide.</p>
+<p><em>Regional breakdown and key findings to follow...</em></p>`,
+        // v2 — added table, no key findings yet
+        `<h1>Global EV Market Share Analysis</h1>
+<div class="doc-subtitle">2024 Annual Review — Prepared by Research Agent</div>
+<div class="doc-stat-row">
+  <div class="doc-stat"><div class="doc-stat-value">14.2M</div><div class="doc-stat-label">EVs Sold Globally</div></div>
+  <div class="doc-stat"><div class="doc-stat-value">18%</div><div class="doc-stat-label">New Car Market Share</div></div>
+  <div class="doc-stat"><div class="doc-stat-value">+35%</div><div class="doc-stat-label">YoY Growth</div></div>
+</div>
+<h2>Executive Summary</h2>
+<p>The global EV market reached an inflection point in 2024, with total sales hitting <strong>14.2 million units</strong> — representing 18% of all new car sales worldwide. This marks a 35% increase over 2023 and signals the transition from early adoption to mainstream.</p>
+<div class="doc-callout">BYD overtook Tesla as the world's largest EV seller in Q4 2023, selling 526K vehicles vs Tesla's 484K in that quarter.</div>
+<h2>Regional Breakdown</h2>
+<table class="doc-table">
+  <thead><tr><th>Region</th><th>2022 Share</th><th>2024 Share</th><th>Growth</th><th>Top OEM</th></tr></thead>
+  <tbody>
+    <tr><td><strong>China</strong></td><td>29%</td><td>45%</td><td>+55%</td><td>BYD</td></tr>
+    <tr><td><strong>Europe</strong></td><td>21%</td><td>24%</td><td>+14%</td><td>VW Group</td></tr>
+    <tr><td><strong>North America</strong></td><td>7%</td><td>9.2%</td><td>+47%</td><td>Tesla</td></tr>
+    <tr><td><strong>SE Asia</strong></td><td>2%</td><td>5.8%</td><td>+190%</td><td>BYD / MG</td></tr>
+    <tr><td><strong>Rest of World</strong></td><td>3%</td><td>4.1%</td><td>+37%</td><td>Various</td></tr>
+  </tbody>
+</table>
+<p><em>Detailed key findings and outlook section in progress...</em></p>`,
+      ],
+      'energy': [
+        // v1 — just the table, no IRA section
+        `<h1>US Renewable Energy Adoption</h1>
+<div class="doc-subtitle">50-State Survey — Initial Data Pull</div>
+<div class="doc-stat-row">
+  <div class="doc-stat"><div class="doc-stat-value">28%</div><div class="doc-stat-label">US Renewable Share</div></div>
+  <div class="doc-stat"><div class="doc-stat-value">+22%</div><div class="doc-stat-label">Solar YoY Growth</div></div>
+  <div class="doc-stat"><div class="doc-stat-value">412 GW</div><div class="doc-stat-label">Total Capacity</div></div>
+</div>
+<h2>Top States by Renewable Capacity</h2>
+<table class="doc-table">
+  <thead><tr><th>State</th><th>Primary Source</th><th>Capacity</th><th>% of Generation</th><th>YoY Growth</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Texas</strong></td><td>Wind</td><td>41.6 GW</td><td>28.3%</td><td>+12%</td></tr>
+    <tr><td><strong>California</strong></td><td>Solar</td><td>39.7 GW</td><td>33.6%</td><td>+18%</td></tr>
+    <tr><td><strong>Iowa</strong></td><td>Wind</td><td>12.4 GW</td><td>62.1%</td><td>+8%</td></tr>
+  </tbody>
+</table>
+<p><em>Expanding to full 50-state dataset. IRA impact analysis pending...</em></p>`,
+      ],
+      'marathon': [
+        // v1 — only 6 events
+        `<div class="sheet-formula-bar"><span class="sheet-formula-label">A1</span><span class="sheet-formula-text">Race Name</span></div>
+<div class="sheet-tabs"><span class="sheet-tab active">All Events</span><span class="sheet-tab">By State</span></div>
+<div class="sheet-grid" style="grid-template-columns: 32px 1.8fr 1.2fr 1fr 0.7fr 1.4fr;">
+<div class="sheet-header-row"><div class="sheet-cell row-num"></div><div class="sheet-cell">Race Name</div><div class="sheet-cell">Location</div><div class="sheet-cell">Date</div><div class="sheet-cell">Field</div><div class="sheet-cell">Notes</div></div>
+<div class="sheet-row"><div class="sheet-cell row-num">1</div><div class="sheet-cell bold">Boston Marathon</div><div class="sheet-cell">Hopkinton → Boston, MA</div><div class="sheet-cell">Apr 21, 2025</div><div class="sheet-cell num">30,000</div><div class="sheet-cell">BQ required</div></div>
+<div class="sheet-row"><div class="sheet-cell row-num">2</div><div class="sheet-cell bold">NYC Marathon</div><div class="sheet-cell">New York, NY</div><div class="sheet-cell">Nov 2, 2025</div><div class="sheet-cell num">50,000</div><div class="sheet-cell">World's largest</div></div>
+<div class="sheet-row"><div class="sheet-cell row-num">3</div><div class="sheet-cell bold">Chicago Marathon</div><div class="sheet-cell">Chicago, IL</div><div class="sheet-cell">Oct 12, 2025</div><div class="sheet-cell num">45,000</div><div class="sheet-cell">World Major</div></div>
+<div class="sheet-row"><div class="sheet-cell row-num">4</div><div class="sheet-cell bold">LA Marathon</div><div class="sheet-cell">Dodger Stadium → Santa Monica</div><div class="sheet-cell">Mar 16, 2025</div><div class="sheet-cell num">25,000</div><div class="sheet-cell">Net downhill</div></div>
+<div class="sheet-row"><div class="sheet-cell row-num">5</div><div class="sheet-cell bold">Houston Marathon</div><div class="sheet-cell">Houston, TX</div><div class="sheet-cell">Jan 19, 2025</div><div class="sheet-cell num">12,000</div><div class="sheet-cell">Fast flat course</div></div>
+<div class="sheet-row"><div class="sheet-cell row-num">6</div><div class="sheet-cell bold">Honolulu Marathon</div><div class="sheet-cell">Honolulu, HI</div><div class="sheet-cell">Dec 14, 2025</div><div class="sheet-cell num">25,000</div><div class="sheet-cell">No time limit</div></div>
+</div>`,
+      ],
+      'cloud': [
+        // v1 — just title slide
+        `<div class="slide">
+  <div class="slide-title">Cloud Provider Comparison</div>
+  <div class="slide-subtitle">Initial research — AWS, Azure, GCP</div>
+  <div class="slide-body">
+    <p>Comparing the top cloud providers across pricing, services, and market position. Data collection in progress.</p>
+  </div>
+  <span class="slide-number">1 / 1</span>
+</div>`,
+        // v2 — title + pricing
+        `<div class="slide">
+  <div class="slide-title">Cloud Provider Comparison 2024</div>
+  <div class="slide-subtitle">AWS vs Azure vs GCP vs Oracle vs IBM</div>
+  <div class="slide-body">
+    <div class="slide-stats">
+      <div class="slide-stat-item"><div class="slide-big-number">$600B+</div><div class="slide-big-label">Total Cloud Market</div></div>
+      <div class="slide-stat-item"><div class="slide-big-number">5</div><div class="slide-big-label">Major Providers</div></div>
+      <div class="slide-stat-item"><div class="slide-big-number">31%</div><div class="slide-big-label">AWS Market Share</div></div>
+    </div>
+  </div>
+  <span class="slide-number">1 / 2</span>
+</div>
+<div class="slide">
+  <div class="slide-body">
+    <h2>Pricing Comparison — Compute (per hour, on-demand)</h2>
+    <div class="slide-cols">
+      <div class="slide-col">
+        <h3>General Purpose (4 vCPU, 16 GB)</h3>
+        <ul>
+          <li><strong>AWS</strong> m7i.xlarge — $0.2016/hr</li>
+          <li><strong>Azure</strong> D4s v5 — $0.192/hr</li>
+          <li><strong>GCP</strong> n2-standard-4 — $0.194/hr</li>
+          <li><strong>Oracle</strong> VM.Standard.E4 — $0.10/hr</li>
+        </ul>
+      </div>
+      <div class="slide-col">
+        <h3>Key Differentiators</h3>
+        <ul>
+          <li><strong>Oracle</strong> is 50% cheaper on compute</li>
+          <li><strong>GCP</strong> sustained-use discounts up to 30%</li>
+          <li><strong>Azure</strong> best for Microsoft shops</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <span class="slide-number">2 / 2</span>
+</div>`,
+        // v3 — added market share slide
+        `<div class="slide">
+  <div class="slide-title">Cloud Provider Comparison 2024</div>
+  <div class="slide-subtitle">AWS vs Azure vs GCP vs Oracle vs IBM — Pricing, Services & Market Position</div>
+  <div class="slide-body">
+    <div class="slide-stats">
+      <div class="slide-stat-item"><div class="slide-big-number">$600B+</div><div class="slide-big-label">Total Cloud Market</div></div>
+      <div class="slide-stat-item"><div class="slide-big-number">5</div><div class="slide-big-label">Major Providers</div></div>
+      <div class="slide-stat-item"><div class="slide-big-number">31%</div><div class="slide-big-label">AWS Market Share</div></div>
+    </div>
+  </div>
+  <span class="slide-number">1 / 3</span>
+</div>
+<div class="slide">
+  <div class="slide-body">
+    <h2>Pricing Comparison — Compute (per hour, on-demand)</h2>
+    <div class="slide-cols">
+      <div class="slide-col">
+        <h3>General Purpose (4 vCPU, 16 GB)</h3>
+        <ul>
+          <li><strong>AWS</strong> m7i.xlarge — $0.2016/hr</li>
+          <li><strong>Azure</strong> D4s v5 — $0.192/hr</li>
+          <li><strong>GCP</strong> n2-standard-4 — $0.194/hr</li>
+          <li><strong>Oracle</strong> VM.Standard.E4 — $0.10/hr</li>
+          <li><strong>IBM</strong> bx2-4x16 — $0.188/hr</li>
+        </ul>
+      </div>
+      <div class="slide-col">
+        <h3>Key Differentiators</h3>
+        <ul>
+          <li><strong>Oracle</strong> is 50% cheaper on compute</li>
+          <li><strong>GCP</strong> sustained-use discounts up to 30%</li>
+          <li><strong>Azure</strong> best for Microsoft shops (15-20% off)</li>
+          <li><strong>AWS</strong> broadest catalog (200+ services)</li>
+          <li><strong>IBM</strong> strongest hybrid cloud play</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <span class="slide-number">2 / 3</span>
+</div>
+<div class="slide">
+  <div class="slide-body">
+    <h2>Market Share & Growth (2024)</h2>
+    <div class="slide-cols">
+      <div class="slide-col">
+        <h3>Current Share</h3>
+        <ul>
+          <li><strong>AWS</strong> — 31% ($105B revenue)</li>
+          <li><strong>Azure</strong> — 25% ($85B revenue)</li>
+          <li><strong>GCP</strong> — 11% ($37B revenue)</li>
+          <li><strong>Oracle</strong> — 3% ($10B cloud rev)</li>
+          <li><strong>IBM</strong> — 2% ($7B cloud rev)</li>
+        </ul>
+      </div>
+      <div class="slide-col">
+        <h3>YoY Growth Rate</h3>
+        <ul>
+          <li><strong>Oracle</strong> — +49% (fastest growing)</li>
+          <li><strong>GCP</strong> — +35%</li>
+          <li><strong>Azure</strong> — +29%</li>
+          <li><strong>AWS</strong> — +17%</li>
+          <li><strong>IBM</strong> — +12%</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <span class="slide-number">3 / 3</span>
+</div>`,
+      ],
+      'faang': [
+        // v1 — just title slide
+        `<div class="slide">
+  <div class="slide-title">FAANG Q4 2024 Earnings Review</div>
+  <div class="slide-subtitle">Revenue Growth, AI Capex, and Forward Guidance</div>
+  <div class="slide-body">
+    <div class="slide-stats">
+      <div class="slide-stat-item"><div class="slide-big-number">$440B</div><div class="slide-big-label">Combined Revenue</div></div>
+      <div class="slide-stat-item"><div class="slide-big-number">+14%</div><div class="slide-big-label">Avg. YoY Growth</div></div>
+      <div class="slide-stat-item"><div class="slide-big-number">$62B</div><div class="slide-big-label">Combined AI Capex</div></div>
+    </div>
+  </div>
+  <span class="slide-number">1 / 1</span>
+</div>`,
+      ],
+      'ai-regs': [
+        // v1 — just nav + hero
+        `<div class="site-nav">
+  <span class="site-nav-brand">AI Regulation Tracker</span>
+  <div class="site-nav-links"><a href="#">Dashboard</a></div>
+</div>
+<div class="site-hero">
+  <h1>Global AI Governance Map</h1>
+  <p>Tracking AI regulations across major jurisdictions.</p>
+  <a class="site-hero-btn" href="#">Explore the Map</a>
+</div>`,
+        // v2 — added feature cards
+        `<div class="site-nav">
+  <span class="site-nav-brand">AI Regulation Tracker</span>
+  <div class="site-nav-links">
+    <a href="#">Dashboard</a>
+    <a href="#">By Country</a>
+    <a href="#">Timeline</a>
+  </div>
+</div>
+<div class="site-hero">
+  <h1>Global AI Governance Map</h1>
+  <p>Tracking AI regulations, executive orders, and guidelines across 42 jurisdictions. Updated in real-time.</p>
+  <a class="site-hero-btn" href="#">Explore the Map</a>
+</div>
+<div class="site-features">
+  <div class="site-feature">
+    <div class="site-feature-icon">📜</div>
+    <h3>EU AI Act</h3>
+    <p>Comprehensive risk-based framework. Effective Aug 2025.</p>
+  </div>
+  <div class="site-feature">
+    <div class="site-feature-icon">🇺🇸</div>
+    <h3>US EO 14110</h3>
+    <p>Executive order on AI safety. NIST AI Safety Institute established.</p>
+  </div>
+  <div class="site-feature">
+    <div class="site-feature-icon">🇨🇳</div>
+    <h3>China AIGC Rules</h3>
+    <p>Mandatory content labeling and algorithm registration.</p>
+  </div>
+</div>`,
+      ],
+    };
+
+    // Convert artifacts to version arrays
+    Object.entries(ARTIFACTS).forEach(([id, a]) => {
+      const history = VERSION_HISTORY[id];
+      if (history) {
+        a.versions = [...history, a.html];
+      } else {
+        a.versions = [a.html];
+      }
+      a.currentVersion = a.versions.length - 1;
+    });
+
+    // Default artifact to show
+    let currentArtifactId = 'ev-market';
 
     // Animation
     const SPINNER_FRAMES = ['\u280B', '\u2819', '\u2839', '\u2838', '\u283C', '\u2834', '\u2826', '\u2827', '\u2807', '\u280F'];
@@ -1767,10 +3301,6 @@
     function renderSidebar() {
       const el = document.getElementById('sidebar-list');
       const allTasks = getAllTasks();
-      const running = allTasks.filter(t => t.status === 'running').length;
-      const done = allTasks.filter(t => t.status === 'completed').length;
-      document.getElementById('stat-running').textContent = running;
-      document.getElementById('stat-done').textContent = done;
 
       el.innerHTML = PROJECTS.map(project => {
         const isCollapsed = project.collapsed;
@@ -1784,29 +3314,21 @@
           else if (task.status === 'new') statusIcon = '<span class="new-dot"></span>';
           else statusIcon = '<span class="queued-dot"></span>';
 
-          let stat = '';
-          if (task.status === 'completed') {
-            const srcCount = task.messages.filter(m => m.type === 'sources').reduce((s, m) => s + m.items.length, 0);
-            if (srcCount > 0) stat = srcCount + ' sources';
-          } else if (task.status === 'running' && task.startTime) {
-            stat = formatTime(Date.now() - task.startTime);
-          }
-
           return `<div class="task-row${isActive ? ' active' : ''}" data-task-id="${task.id}">
             <div class="task-status-icon">${statusIcon}</div>
             <div class="task-row-body">
               <span class="task-row-name">${task.name}</span>
-              ${stat ? `<span class="task-row-stat">${stat}</span>` : ''}
-              <span class="task-row-badge ${task.status}">${task.status === 'completed' ? 'Done' : task.status === 'running' ? 'Running' : task.status === 'new' ? 'New' : 'Queued'}</span>
             </div>
           </div>`;
         }).join('');
 
         return `<div class="project-group${isCollapsed ? ' collapsed' : ''}" data-project-id="${project.id}">
           <div class="project-header">
-            <svg class="project-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+            <svg class="project-folder-icon" viewBox="0 0 24 24">${isCollapsed
+              ? '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>'
+              : '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="2" y1="10" x2="22" y2="10"/>'
+            }</svg>
             <span class="project-name">${project.name}</span>
-            <span class="project-count">${taskCount}</span>
           </div>
           <div class="project-tasks" style="max-height:${isCollapsed ? '0' : taskCount * 48}px">${tasksHtml}</div>
         </div>`;
@@ -1850,8 +3372,9 @@
 
       if (task.messages.length === 0 && task.status === 'new') {
         el.innerHTML = `<div class="conv-empty-start">
+          <div class="conv-empty-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
           <div class="conv-empty-heading">New Task</div>
-          <div class="conv-empty-sub">Describe what you want to research below to get started.</div>
+          <div class="conv-empty-sub">Describe what you want to research. The agent will search, analyze, and synthesize findings.</div>
         </div>`;
         setTimeout(() => {
           const input = document.getElementById('chat-input');
@@ -1861,7 +3384,11 @@
       }
 
       if (task.messages.length === 0) {
-        el.innerHTML = '<div class="conv-empty">Task is queued \u2014 waiting for capacity</div>';
+        el.innerHTML = `<div class="conv-empty-start">
+          <div class="conv-empty-icon" style="background: var(--muted-bg);"><svg viewBox="0 0 24 24" style="stroke: var(--text-muted);"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div class="conv-empty-heading">Queued</div>
+          <div class="conv-empty-sub">This task is waiting for capacity. It will start automatically when a slot opens up.</div>
+        </div>`;
         return;
       }
 
@@ -1869,7 +3396,7 @@
         const msgId = `msg-${task.id}-${idx}`;
         if (msg.type === 'user') {
           return `<div class="msg msg-user">
-            <div class="msg-user-label">You</div>
+            <div class="msg-user-label"><span class="msg-user-avatar">G</span> You</div>
             <div class="msg-user-text">${msg.text}</div>
           </div>`;
         }
@@ -1877,7 +3404,7 @@
           const isDone = msg.done;
           const isExpanded = !msg.collapsed;
           const agLabel = msg.label || 'Research';
-          const agTask = msg.task || (isDone ? 'Thought for ' + (msg.lines.length * 2) + 's' : 'Processing\u2026');
+          const agTask = isDone ? (msg.task || msg.lines.length + ' steps completed') : (msg.task || 'Processing\u2026');
 
           const stepsHtml = msg.lines.map((l, li) => {
             const isCompleted = isDone || (msg.streaming && li < msg.lines.length - 1);
@@ -1905,21 +3432,36 @@
           </div>`;
         }
         if (msg.type === 'sources') {
-          const cardsHtml = msg.items.map(s => `<div class="source-card">
-            <div class="source-card-title">${s.title}</div>
-            <div class="source-card-url">${s.url}</div>
-            <div class="source-card-snippet">${s.snippet}</div>
-          </div>`).join('');
-          return `<div class="msg msg-sources"><div class="sources-grid">${cardsHtml}</div></div>`;
+          const cardsHtml = msg.items.map((s, si) => {
+            const domain = s.url.split('/')[0];
+            const initial = domain.charAt(0).toUpperCase();
+            return `<div class="source-card">
+              <div class="source-card-header">
+                <span class="source-card-favicon">${initial}</span>
+                <span class="source-card-title">${s.title}</span>
+              </div>
+              <div class="source-card-url">${s.url}</div>
+              <div class="source-card-snippet">${s.snippet}</div>
+            </div>`;
+          }).join('');
+          return `<div class="msg msg-sources">
+            <div class="sources-label"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> ${msg.items.length} Sources</div>
+            <div class="sources-grid">${cardsHtml}</div>
+          </div>`;
         }
         if (msg.type === 'artifact') {
+          const lineCount = msg.content.split('\n').length;
           return `<div class="msg msg-artifact">
             <div class="artifact-card">
               <div class="artifact-header">
-                <svg class="artifact-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                <span class="artifact-title">${msg.title}</span>
+                <div class="artifact-icon-wrap"><svg class="artifact-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+                <div class="artifact-meta">
+                  <div class="artifact-title">${msg.title}</div>
+                  <div class="artifact-subtitle">${lineCount} rows · data table</div>
+                </div>
+                <button class="artifact-open-btn">Open</button>
               </div>
-              <div class="artifact-preview">${msg.content}</div>
+              <div class="artifact-preview" style="position:relative;">${msg.content}<div class="artifact-fade"></div></div>
             </div>
           </div>`;
         }
@@ -1937,7 +3479,17 @@
     // INTERACTIONS
     // =============================================
 
-    // Sidebar: project collapse/expand
+    // Artifact open button → switch to artifact view
+    document.getElementById('conversation').addEventListener('click', (e) => {
+      const btn = e.target.closest('.artifact-open-btn');
+      if (btn) {
+        e.preventDefault();
+        setViewMode('canvas');
+        return;
+      }
+    });
+
+    // Sidebar: project collapse/expand (Files panel)
     document.getElementById('sidebar-list').addEventListener('click', (e) => {
       const header = e.target.closest('.project-header');
       if (header) {
@@ -1950,17 +3502,17 @@
         return;
       }
 
-      // Task click
+      // Task click from Files panel
       const row = e.target.closest('.task-row');
       if (row) {
         const taskId = row.dataset.taskId;
-        if (!openTabs.includes(taskId)) {
-          openTabs.push(taskId);
-        }
+        if (!openTabs.includes(taskId)) openTabs.push(taskId);
         activeTabId = taskId;
         renderSidebar();
+  
         renderTabs();
         renderConversation();
+        if (viewMode === 'canvas') renderArtifact();
       }
     });
 
@@ -1975,7 +3527,9 @@
         }
         renderTabs();
         renderSidebar();
+  
         renderConversation();
+        if (viewMode === 'canvas') renderArtifact();
         return;
       }
 
@@ -1984,7 +3538,9 @@
         activeTabId = tab.dataset.tabId;
         renderTabs();
         renderSidebar();
+  
         renderConversation();
+        if (viewMode === 'canvas') renderArtifact();
       }
     });
 
@@ -2104,18 +3660,23 @@
       activeTabId = taskId;
 
       renderSidebar();
+
       renderTabs();
       renderConversation();
     }
 
     document.getElementById('new-task-btn').addEventListener('click', createNewTask);
-
+    document.getElementById('nav-new-task').addEventListener('click', () => {
+      if (viewMode !== 'workspace') setViewMode('workspace');
+      createNewTask();
+    });
     // New Project modal
     const projectModal = document.getElementById('project-modal');
     // Sidebar nav tab switching
     document.getElementById('sidebar-nav').addEventListener('click', (e) => {
       const btn = e.target.closest('.sidebar-nav-item');
       if (!btn) return;
+      if (btn.id === 'nav-new-task') return; // handled separately
       const panelId = btn.dataset.panel;
       document.querySelectorAll('.sidebar-nav-item').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
@@ -2176,154 +3737,326 @@
       });
       const conv = document.getElementById('conversation');
       const canvas = document.getElementById('canvas-view');
+      const chatBar = document.querySelector('.chat-input-bar');
       if (mode === 'workspace') {
         conv.style.display = '';
         canvas.classList.remove('visible');
+        if (chatBar) chatBar.style.display = '';
       } else {
         conv.style.display = 'none';
         canvas.classList.add('visible');
-        renderCanvas();
+        if (chatBar) chatBar.style.display = 'none';
+        renderArtifact();
       }
       renderTabs();
     }
 
     // =============================================
-    // CANVAS RENDERING
+    // ARTIFACT WORKSPACE
     // =============================================
-    function renderCanvas() {
-      const area = document.getElementById('canvas-area');
-      const nodesEl = document.getElementById('canvas-nodes');
-      const linesEl = document.getElementById('canvas-lines');
-      const feedEl = document.getElementById('activity-feed-body');
+    function getArtifactForTask(taskId) {
+      return ARTIFACTS[taskId] || null;
+    }
 
-      const w = area.clientWidth;
-      const h = area.clientHeight;
-      const cx = w / 2;
-      const cy = h / 2;
+    function renderArtifact() {
+      // Find the best artifact to show — prefer active tab, fall back to first completed task with an artifact
+      let artifact = getArtifactForTask(activeTabId);
+      if (!artifact) {
+        for (const id of Object.keys(ARTIFACTS)) {
+          artifact = ARTIFACTS[id];
+          currentArtifactId = id;
+          break;
+        }
+      } else {
+        currentArtifactId = activeTabId;
+      }
 
-      // Determine which services are "active" (used by running tasks)
-      const runningTasks = getAllTasks().filter(t => t.status === 'running');
-      const activeServiceIds = new Set();
-      // Simulate: connected services rotate through being "active"
-      const tick = Math.floor(Date.now() / 3000);
-      const connectedServices = SERVICES.filter(s => s.status === 'connected');
-      if (connectedServices.length > 0 && runningTasks.length > 0) {
-        // 2-3 services active at a time
-        for (let i = 0; i < Math.min(3, connectedServices.length); i++) {
-          const idx = (tick + i) % connectedServices.length;
-          activeServiceIds.add(connectedServices[idx].id);
+      if (!artifact) return;
+
+      document.getElementById('artifact-toolbar-title').textContent = artifact.title;
+      updateVersionUI(artifact);
+
+      const docEl = document.getElementById('artifact-doc');
+      docEl.className = '';
+      const containerMap = {
+        'doc': 'artifact-doc',
+        'slides': 'artifact-slides',
+        'spreadsheet': 'artifact-spreadsheet',
+        'website': 'artifact-website',
+      };
+      docEl.classList.add(containerMap[artifact.container] || 'artifact-doc');
+      docEl.innerHTML = artifact.versions[artifact.currentVersion];
+
+      // Clear context chips on artifact switch
+      contextSelections = [];
+      renderContextChips();
+
+      // Make elements selectable
+      setupArtifactSelection(docEl);
+    }
+
+    function updateVersionUI(artifact) {
+      const total = artifact.versions.length;
+      const current = artifact.currentVersion;
+      document.getElementById('artifact-ver-label').textContent = 'v' + (current + 1) + ' / ' + total;
+      document.getElementById('artifact-ver-prev').disabled = current <= 0;
+      document.getElementById('artifact-ver-next').disabled = current >= total - 1;
+    }
+
+    // Version navigation
+    document.getElementById('artifact-ver-prev').addEventListener('click', () => {
+      const artifact = ARTIFACTS[currentArtifactId];
+      if (!artifact || artifact.currentVersion <= 0) return;
+      artifact.currentVersion--;
+      renderArtifact();
+    });
+    document.getElementById('artifact-ver-next').addEventListener('click', () => {
+      const artifact = ARTIFACTS[currentArtifactId];
+      if (!artifact || artifact.currentVersion >= artifact.versions.length - 1) return;
+      artifact.currentVersion++;
+      renderArtifact();
+    });
+
+    // =============================================
+    // ARTIFACT ELEMENT SELECTION
+    // =============================================
+    let contextSelections = []; // { id, label, text, el }
+
+    function setupArtifactSelection(root) {
+      // Tag selectable elements: paragraphs, list items, table rows, headings, stat cards, callouts, slides, timeline items, enforcement cards, feature cards
+      const selectors = [
+        'p', 'li', 'h2', 'h3',
+        '.doc-stat', '.doc-callout', '.doc-table tr:not(:first-child)',
+        '.slide', '.slide-col',
+        '.sheet-row',
+        '.site-feature', '.site-tl-item', '.site-enforcement-card',
+        '.site-section h2', '.site-table tr:not(:first-child)',
+      ];
+
+      let selectId = 0;
+      selectors.forEach(sel => {
+        root.querySelectorAll(sel).forEach(el => {
+          // Skip if already inside a selectable (avoid double-tagging)
+          if (el.closest('.artifact-selectable')) return;
+          el.classList.add('artifact-selectable');
+          el.dataset.selectId = 'sel-' + (selectId++);
+        });
+      });
+    }
+
+    function getElementLabel(el) {
+      const tag = el.tagName.toLowerCase();
+      if (el.classList.contains('doc-stat')) return 'Stat';
+      if (el.classList.contains('doc-callout')) return 'Callout';
+      if (el.classList.contains('slide')) return 'Slide';
+      if (el.classList.contains('slide-col')) return 'Column';
+      if (el.classList.contains('sheet-row')) return 'Row';
+      if (el.classList.contains('site-feature')) return 'Feature';
+      if (el.classList.contains('site-tl-item')) return 'Event';
+      if (el.classList.contains('site-enforcement-card')) return 'Card';
+      if (tag === 'tr') return 'Row';
+      if (tag === 'h2' || tag === 'h3') return 'Heading';
+      if (tag === 'li') return 'Item';
+      if (tag === 'p') return 'Paragraph';
+      return 'Element';
+    }
+
+    function getElementText(el) {
+      return (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+    }
+
+    function renderContextChips() {
+      const container = document.getElementById('canvas-prompt-context');
+      container.innerHTML = contextSelections.map(s =>
+        `<div class="context-chip" data-select-id="${s.id}">
+          <span class="context-chip-label">${s.label}</span>
+          <span class="context-chip-text">${s.text}</span>
+          <button class="context-chip-close" data-remove-id="${s.id}">&times;</button>
+        </div>`
+      ).join('');
+
+      // Update placeholder
+      const input = document.getElementById('canvas-prompt-input');
+      if (contextSelections.length > 0) {
+        input.placeholder = 'What should I change about ' + (contextSelections.length === 1 ? 'this' : 'these') + '?';
+      } else {
+        input.placeholder = 'Iterate on this artifact...';
+      }
+    }
+
+    // Click handler for artifact element selection
+    document.getElementById('artifact-doc').addEventListener('click', (e) => {
+      const selectable = e.target.closest('.artifact-selectable');
+      if (!selectable) return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      const id = selectable.dataset.selectId;
+      const existing = contextSelections.findIndex(s => s.id === id);
+
+      if (existing >= 0) {
+        // Deselect
+        contextSelections.splice(existing, 1);
+        selectable.classList.remove('selected');
+      } else {
+        // Select
+        contextSelections.push({
+          id: id,
+          label: getElementLabel(selectable),
+          text: getElementText(selectable),
+          el: selectable,
+        });
+        selectable.classList.add('selected');
+      }
+
+      renderContextChips();
+      document.getElementById('canvas-prompt-input').focus();
+    });
+
+    // Remove chip handler
+    document.getElementById('canvas-prompt-context').addEventListener('click', (e) => {
+      const btn = e.target.closest('.context-chip-close');
+      if (!btn) return;
+      const id = btn.dataset.removeId;
+
+      // Remove from selections
+      const idx = contextSelections.findIndex(s => s.id === id);
+      if (idx >= 0) {
+        // Deselect the element in the artifact
+        const el = contextSelections[idx].el;
+        if (el) el.classList.remove('selected');
+        contextSelections.splice(idx, 1);
+      }
+      renderContextChips();
+    });
+
+    // Canvas prompt submit
+    function submitCanvasPrompt() {
+      const input = document.getElementById('canvas-prompt-input');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+
+      const selectedCount = contextSelections.length;
+
+      // Clear selections
+      contextSelections.forEach(s => { if (s.el) s.el.classList.remove('selected'); });
+      contextSelections = [];
+      renderContextChips();
+
+      // Build contextual chain-of-thought steps
+      const cotSteps = [];
+      if (selectedCount > 0) {
+        cotSteps.push('Reading ' + selectedCount + ' selected element' + (selectedCount > 1 ? 's' : ''));
+      }
+      cotSteps.push('Parsing edit instruction');
+
+      // Add steps based on the prompt content
+      const lower = text.toLowerCase();
+      if (lower.includes('table') || lower.includes('data') || lower.includes('row') || lower.includes('column')) {
+        cotSteps.push('Restructuring data layout');
+        cotSteps.push('Reformatting table cells');
+      } else if (lower.includes('add') || lower.includes('section') || lower.includes('include')) {
+        cotSteps.push('Generating new content');
+        cotSteps.push('Inserting into document structure');
+      } else if (lower.includes('style') || lower.includes('color') || lower.includes('font') || lower.includes('design')) {
+        cotSteps.push('Adjusting visual styles');
+        cotSteps.push('Validating accessibility contrast');
+      } else if (lower.includes('remove') || lower.includes('delete') || lower.includes('hide')) {
+        cotSteps.push('Identifying elements to remove');
+        cotSteps.push('Cleaning up surrounding layout');
+      } else if (lower.includes('rewrite') || lower.includes('rephrase') || lower.includes('tone') || lower.includes('change')) {
+        cotSteps.push('Analyzing current content tone');
+        cotSteps.push('Rewriting selected passages');
+      } else {
+        cotSteps.push('Analyzing artifact structure');
+        cotSteps.push('Generating modifications');
+      }
+      cotSteps.push('Validating output');
+      cotSteps.push('Applying changes');
+
+      // Show overlay
+      const overlay = document.getElementById('artifact-updating');
+      const stepsEl = document.getElementById('artifact-updating-steps');
+      const progressBar = document.getElementById('artifact-updating-progress');
+      const titleEl = document.getElementById('artifact-updating-title');
+
+      titleEl.textContent = 'Editing artifact...';
+      stepsEl.innerHTML = '';
+      progressBar.style.width = '0%';
+      overlay.classList.add('active');
+
+      // Animate steps one by one
+      let stepIdx = 0;
+      const stepDelay = 700;
+      const totalDuration = cotSteps.length * stepDelay + 600;
+
+      function showNextStep() {
+        if (stepIdx >= cotSteps.length) return;
+
+        // Mark previous step as completed
+        if (stepIdx > 0) {
+          const prev = stepsEl.children[stepIdx - 1];
+          if (prev) {
+            prev.classList.remove('active');
+            prev.classList.add('completed');
+            prev.querySelector('.artifact-cot-icon').innerHTML = '<span class="check">&#x2713;</span>';
+          }
+        }
+
+        // Add new step
+        const stepEl = document.createElement('div');
+        stepEl.className = 'artifact-cot-step';
+        stepEl.innerHTML = '<span class="artifact-cot-icon"><span class="spinner-char">\u280B</span></span><span>' + cotSteps[stepIdx] + '</span>';
+        stepsEl.appendChild(stepEl);
+
+        // Animate in
+        requestAnimationFrame(() => {
+          stepEl.classList.add('visible', 'active');
+        });
+
+        // Update progress
+        progressBar.style.width = Math.round(((stepIdx + 1) / cotSteps.length) * 100) + '%';
+
+        stepIdx++;
+        if (stepIdx < cotSteps.length) {
+          setTimeout(showNextStep, stepDelay);
+        } else {
+          // Complete last step after a beat
+          setTimeout(() => {
+            const last = stepsEl.children[stepsEl.children.length - 1];
+            if (last) {
+              last.classList.remove('active');
+              last.classList.add('completed');
+              last.querySelector('.artifact-cot-icon').innerHTML = '<span class="check">&#x2713;</span>';
+            }
+            progressBar.style.width = '100%';
+            titleEl.textContent = 'Done';
+
+            // Dismiss after a moment
+            setTimeout(() => {
+              const artifact = ARTIFACTS[currentArtifactId];
+              if (artifact) {
+                // Clone current HTML as new version (in real use, AI would return new HTML)
+                const currentHtml = artifact.versions[artifact.currentVersion];
+                artifact.versions.push(currentHtml);
+                artifact.currentVersion = artifact.versions.length - 1;
+                updateVersionUI(artifact);
+              }
+              overlay.classList.remove('active');
+            }, 500);
+          }, stepDelay);
         }
       }
 
-      // Render service nodes in a circle
-      const radius = Math.min(w, h) * 0.32;
-      const nodeCount = SERVICES.length;
-
-      let nodesHtml = '';
-      let linesHtml = '';
-
-      // Center node
-      nodesHtml += `<div class="canvas-center-node" style="left:${cx}px;top:${cy}px;">
-        <div class="center-node-circle">
-          <div class="center-node-glow"></div>
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-        </div>
-        <span class="center-node-label">Agent</span>
-      </div>`;
-
-      SERVICES.forEach((svc, i) => {
-        const angle = (i / nodeCount) * Math.PI * 2 - Math.PI / 2;
-        const nx = cx + Math.cos(angle) * radius;
-        const ny = cy + Math.sin(angle) * radius;
-        const isConnected = svc.status === 'connected';
-        const isActive = activeServiceIds.has(svc.id);
-        const stateClass = isActive ? 'active' : isConnected ? 'connected' : 'disconnected';
-        const lineClass = isActive ? 'active' : isConnected ? 'connected' : 'disconnected';
-
-        nodesHtml += `<div class="canvas-service-node ${stateClass}" style="left:${nx}px;top:${ny}px;">
-          <div class="service-node-circle">${svc.icon}</div>
-          <span class="service-node-label">${svc.name}</span>
-        </div>`;
-
-        linesHtml += `<line class="canvas-line ${lineClass}" x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}"/>`;
-      });
-
-      nodesEl.innerHTML = nodesHtml;
-      linesEl.innerHTML = linesHtml;
-
-      // Activity feed
-      renderActivityFeed();
+      // Kick off after a short delay
+      setTimeout(showNextStep, 300);
     }
 
-    function renderActivityFeed() {
-      const feedEl = document.getElementById('activity-feed-body');
-      const allTasks = getAllTasks();
-      const running = allTasks.filter(t => t.status === 'running');
-      const completed = allTasks.filter(t => t.status === 'completed');
-
-      let html = '';
-
-      // Active sessions
-      html += '<div class="activity-section-title">Active Sessions</div>';
-      if (running.length === 0) {
-        html += '<div style="padding:0.5rem 1rem;font-size:0.62rem;color:var(--text-muted);">No active tasks</div>';
-      } else {
-        running.forEach(task => {
-          const elapsed = task.startTime ? formatTime(Date.now() - task.startTime) : '';
-          // Pick 2-3 random service icons for decoration
-          const connSvcs = SERVICES.filter(s => s.status === 'connected');
-          const svcIcons = connSvcs.slice(0, 3).map(s => s.icon).join('');
-          html += `<div class="activity-item" data-task-id="${task.id}">
-            <div class="activity-item-icon"><span class="spinner-char">\u280B</span></div>
-            <div class="activity-item-body">
-              <div class="activity-item-name">${task.name}</div>
-              <div class="activity-item-meta">
-                <span>${elapsed}</span>
-                <span class="activity-item-services">${svcIcons}</span>
-              </div>
-            </div>
-          </div>`;
-        });
-      }
-
-      html += '<div class="activity-divider"></div>';
-      html += '<div class="activity-section-title">Recent</div>';
-
-      if (completed.length === 0) {
-        html += '<div style="padding:0.5rem 1rem;font-size:0.62rem;color:var(--text-muted);">No completed tasks yet</div>';
-      } else {
-        completed.forEach(task => {
-          const ago = task.startTime ? Math.floor((Date.now() - task.startTime) / 60000) : 0;
-          const agoText = ago < 1 ? 'just now' : ago + ' min ago';
-          const srcCount = task.messages.filter(m => m.type === 'sources').reduce((s, m) => s + m.items.length, 0);
-          html += `<div class="activity-item" data-task-id="${task.id}">
-            <div class="activity-item-icon"><span class="check-icon">\u2713</span></div>
-            <div class="activity-item-body">
-              <div class="activity-item-name">${task.name}</div>
-              <div class="activity-item-meta">
-                <span>${agoText}</span>
-                ${srcCount > 0 ? `<span>\u00b7 ${srcCount} sources</span>` : ''}
-              </div>
-            </div>
-          </div>`;
-        });
-      }
-
-      feedEl.innerHTML = html;
-    }
-
-    // Activity feed item clicks → switch to workspace + open task
-    document.getElementById('activity-feed-body').addEventListener('click', (e) => {
-      const item = e.target.closest('.activity-item');
-      if (!item) return;
-      const taskId = item.dataset.taskId;
-      if (!openTabs.includes(taskId)) openTabs.push(taskId);
-      activeTabId = taskId;
-      setViewMode('workspace');
-      renderSidebar();
-      renderTabs();
-      renderConversation();
+    document.getElementById('canvas-prompt-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); submitCanvasPrompt(); }
     });
+    document.getElementById('canvas-prompt-send').addEventListener('click', submitCanvasPrompt);
 
     // =============================================
     // ANIMATION ENGINE
@@ -2360,16 +4093,20 @@
           if (lastMsg && lastMsg.type === 'thinking' && lastMsg.streaming && !lastMsg.done) {
             if (Math.random() < 0.35 && lastMsg.lines.length < 8) {
               const actions = [
-                'Analyzing additional data points',
-                'Cross-referencing sources',
-                'Verifying statistical claims',
-                'Extracting key findings',
-                'Comparing against historical data',
-                'Evaluating source credibility',
-                'Building data visualization',
-                'Processing document batch',
-                'Running sentiment analysis',
-                'Calculating trend projections',
+                'Analyzing additional data points from secondary sources',
+                'Cross-referencing findings with government databases',
+                'Verifying statistical claims against primary datasets',
+                'Extracting key findings and confidence intervals',
+                'Comparing against 5-year historical baselines',
+                'Evaluating source credibility and publication date',
+                'Building structured data table from unstructured reports',
+                'Processing batch of 12 PDF documents',
+                'Running comparative analysis across regions',
+                'Calculating compound growth projections through 2028',
+                'Flagging contradictory data between sources',
+                'Normalizing units and currency for cross-region comparison',
+                'Scraping supplementary data from industry association reports',
+                'Validating findings against peer-reviewed literature',
               ];
               lastMsg.lines.push(actions[Math.floor(Math.random() * actions.length)]);
               if (task.id === activeTabId) needsRender = true;
@@ -2394,11 +4131,13 @@
 
       // Update sidebar timers
       renderSidebar();
+
+
       if (viewMode === 'workspace' && needsRender) {
         renderConversation();
       }
       if (viewMode === 'canvas') {
-        renderCanvas();
+        // Artifact view doesn't need periodic re-renders
       }
     }
 
@@ -2428,11 +4167,12 @@
       lastMsg.collapsed = true;
       lastMsg.streaming = false;
 
-      // Add a generic response
+      // Add a contextual response
       const responses = [
-        '<p><strong>Progress update:</strong> I\'ve gathered data from multiple sources and am now synthesizing findings. Key patterns are emerging around market dynamics and competitive positioning.</p><p>I\'ll continue refining the analysis with additional source verification.</p>',
-        '<p><strong>Interim findings:</strong> The data shows significant regional variation in adoption patterns. Early analysis suggests several key drivers influencing the trends.</p><ul><li>Regulatory environment plays a larger role than initially expected</li><li>Market consolidation is accelerating in the top 3 players</li><li>Growth trajectories vary significantly by geography</li></ul>',
-        '<p><strong>Initial analysis complete.</strong> I\'ve processed the primary data sources and identified the core trends. The market is showing clear directional signals that align with broader macroeconomic patterns.</p><p>Moving to secondary source verification and cross-referencing now.</p>',
+        '<p><strong>Progress update:</strong> I\'ve processed 18 sources so far and the data is converging. Key patterns are emerging:</p><ul><li>Market concentration is increasing — top 3 players now control 64% of volume, up from 51% two years ago</li><li>Pricing pressure is most acute in the mid-tier segment</li><li>Geographic expansion is the primary growth vector for incumbents</li></ul><p>Continuing to verify these figures against primary datasets.</p>',
+        '<p><strong>Interim findings:</strong> The data reveals more regional divergence than expected. Three distinct patterns are forming:</p><ul><li><strong>Mature markets</strong> (US, EU, Japan) — slowing growth but deepening adoption, driven by enterprise contracts</li><li><strong>High-growth markets</strong> (SE Asia, LATAM, India) — 40-120% YoY growth from a low base, price-sensitive segments</li><li><strong>Policy-driven markets</strong> (China, UAE, Singapore) — government mandates and subsidies shaping adoption curves</li></ul><p>I\'m now building the comparative framework to quantify these patterns.</p>',
+        '<p><strong>Initial analysis complete.</strong> I\'ve validated the primary data and can share high-confidence findings:</p><p>The market grew <strong>23% YoY</strong> overall, but this headline number masks significant variance. The fastest-growing sub-segments are outpacing the market by 3-5x, while legacy categories are contracting. I\'m now pulling secondary sources to build out the full competitive landscape.</p>',
+        '<p><strong>Source validation complete.</strong> After cross-referencing 12 primary sources, the data quality is high — only 2 conflicting data points which I\'ve flagged for review.</p><p>Key takeaway so far: the structural shift everyone has been discussing is real, but the timeline is approximately 18 months behind most analyst projections. I\'m synthesizing the complete findings now.</p>',
       ];
 
       task.messages.push({
@@ -2443,11 +4183,18 @@
       // Sometimes add a new thinking block to continue
       if (Math.random() < 0.6) {
         setTimeout(() => {
+          const continuations = [
+            { label: 'Verification', task: 'Cross-checking findings against secondary sources' },
+            { label: 'Deep Dive', task: 'Expanding analysis on high-impact segments' },
+            { label: 'Synthesis', task: 'Building structured output from validated findings' },
+            { label: 'Data Enrichment', task: 'Adding supplementary context from industry reports' },
+          ];
+          const cont = continuations[Math.floor(Math.random() * continuations.length)];
           task.messages.push({
             type: 'thinking',
-            label: 'Research',
-            task: 'Continuing with secondary sources',
-            lines: ['Continuing analysis with secondary sources'],
+            label: cont.label,
+            task: cont.task,
+            lines: [cont.task],
             collapsed: false,
             done: false,
             streaming: true,
@@ -2476,6 +4223,7 @@
     // INIT
     // =============================================
     renderSidebar();
+    renderTaskInbox();
     renderTabs();
     renderConversation();
     if (typeof startAllSpinners === 'function') startAllSpinners();
