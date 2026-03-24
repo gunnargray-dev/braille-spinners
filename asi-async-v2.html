@@ -33,12 +33,11 @@
 
     /* --- Left Sidebar --- */
     .sidebar {
-      width: 280px;
-      min-width: 280px;
-      border-right: 1px solid var(--border);
+      width: 200px;
+      min-width: 200px;
       display: flex;
       flex-direction: column;
-      background: color-mix(in srgb, var(--surface) 60%, var(--bg));
+      background: transparent;
       overflow: hidden;
     }
     .sidebar-menu-bar {
@@ -113,9 +112,9 @@
       cursor: pointer;
       border: none;
       background: none;
-      color: var(--text-muted);
+      color: var(--text);
       font-family: var(--font-body);
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       font-weight: 450;
       letter-spacing: -0.01em;
       transition: color 0.15s ease, background 0.15s ease;
@@ -255,9 +254,9 @@
       stroke: var(--text-secondary);
     }
     .project-name {
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: var(--text-secondary);
+      font-size: 0.78rem;
+      font-weight: 550;
+      color: var(--text);
       flex: 1;
       white-space: nowrap;
       overflow: hidden;
@@ -326,6 +325,697 @@
       min-width: 0;
     }
     .task-row.active .task-row-name { color: var(--text); }
+
+    .sidebar-section-label {
+      padding: 0.75rem 1rem 0.35rem;
+      font-size: 0.58rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    /* Project landing view — two column */
+    .project-landing {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .project-landing-inner {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: none;
+      padding: 2rem 2rem 2rem;
+    }
+    .project-landing-inner::-webkit-scrollbar { display: none; }
+    .project-landing-header {
+      margin-bottom: 1.25rem;
+    }
+    .project-landing-header h1 {
+      font-size: 1.15rem;
+      font-weight: 650;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.1rem;
+    }
+    .project-landing-count {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+    .project-landing-cols {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    /* Left column — queries */
+    .pl-col-label {
+      font-size: 0.58rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+    .project-landing-tasks {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .pl-task {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.55rem 0.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.12s ease;
+    }
+    .pl-task:hover { background: var(--surface-raised); }
+    .pl-task-icon {
+      width: 16px; height: 16px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .pl-task-icon .spinner-char { font-size: 0.72rem; color: var(--blue); }
+    .pl-task-icon .check-icon { font-size: 0.68rem; color: var(--green); }
+    .pl-task-icon .queued-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      border: 1.5px solid var(--text-muted);
+    }
+    .pl-task-icon .new-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--purple);
+    }
+    .pl-task-body { flex: 1; min-width: 0; }
+    .pl-task-name {
+      font-size: 0.82rem;
+      font-weight: 450;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .pl-task-meta {
+      font-size: 0.58rem;
+      color: var(--text-muted);
+      margin-top: 0.08rem;
+    }
+    .pl-empty {
+      padding: 1.5rem 0.75rem;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+    }
+
+    /* Inbox-style task rows (global tasks view) */
+    .pl-inbox-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .pl-inbox-item {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.6rem 0.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.12s ease;
+    }
+    .pl-inbox-item:hover { background: var(--surface-raised); }
+    .pl-inbox-item-icon {
+      width: 16px; height: 16px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .pl-inbox-item-icon .spinner-char { font-size: 0.72rem; color: var(--blue); }
+    .pl-inbox-item-icon .check-icon { font-size: 0.68rem; color: var(--green); }
+    .pl-inbox-item-icon .queued-dot { width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--text-muted); }
+    .pl-inbox-item-body {
+      flex: 1; min-width: 0;
+    }
+    .pl-inbox-item-name {
+      font-size: 0.82rem;
+      font-weight: 450;
+      color: var(--text);
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .pl-inbox-item-meta {
+      font-size: 0.58rem;
+      color: var(--text-muted);
+      margin-top: 0.08rem;
+      display: flex;
+      gap: 0.35rem;
+      align-items: center;
+    }
+    .pl-inbox-item-preview {
+      display: flex;
+      gap: 0.35rem;
+      flex-shrink: 0;
+    }
+    .pl-inbox-artifact {
+      height: 32px;
+      width: 48px;
+      border-radius: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.5rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .pl-inbox-artifact.type-doc { border-left: 2px solid var(--blue); }
+    .pl-inbox-artifact.type-slides { border-left: 2px solid var(--yellow); }
+    .pl-inbox-artifact.type-spreadsheet { border-left: 2px solid var(--green); }
+    .pl-inbox-artifact.type-website { border-left: 2px solid var(--accent); }
+
+    /* Inbox header bar */
+    .pl-inbox-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .pl-inbox-toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      flex: 1;
+    }
+    .pl-inbox-filter {
+      font-size: 0.62rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.3rem 0.55rem;
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+    }
+    .pl-inbox-filter:hover {
+      border-color: var(--text-muted);
+      color: var(--text-secondary);
+    }
+    .pl-inbox-filter.active {
+      background: var(--accent-bg-subtle);
+      border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+      color: var(--accent);
+    }
+    .pl-inbox-overflow {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: 1px solid var(--border);
+      border-radius: 6px; cursor: pointer;
+      color: var(--text-muted);
+      transition: border-color 0.15s ease, color 0.15s ease;
+      flex-shrink: 0;
+    }
+    .pl-inbox-overflow:hover {
+      border-color: var(--text-muted);
+      color: var(--text-secondary);
+    }
+    .pl-inbox-overflow svg {
+      width: 14px; height: 14px;
+      stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    /* Project pill in inbox rows */
+    .pl-inbox-project-pill {
+      font-size: 0.52rem;
+      font-weight: 550;
+      color: var(--text-muted);
+      background: var(--muted-bg);
+      padding: 0.12rem 0.4rem;
+      border-radius: 4px;
+      white-space: nowrap;
+      letter-spacing: 0.02em;
+    }
+
+    /* Right column — files */
+    .pl-files-section {
+      margin-bottom: 1rem;
+    }
+    .pl-files-section:last-child { margin-bottom: 0; }
+    .pl-file {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.4rem 0.5rem;
+      border-radius: 6px;
+      cursor: default;
+      transition: background 0.12s ease;
+    }
+    .pl-file:hover { background: var(--surface-raised); }
+    .pl-file-icon {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.7rem;
+    }
+    .pl-file-icon.pdf { background: rgba(220,105,115,0.12); }
+    .pl-file-icon.spreadsheet { background: rgba(83,158,85,0.12); }
+    .pl-file-icon.doc { background: rgba(96,165,250,0.12); }
+    .pl-file-icon.slides { background: rgba(213,113,65,0.12); }
+    .pl-file-icon.website { background: rgba(78,153,163,0.12); }
+    .pl-file-icon.archive { background: rgba(176,124,212,0.12); }
+    .pl-file-body { flex: 1; min-width: 0; }
+    .pl-file-name {
+      font-size: 0.68rem;
+      font-weight: 450;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.3;
+    }
+    .pl-file-size {
+      font-size: 0.55rem;
+      color: var(--text-muted);
+    }
+    .pl-files-empty {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      padding: 0.5rem;
+    }
+    .pl-upload-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      padding: 0.4rem;
+      margin-top: 0.35rem;
+      font-size: 0.62rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: none;
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      font-family: var(--font-body);
+      transition: border-color 0.15s ease, color 0.15s ease;
+    }
+    .pl-upload-btn:hover {
+      border-color: var(--text-muted);
+      color: var(--text-secondary);
+    }
+    .pl-upload-btn svg {
+      width: 12px; height: 12px;
+      stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    /* Dashboard widgets */
+    .pl-widgets {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.65rem;
+      margin-bottom: 1.5rem;
+    }
+    .pl-widget {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .pl-widget:hover {
+      border-color: var(--text-muted);
+      background: var(--surface-raised);
+    }
+    .pl-widget-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    .pl-widget-title {
+      font-size: 0.62rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+    .pl-widget-badge {
+      font-size: 0.5rem;
+      font-weight: 600;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .pl-widget-badge.live {
+      color: var(--green);
+      background: var(--green-bg);
+    }
+    .pl-widget-badge.live::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: livePulse 2s ease-in-out infinite;
+    }
+    @keyframes livePulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+    .pl-widget-badge.scheduled {
+      color: var(--text-muted);
+      background: var(--muted-bg);
+    }
+    .pl-widget-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .pl-widget-sub {
+      font-size: 0.58rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+    .pl-widget-change {
+      font-weight: 600;
+    }
+    .pl-widget-change.up { color: var(--green); }
+    .pl-widget-change.down { color: var(--red); }
+
+    /* Sparkline */
+    .pl-sparkline {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 32px;
+      margin-top: 0.5rem;
+    }
+    .pl-spark-bar {
+      flex: 1;
+      border-radius: 2px 2px 0 0;
+      min-height: 2px;
+      transition: height 0.3s ease;
+    }
+
+    /* Activity log widget */
+    .pl-widget-log {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-top: 0.15rem;
+    }
+    .pl-log-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.6rem;
+    }
+    .pl-log-time {
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      color: var(--text-muted);
+      min-width: 38px;
+      flex-shrink: 0;
+    }
+    .pl-log-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .pl-log-text {
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Ticker widget */
+    .pl-ticker-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      margin-top: 0.15rem;
+    }
+    .pl-ticker-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.62rem;
+    }
+    .pl-ticker-name {
+      font-weight: 550;
+      color: var(--text);
+      min-width: 45px;
+    }
+    .pl-ticker-bar-wrap {
+      flex: 1;
+      height: 4px;
+      background: var(--border-subtle);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .pl-ticker-bar {
+      height: 100%;
+      border-radius: 2px;
+    }
+    .pl-ticker-val {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      color: var(--text-muted);
+      min-width: 32px;
+      text-align: right;
+    }
+
+    /* Donut chart widget */
+    .pl-donut-wrap {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 0.35rem;
+    }
+    .pl-donut {
+      width: 72px; height: 72px;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .pl-donut svg {
+      width: 100%; height: 100%;
+      transform: rotate(-90deg);
+    }
+    .pl-donut circle {
+      fill: none;
+      stroke-width: 6;
+      cx: 36; cy: 36; r: 30;
+    }
+    .pl-donut-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    .pl-donut-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      flex: 1;
+      min-width: 0;
+    }
+    .pl-donut-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.58rem;
+      color: var(--text-secondary);
+    }
+    .pl-donut-legend-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .pl-donut-legend-val {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      color: var(--text-muted);
+    }
+
+    /* Area sparkline */
+    .pl-area-chart {
+      height: 48px;
+      margin-top: 0.4rem;
+      position: relative;
+    }
+    .pl-area-chart svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Heatmap grid */
+    .pl-heatmap {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 2px;
+      margin-top: 0.4rem;
+    }
+    .pl-heatmap-cell {
+      aspect-ratio: 1;
+      border-radius: 2px;
+      position: relative;
+    }
+    .pl-heatmap-cell::after {
+      content: attr(data-label);
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.4rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+    }
+    .pl-heatmap-labels {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 2px;
+      margin-top: 1px;
+    }
+    .pl-heatmap-label {
+      font-size: 0.4rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* Mini bar chart (horizontal) */
+    .pl-mini-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      margin-top: 0.25rem;
+    }
+    .pl-mini-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .pl-mini-bar-label {
+      font-size: 0.55rem;
+      color: var(--text-muted);
+      min-width: 22px;
+      text-align: right;
+      font-family: var(--font-mono);
+    }
+    .pl-mini-bar-track {
+      flex: 1;
+      height: 12px;
+      background: var(--border-subtle);
+      border-radius: 3px;
+      overflow: hidden;
+      display: flex;
+    }
+    .pl-mini-bar-seg {
+      height: 100%;
+      transition: width 0.4s ease;
+    }
+    .pl-mini-bar-val {
+      font-size: 0.55rem;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+      min-width: 28px;
+    }
+
+    /* Project landing suggestions */
+    .pl-suggestions {
+      display: flex;
+      gap: 0.35rem;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+    .pl-suggestions:empty { display: none; }
+    .pl-suggestion {
+      font-size: 0.65rem;
+      font-weight: 450;
+      color: var(--text-muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.4rem 0.7rem;
+      cursor: pointer;
+      transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+      font-family: var(--font-body);
+      white-space: nowrap;
+    }
+    .pl-suggestion:hover {
+      border-color: var(--text-muted);
+      color: var(--text-secondary);
+      background: var(--surface-raised);
+    }
+
+    /* Project landing input */
+    .project-landing-input {
+      padding: 1.5rem 2rem 0.85rem;
+      background: linear-gradient(to bottom, transparent, var(--surface) 40%);
+      position: relative;
+      margin-top: -1rem;
+      z-index: 5;
+    }
+    .project-landing-input-inner {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 0.55rem 0.65rem 0.55rem 1rem;
+      width: 100%;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .project-landing-input-inner:focus-within {
+      border-color: var(--border-base);
+      box-shadow: 0 0 0 1px var(--border-soft);
+    }
+    .project-landing-input-field {
+      flex: 1;
+      background: none; border: none;
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      color: var(--text);
+      outline: none;
+      letter-spacing: -0.01em;
+    }
+    .project-landing-input-field::placeholder { color: var(--text-muted); }
+    .project-landing-send {
+      width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--text); border: none; border-radius: 50%;
+      cursor: pointer; transition: opacity 0.15s ease; flex-shrink: 0;
+    }
+    .project-landing-send:hover { opacity: 0.8; }
+    .project-landing-send svg {
+      width: 14px; height: 14px;
+      stroke: var(--bg); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
 
     /* Sidebar footer actions */
     .sidebar-footer {
@@ -456,7 +1146,10 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      background: var(--bg);
+      background: var(--surface);
+      margin: 0.35rem 0.35rem 0.35rem 0;
+      border-radius: 14px;
+      border: 1px solid var(--border);
     }
 
     /* Tab bar */
@@ -857,6 +1550,7 @@
       min-height: 36px;
       padding: 0 0.75rem;
       gap: 0.5rem;
+      border-radius: 13px 13px 0 0;
     }
     .view-toggle {
       display: inline-flex;
@@ -882,6 +1576,31 @@
     .view-toggle-btn.active {
       background: var(--border);
       color: var(--text);
+    }
+    .back-to-project {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 0.68rem;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      transition: color 0.15s ease, background 0.15s ease;
+      margin-right: 0.25rem;
+    }
+    .back-to-project:hover {
+      color: var(--text-secondary);
+      background: var(--surface-raised);
+    }
+    .back-to-project svg {
+      width: 14px; height: 14px;
+      stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
     }
     .view-toggle-spacer { flex: 1; }
 
@@ -1906,6 +2625,33 @@
       transition: width 0.4s ease;
     }
 
+    /* Artifact diff highlight */
+    .artifact-changed {
+      position: relative;
+      animation: diffHighlight 2.5s ease forwards;
+    }
+    .artifact-changed::before {
+      content: '';
+      position: absolute;
+      inset: -2px -4px;
+      border-radius: 4px;
+      background: var(--accent);
+      opacity: 0;
+      animation: diffGlow 2.5s ease forwards;
+      pointer-events: none;
+      z-index: -1;
+    }
+    @keyframes diffHighlight {
+      0% { background: color-mix(in srgb, var(--accent) 15%, transparent); }
+      70% { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+      100% { background: transparent; }
+    }
+    @keyframes diffGlow {
+      0% { opacity: 0.12; }
+      30% { opacity: 0.08; }
+      100% { opacity: 0; }
+    }
+
     /* Streaming text animation */
     .streaming-word {
       display: inline;
@@ -1916,7 +2662,7 @@
       to { opacity: 1; filter: blur(0); }
     }
 
-    /* Empty state */
+    /* Empty / new task state */
     .conv-empty {
       flex: 1;
       display: flex;
@@ -1934,38 +2680,77 @@
       gap: 0.5rem;
       padding: 2rem;
     }
-    .conv-empty-icon {
-      width: 40px; height: 40px;
-      border-radius: 12px;
-      background: var(--accent-bg-subtle);
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 0.25rem;
-    }
-    .conv-empty-icon svg {
-      width: 20px; height: 20px;
-      stroke: var(--accent); fill: none;
-      stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
-    }
     .conv-empty-heading {
-      font-size: 1.05rem;
-      font-weight: 600;
+      font-size: 1.15rem;
+      font-weight: 650;
       color: var(--text);
-      letter-spacing: -0.02em;
+      letter-spacing: -0.03em;
     }
     .conv-empty-sub {
       font-size: 0.78rem;
       color: var(--text-muted);
-      max-width: 280px;
+      max-width: 320px;
       text-align: center;
-      line-height: 1.5;
+      line-height: 1.55;
+      margin-bottom: 0.5rem;
+    }
+    .new-task-suggestions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      max-width: 480px;
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+    .new-task-suggestion {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      padding: 0.75rem 0.85rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease;
+      text-align: left;
+    }
+    .new-task-suggestion:hover {
+      border-color: var(--text-muted);
+      background: var(--surface-raised);
+    }
+    .new-task-suggestion-icon {
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.85rem;
+      background: var(--bg-soft);
+    }
+    .new-task-suggestion-body {
+      flex: 1; min-width: 0;
+    }
+    .new-task-suggestion-title {
+      font-size: 0.72rem;
+      font-weight: 550;
+      color: var(--text);
+      line-height: 1.3;
+      margin-bottom: 0.1rem;
+    }
+    .new-task-suggestion-desc {
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      line-height: 1.4;
     }
 
     /* --- Chat Input Bar --- */
     .chat-input-bar {
-      padding: 0.5rem 1.25rem 0.85rem;
+      padding: 1.5rem 1.25rem 0.85rem;
       display: flex;
       flex-direction: column;
-      background: var(--bg);
+      background: linear-gradient(to bottom, transparent, var(--surface) 40%);
+      position: relative;
+      margin-top: -1rem;
+      z-index: 5;
     }
     .chat-input-inner {
       display: flex;
@@ -2046,277 +2831,81 @@
   <div class="workspace">
     <!-- LEFT SIDEBAR -->
     <div class="sidebar">
-      <div class="sidebar-menu-bar" style="position: relative;">
-        <button class="menu-btn" id="menu-btn" aria-label="Menu">
-          <svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
-        </button>
-        <div class="menu-dropdown" id="menu-dropdown">
-          <a href="index.html">Index</a>
-          <a href="components.html">Components</a>
-          <a href="streaming.html">Streaming</a>
-          <a href="asi-v0-scope.html">Wide Research</a>
-          <a href="asi-v0-rows.html">Wide Research - Rows</a>
-          <a href="asi.html">Subagents - List</a>
-          <a href="asi-mega.html">Subagents - Grid</a>
-          <a href="asi-condensed.html">Condensed</a>
-          <a href="asi-floating.html">Floating Agents</a>
-          <a href="asi-async.html">Async Agents</a>
-          <a href="asi-async-v2.html">Workspace</a>
-        </div>
-      </div>
       <div class="sidebar-nav" id="sidebar-nav">
         <button class="sidebar-nav-item" id="nav-new-task">
           <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           New Task
         </button>
-        <button class="sidebar-nav-item active" data-panel="files">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          Files
+        <button class="sidebar-nav-item" id="nav-tasks-inbox">
+          <svg viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+          Tasks
         </button>
-        <button class="sidebar-nav-item" data-panel="sources">
+        <button class="sidebar-nav-item" id="nav-connectors">
           <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
           Connectors
         </button>
-        <button class="sidebar-nav-item" data-panel="skills">
+        <button class="sidebar-nav-item" id="nav-skills">
           <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
           Skills
         </button>
       </div>
-      <!-- FILES PANEL (default) -->
-      <div class="sidebar-panel visible" id="panel-files">
-        <div class="sidebar-header">
-          <span class="sidebar-title">Projects</span>
-        </div>
-        <div class="sidebar-list" id="sidebar-list"></div>
-        <div class="sidebar-footer">
-          <button class="sidebar-action" id="new-task-btn">
-            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            New Task
-          </button>
-          <button class="sidebar-action" id="new-project-btn">
-            <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-            New Project
-          </button>
-        </div>
-      </div>
+      <div class="sidebar-section-label">Projects</div>
+      <div class="sidebar-list" id="sidebar-list"></div>
 
-      <!-- SKILLS PANEL -->
-      <div class="sidebar-panel" id="panel-skills">
-        <div class="sidebar-panel-header">Research & Analysis</div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: rgba(124,164,212,0.12);">🔍</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">Deep Research</div>
-            <div class="panel-item-desc">Multi-source research with citation tracking</div>
-          </div>
-          <span class="panel-item-badge active">Active</span>
-        </div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: rgba(176,124,212,0.12);">📊</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">Data Analysis</div>
-            <div class="panel-item-desc">Statistical analysis, charting, trend detection</div>
-          </div>
-          <span class="panel-item-badge active">Active</span>
-        </div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: rgba(61,186,114,0.12);">📈</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">Market Intelligence</div>
-            <div class="panel-item-desc">Competitive analysis, market sizing, trends</div>
-          </div>
-          <span class="panel-item-badge active">Active</span>
-        </div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: rgba(212,168,76,0.12);">📰</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">News Monitor</div>
-            <div class="panel-item-desc">Real-time news tracking and alerting</div>
-          </div>
-          <span class="panel-item-badge active">Active</span>
-        </div>
-        <div class="panel-divider"></div>
-        <div class="sidebar-panel-header">Writing & Creation</div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: rgba(124,164,212,0.12);">✍️</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">Report Writer</div>
-            <div class="panel-item-desc">Generate structured reports and briefs</div>
-          </div>
-          <span class="panel-item-badge active">Active</span>
-        </div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: rgba(176,124,212,0.12);">🧮</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">Spreadsheet Builder</div>
-            <div class="panel-item-desc">Create data tables and formatted exports</div>
-          </div>
-          <span class="panel-item-badge available">Available</span>
-        </div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: rgba(61,186,114,0.12);">🎨</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">Slide Deck</div>
-            <div class="panel-item-desc">Auto-generate presentation slides</div>
-          </div>
-          <span class="panel-item-badge available">Available</span>
-        </div>
-        <div class="panel-divider"></div>
-        <div class="sidebar-panel-header">Code & Engineering</div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: rgba(124,164,212,0.12);">💻</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">Code Interpreter</div>
-            <div class="panel-item-desc">Execute Python, JS, SQL for analysis</div>
-          </div>
-          <span class="panel-item-badge active">Active</span>
-        </div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: rgba(212,168,76,0.12);">🔗</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">API Caller</div>
-            <div class="panel-item-desc">Make authenticated API requests</div>
-          </div>
-          <span class="panel-item-badge available">Available</span>
-        </div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: rgba(176,124,212,0.12);">🗄️</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">Database Query</div>
-            <div class="panel-item-desc">Query SQL and NoSQL databases</div>
-          </div>
-          <span class="panel-item-badge available">Available</span>
-        </div>
-      </div>
-
-      <!-- SOURCES PANEL -->
-      <div class="sidebar-panel" id="panel-sources">
-        <div class="sidebar-panel-header">Connected</div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: rgba(61,186,114,0.12);">💬</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">Slack</div>
-            <div class="panel-item-desc">Send messages, read channels, manage alerts</div>
-          </div>
-          <span class="panel-item-badge connected">Connected</span>
-        </div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: rgba(61,186,114,0.12);">📝</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">Notion</div>
-            <div class="panel-item-desc">Create pages, databases, manage workspace</div>
-          </div>
-          <span class="panel-item-badge connected">Connected</span>
-        </div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: rgba(61,186,114,0.12);">🐙</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">GitHub</div>
-            <div class="panel-item-desc">Repos, issues, PRs, code search</div>
-          </div>
-          <span class="panel-item-badge connected">Connected</span>
-        </div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: rgba(61,186,114,0.12);">📧</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">Gmail</div>
-            <div class="panel-item-desc">Read, send, and draft emails</div>
-          </div>
-          <span class="panel-item-badge connected">Connected</span>
-        </div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: rgba(61,186,114,0.12);">📁</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">Google Drive</div>
-            <div class="panel-item-desc">Read and create docs, sheets, slides</div>
-          </div>
-          <span class="panel-item-badge connected">Connected</span>
-        </div>
-        <div class="panel-divider"></div>
-        <div class="sidebar-panel-header">Data Hubs</div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: rgba(124,164,212,0.12);">❄️</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">Snowflake</div>
-            <div class="panel-item-desc">Query data warehouse tables and views</div>
-          </div>
-          <span class="panel-item-badge connected">Connected</span>
-        </div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: rgba(124,164,212,0.12);">📊</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">BigQuery</div>
-            <div class="panel-item-desc">Run analytics queries on GCP datasets</div>
-          </div>
-          <span class="panel-item-badge disconnected">Available</span>
-        </div>
-        <div class="panel-divider"></div>
-        <div class="sidebar-panel-header">Available</div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: var(--muted-bg);">📋</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">Jira</div>
-            <div class="panel-item-desc">Issues, sprints, project tracking</div>
-          </div>
-          <span class="panel-item-badge disconnected">Connect</span>
-        </div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: var(--muted-bg);">🎨</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">Figma</div>
-            <div class="panel-item-desc">Read designs, extract assets and specs</div>
-          </div>
-          <span class="panel-item-badge disconnected">Connect</span>
-        </div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: var(--muted-bg);">📈</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">Salesforce</div>
-            <div class="panel-item-desc">CRM data, leads, accounts, reports</div>
-          </div>
-          <span class="panel-item-badge disconnected">Connect</span>
-        </div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: var(--muted-bg);">📊</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">Tableau</div>
-            <div class="panel-item-desc">Dashboards, data visualizations</div>
-          </div>
-          <span class="panel-item-badge disconnected">Connect</span>
-        </div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: var(--muted-bg);">🔄</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">Confluence</div>
-            <div class="panel-item-desc">Wiki pages, spaces, knowledge base</div>
-          </div>
-          <span class="panel-item-badge disconnected">Connect</span>
-        </div>
-        <div class="panel-item">
-          <div class="panel-item-icon" style="background: var(--muted-bg);">📬</div>
-          <div class="panel-item-body">
-            <div class="panel-item-name">HubSpot</div>
-            <div class="panel-item-desc">Marketing, contacts, deal pipeline</div>
-          </div>
-          <span class="panel-item-badge disconnected">Connect</span>
-        </div>
-      </div>
     </div>
 
     <!-- MAIN PANE -->
     <div class="main-pane">
       <!-- View toggle bar (always visible) -->
       <div class="view-toggle-bar" id="view-toggle-bar">
+        <button class="back-to-project" id="back-to-project" style="display:none;">
+          <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          <span id="back-to-project-name"></span>
+        </button>
+        <div class="view-toggle-spacer"></div>
         <div class="view-toggle">
           <button class="view-toggle-btn active" data-view="workspace">Workspace</button>
           <button class="view-toggle-btn" data-view="canvas">Artifact</button>
         </div>
-        <div class="view-toggle-spacer"></div>
-        <!-- Tab items injected here when in workspace mode -->
-        <div id="tab-items-wrap" style="display:flex;align-items:stretch;gap:0;flex:1;overflow-x:auto;scrollbar-width:none;"></div>
       </div>
-      <div class="tab-bar" id="tab-bar" style="display:none;"></div>
       <div class="conversation" id="conversation"></div>
+
+      <!-- PROJECT LANDING VIEW -->
+      <div class="project-landing" id="project-landing" style="display:none;">
+        <div class="project-landing-inner">
+          <div class="project-landing-header">
+            <h1 id="project-landing-name"></h1>
+            <p class="project-landing-count" id="project-landing-count"></p>
+          </div>
+          <div class="pl-widgets" id="pl-widgets"></div>
+          <div class="project-landing-cols">
+            <div class="pl-col-left">
+              <div class="pl-col-label">Queries</div>
+              <div class="project-landing-tasks" id="project-landing-tasks"></div>
+            </div>
+            <div class="pl-col-right">
+              <div class="pl-files-section">
+                <div class="pl-col-label">Context</div>
+                <div id="pl-uploads"></div>
+                <button class="pl-upload-btn"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Upload file</button>
+              </div>
+              <div class="pl-files-section">
+                <div class="pl-col-label">Created</div>
+                <div id="pl-outputs"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="project-landing-input">
+          <div class="pl-suggestions" id="pl-suggestions"></div>
+          <div class="project-landing-input-inner">
+            <input type="text" class="project-landing-input-field" id="project-landing-input" placeholder="Create a new task..." autocomplete="off">
+            <button class="project-landing-send" id="project-landing-send">
+              <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
 
       <!-- CANVAS VIEW — Artifact Workspace -->
       <div class="canvas-view" id="canvas-view">
@@ -2393,14 +2982,6 @@
 
   <script src="js/main.js"></script>
   <script>
-    // Menu toggle
-    const menuBtn = document.getElementById('menu-btn');
-    const menuDropdown = document.getElementById('menu-dropdown');
-    menuBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      menuDropdown.classList.toggle('open');
-    });
-    document.addEventListener('click', () => menuDropdown.classList.remove('open'));
 
     // =============================================
     // DATA MODEL
@@ -2412,6 +2993,15 @@
         id: 'market-research',
         name: 'Market Research',
         collapsed: false,
+        uploads: [
+          { name: 'Q4 2024 Sales Data.xlsx', size: '2.4 MB', type: 'spreadsheet' },
+          { name: 'IEA Global EV Outlook.pdf', size: '14.2 MB', type: 'pdf' },
+          { name: 'Competitor Pricing Matrix.csv', size: '340 KB', type: 'spreadsheet' },
+        ],
+        outputs: [
+          { name: 'EV Market Analysis 2024.docx', size: '1.8 MB', type: 'doc', taskId: 'ev-market' },
+          { name: 'Cloud Provider Comparison.pptx', size: '3.2 MB', type: 'slides', taskId: 'cloud' },
+        ],
         tasks: [
           {
             id: 'ev-market',
@@ -2453,12 +3043,47 @@
               { type: 'thinking', label: 'Deep Dive', task: 'Analyzing Oracle and IBM enterprise offerings', lines: ['Comparing OCI Ampere A1 vs Flex pricing to AWS Graviton', 'Analyzing IBM Cloud Pak licensing and Red Hat integration', 'Reviewing Oracle autonomous database vs AWS Aurora serverless'], collapsed: false, done: false, streaming: true },
             ],
           },
+          {
+            id: 'battery-tech',
+            name: 'Battery technology cost trends',
+            status: 'completed',
+            startTime: now - 520000,
+            messages: [
+              { type: 'user', text: 'Track lithium-ion battery cost per kWh from 2015 to 2024 and project the trajectory to 2030.' },
+              { type: 'thinking', label: 'Research', task: 'Compiled BNEF battery cost data', lines: ['Pulling BNEF lithium-ion battery price survey data', 'Cross-referencing with DOE and CATL published figures'], collapsed: true, done: true },
+              { type: 'assistant', html: '<p><strong>Battery pack costs fell to $139/kWh in 2024</strong>, down from $780/kWh in 2013. The learning rate of 18% per doubling of cumulative capacity suggests costs could reach $80-90/kWh by 2028.</p>' },
+            ],
+          },
+          {
+            id: 'charging-infra',
+            name: 'EV charging infrastructure gaps',
+            status: 'running',
+            startTime: now - 45000,
+            messages: [
+              { type: 'user', text: 'Map EV public charging infrastructure by state and identify the biggest coverage gaps relative to EV registrations.' },
+              { type: 'thinking', label: 'Data Pipeline', task: 'Processing DOE AFDC charging station data', lines: ['Querying Alternative Fuels Station Locator API', 'Mapping Level 2 and DC fast charger density by zip code'], collapsed: false, done: false, streaming: true },
+            ],
+          },
+          {
+            id: 'supply-chain',
+            name: 'Critical mineral supply chain risks',
+            status: 'queued',
+            startTime: null,
+            messages: [],
+          },
         ],
       },
       {
         id: 'policy-regulation',
         name: 'Policy & Regulation',
         collapsed: false,
+        uploads: [
+          { name: 'EU AI Act Full Text.pdf', size: '8.6 MB', type: 'pdf' },
+          { name: 'US EO 14110 Summary.pdf', size: '1.1 MB', type: 'pdf' },
+        ],
+        outputs: [
+          { name: 'AI Regulation Tracker.html', size: '420 KB', type: 'website', taskId: 'ai-regs' },
+        ],
         tasks: [
           {
             id: 'ai-regs',
@@ -2477,12 +3102,47 @@
             startTime: null,
             messages: [],
           },
+          {
+            id: 'us-state-ai',
+            name: 'US state-level AI legislation tracker',
+            status: 'completed',
+            startTime: now - 380000,
+            messages: [
+              { type: 'user', text: 'Track all AI-related bills introduced at the US state level in 2024, categorized by topic.' },
+              { type: 'thinking', label: 'Legislative Scan', task: 'Scanned 50 state legislatures', lines: ['Querying LegiScan API for AI-tagged bills', 'Categorizing by topic: deepfakes, hiring, education, healthcare'], collapsed: true, done: true },
+              { type: 'assistant', html: '<p><strong>412 AI-related bills</strong> were introduced across 45 states in 2024. Top categories: deepfake regulation (87 bills), AI in hiring (64 bills), education (52 bills), and healthcare AI (41 bills). California, New York, and Texas lead in volume.</p>' },
+            ],
+          },
+          {
+            id: 'china-ai-rules',
+            name: 'China AI governance deep dive',
+            status: 'running',
+            startTime: now - 72000,
+            messages: [
+              { type: 'user', text: 'Comprehensive analysis of China\'s AI governance framework including AIGC rules, algorithm registry, and enforcement actions.' },
+              { type: 'thinking', label: 'Deep Dive', task: 'Analyzing CAC enforcement database', lines: ['Reviewing CAC algorithm registration database — 140+ registered algorithms', 'Extracting deep synthesis management provisions'], collapsed: false, done: false, streaming: true },
+            ],
+          },
+          {
+            id: 'data-privacy-compare',
+            name: 'GDPR vs CCPA vs PIPL comparison',
+            status: 'queued',
+            startTime: null,
+            messages: [],
+          },
         ],
       },
       {
         id: 'earnings',
         name: 'Earnings Analysis',
         collapsed: false,
+        uploads: [
+          { name: 'FAANG 10-Q Filings.zip', size: '45 MB', type: 'archive' },
+          { name: 'Analyst Consensus Estimates.xlsx', size: '890 KB', type: 'spreadsheet' },
+        ],
+        outputs: [
+          { name: 'FAANG Q4 2024 Earnings.pptx', size: '2.7 MB', type: 'slides', taskId: 'faang' },
+        ],
         tasks: [
           {
             id: 'faang',
@@ -2501,12 +3161,42 @@
             startTime: null,
             messages: [],
           },
+          {
+            id: 'mag7-margins',
+            name: 'Mag 7 operating margin trends',
+            status: 'completed',
+            startTime: now - 600000,
+            messages: [
+              { type: 'user', text: 'Chart operating margin trends for the Magnificent 7 over the last 8 quarters.' },
+              { type: 'thinking', label: 'Financial Analysis', task: 'Compiled 8-quarter margin data', lines: ['Extracting operating income from SEC filings', 'Normalizing for one-time charges'], collapsed: true, done: true },
+              { type: 'assistant', html: '<p>Operating margins diverged significantly in 2024. <strong>Meta</strong> expanded to 41% (from 25% in Q1 2023) driven by cost cuts. <strong>Tesla</strong> contracted to 8.2% under price war pressure. <strong>Nvidia</strong> hit 62% on AI chip demand.</p>' },
+            ],
+          },
+          {
+            id: 'ai-capex-tracker',
+            name: 'AI infrastructure capex tracker',
+            status: 'running',
+            startTime: now - 30000,
+            messages: [
+              { type: 'user', text: 'Track cumulative AI infrastructure capital expenditure commitments by major tech companies for 2025.' },
+              { type: 'thinking', label: 'Data Collection', task: 'Scanning earnings calls and press releases', lines: ['Parsing Q4 2024 earnings call transcripts for capex guidance', 'Tracking datacenter construction announcements'], collapsed: false, done: false, streaming: true },
+            ],
+          },
         ],
       },
       {
         id: 'energy-climate',
         name: 'Energy & Climate',
         collapsed: false,
+        uploads: [
+          { name: 'EIA State Energy Data 2024.csv', size: '12 MB', type: 'spreadsheet' },
+          { name: 'NREL Solar Wind Capacity.xlsx', size: '3.4 MB', type: 'spreadsheet' },
+          { name: 'IRA Incentive Allocations.pdf', size: '2.1 MB', type: 'pdf' },
+        ],
+        outputs: [
+          { name: 'Renewable Energy by State.docx', size: '2.2 MB', type: 'doc', taskId: 'energy' },
+          { name: 'Carbon Credit Market Analysis.docx', size: '1.5 MB', type: 'doc', taskId: 'carbon' },
+        ],
         tasks: [
           {
             id: 'energy',
@@ -2535,12 +3225,44 @@
               { type: 'thinking', label: 'Market Scan', task: 'Analyzing voluntary and compliance carbon markets', lines: ['Reviewing Verra VCS and Gold Standard registry data', 'Pulling spot and futures pricing from ICE and CBL exchanges', 'Analyzing EU ETS Phase IV pricing trends vs voluntary offsets', 'Comparing CORSIA eligibility criteria across registry standards'], collapsed: false, done: false, streaming: true },
             ],
           },
+          {
+            id: 'grid-storage',
+            name: 'Grid-scale battery storage economics',
+            status: 'completed',
+            startTime: now - 350000,
+            messages: [
+              { type: 'user', text: 'Analyze the economics of grid-scale battery storage projects, including LCOE trends and key deployments.' },
+              { type: 'thinking', label: 'Analysis', task: 'Compiled LDES cost data from BNEF and Lazard', lines: ['Pulling Lazard LCOE+ storage analysis', 'Comparing lithium-ion vs iron-air vs flow battery costs'], collapsed: true, done: true },
+              { type: 'assistant', html: '<p>Grid-scale storage LCOE fell to <strong>$138/MWh</strong> in 2024, down 14% YoY. Lithium-ion 4-hour systems dominate at 95% of deployments. The IRA\'s standalone storage ITC (30-50%) has made previously uneconomic projects viable.</p>' },
+            ],
+          },
+          {
+            id: 'hydrogen-outlook',
+            name: 'Green hydrogen production cost forecast',
+            status: 'queued',
+            startTime: null,
+            messages: [],
+          },
+          {
+            id: 'utility-solar',
+            name: 'Top 20 utility-scale solar projects 2024',
+            status: 'running',
+            startTime: now - 88000,
+            messages: [
+              { type: 'user', text: 'Identify and profile the 20 largest utility-scale solar projects under construction or completed in the US in 2024.' },
+              { type: 'thinking', label: 'Research', task: 'Scanning SEIA project tracker and EIA-860', lines: ['Querying EIA Form 860 for planned and operating solar plants', 'Cross-referencing with SEIA major project tracker'], collapsed: false, done: false, streaming: true },
+            ],
+          },
         ],
       },
       {
         id: 'startup-landscape',
         name: 'Startup Landscape',
         collapsed: true,
+        uploads: [],
+        outputs: [
+          { name: 'AI Startup Funding 2024.docx', size: '1.9 MB', type: 'doc', taskId: 'ai-funding' },
+        ],
         tasks: [
           {
             id: 'ai-funding',
@@ -2564,6 +3286,34 @@
             startTime: null,
             messages: [],
           },
+          {
+            id: 'ai-agents-landscape',
+            name: 'AI agents startup landscape',
+            status: 'completed',
+            startTime: now - 440000,
+            messages: [
+              { type: 'user', text: 'Map the AI agents ecosystem: key startups, funding, use cases, and differentiation.' },
+              { type: 'thinking', label: 'Research', task: 'Mapped 120+ AI agent startups', lines: ['Querying Crunchbase for AI agent tagged companies', 'Categorizing by use case: coding, customer support, sales, research'], collapsed: true, done: true },
+              { type: 'assistant', html: '<p>The AI agents space has 120+ funded startups. Key segments: <strong>coding agents</strong> (Cognition, Cursor, Codeium), <strong>customer support</strong> (Sierra, Decagon), <strong>sales</strong> (11x, Artisan), and <strong>research</strong> (Elicit, Consensus). Total funding: $12.4B in 2024.</p>' },
+            ],
+          },
+          {
+            id: 'series-b-patterns',
+            name: 'Series B success patterns 2024',
+            status: 'running',
+            startTime: now - 115000,
+            messages: [
+              { type: 'user', text: 'Analyze patterns in successful Series B rounds in 2024: median metrics, time from A to B, and investor composition.' },
+              { type: 'thinking', label: 'Analysis', task: 'Processing 680 Series B rounds', lines: ['Filtering PitchBook for 2024 Series B rounds', 'Computing median ARR, growth rate, and round size'], collapsed: false, done: false, streaming: true },
+            ],
+          },
+          {
+            id: 'deeptech-climate',
+            name: 'Deep tech climate startups',
+            status: 'queued',
+            startTime: null,
+            messages: [],
+          },
         ],
       },
     ];
@@ -2574,6 +3324,7 @@
 
     // View mode
     let viewMode = 'workspace';
+    let activeProjectId = null;
 
     // Artifact data for canvas view
     const ARTIFACTS = {
@@ -3302,61 +4053,533 @@
       const el = document.getElementById('sidebar-list');
       const allTasks = getAllTasks();
 
-      el.innerHTML = PROJECTS.map(project => {
-        const isCollapsed = project.collapsed;
-        const taskCount = project.tasks.length;
-
-        const tasksHtml = project.tasks.map(task => {
-          const isActive = task.id === activeTabId;
-          let statusIcon = '';
-          if (task.status === 'running') statusIcon = '<span class="spinner-char">\u280B</span>';
-          else if (task.status === 'completed') statusIcon = '<span class="check-icon">\u2713</span>';
-          else if (task.status === 'new') statusIcon = '<span class="new-dot"></span>';
-          else statusIcon = '<span class="queued-dot"></span>';
-
-          return `<div class="task-row${isActive ? ' active' : ''}" data-task-id="${task.id}">
-            <div class="task-status-icon">${statusIcon}</div>
-            <div class="task-row-body">
-              <span class="task-row-name">${task.name}</span>
-            </div>
-          </div>`;
-        }).join('');
-
-        return `<div class="project-group${isCollapsed ? ' collapsed' : ''}" data-project-id="${project.id}">
+      el.innerHTML = PROJECTS.filter(p => p.id !== '__tasks_inbox').map(project => {
+        return `<div class="project-group" data-project-id="${project.id}">
           <div class="project-header">
-            <svg class="project-folder-icon" viewBox="0 0 24 24">${isCollapsed
-              ? '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>'
-              : '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="2" y1="10" x2="22" y2="10"/>'
-            }</svg>
+            <svg class="project-folder-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
             <span class="project-name">${project.name}</span>
           </div>
-          <div class="project-tasks" style="max-height:${isCollapsed ? '0' : taskCount * 48}px">${tasksHtml}</div>
         </div>`;
       }).join('');
     }
 
     // =============================================
-    // RENDER: TABS
+    // RENDER: PROJECT LANDING
     // =============================================
-    function renderTabs() {
-      const el = document.getElementById('tab-items-wrap');
-      if (viewMode !== 'workspace') {
+    function renderProjectLanding() {
+      const isGlobal = activeProjectId === '__tasks_inbox';
+      const project = PROJECTS.find(p => p.id === activeProjectId);
+      if (!project) return;
+
+      // For global Tasks view, gather all tasks across all projects
+      let tasksToShow;
+      if (isGlobal) {
+        tasksToShow = [];
+        PROJECTS.forEach(p => {
+          p.tasks.forEach(t => tasksToShow.push({ task: t, projectName: p.id === '__tasks_inbox' ? null : p.name }));
+        });
+        // Sort: running first, then queued/new, then completed
+        const order = { running: 0, new: 1, queued: 2, completed: 3 };
+        tasksToShow.sort((a, b) => (order[a.task.status] || 9) - (order[b.task.status] || 9));
+      } else {
+        tasksToShow = project.tasks.map(t => ({ task: t, projectName: null }));
+      }
+
+      const allTasks = isGlobal ? getAllTasks() : project.tasks;
+      const running = allTasks.filter(t => t.status === 'running').length;
+      const total = allTasks.length;
+
+      document.getElementById('project-landing-name').textContent = isGlobal ? 'Tasks' : project.name;
+      document.getElementById('project-landing-count').textContent =
+        total + ' task' + (total !== 1 ? 's' : '') + (running > 0 ? ' · ' + running + ' running' : '');
+
+      const tasksEl = document.getElementById('project-landing-tasks');
+      const colsEl = document.querySelector('.project-landing-cols');
+      const widgetsEl = document.getElementById('pl-widgets');
+
+      if (isGlobal) {
+        // Inbox mode: hide columns layout, show full-width inbox
+        if (colsEl) colsEl.style.display = 'none';
+        widgetsEl.innerHTML = '';
+        widgetsEl.style.display = 'none';
+
+        // Render toolbar + inbox list
+        const fileIcons = { doc: 'DOC', slides: 'PPT', spreadsheet: 'XLS', website: 'WEB' };
+        const typeClass = { doc: 'type-doc', slides: 'type-slides', spreadsheet: 'type-spreadsheet', website: 'type-website' };
+
+        let inboxHtml = `<div class="pl-inbox-toolbar">
+          <div class="pl-inbox-toolbar-left">
+            <button class="pl-inbox-filter active">All</button>
+            <button class="pl-inbox-filter">Running</button>
+            <button class="pl-inbox-filter">Completed</button>
+            <button class="pl-inbox-filter">Queued</button>
+          </div>
+          <button class="pl-inbox-overflow" title="More actions"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+        </div>`;
+
+        inboxHtml += '<div class="pl-inbox-list">';
+        if (tasksToShow.length === 0) {
+          inboxHtml += '<div class="pl-empty">No tasks yet — type below to create one</div>';
+        } else {
+          inboxHtml += tasksToShow.map(({ task, projectName }) => {
+            let icon = '';
+            if (task.status === 'running') icon = '<span class="spinner-char">\u280B</span>';
+            else if (task.status === 'completed') icon = '<span class="check-icon">\u2713</span>';
+            else if (task.status === 'new') icon = '<span class="new-dot"></span>';
+            else icon = '<span class="queued-dot"></span>';
+
+            let metaParts = [];
+            if (task.status === 'running' && task.startTime) {
+              metaParts.push(formatTime(Date.now() - task.startTime));
+            } else if (task.status === 'queued') {
+              metaParts.push('Queued');
+            }
+            const meta = metaParts.join(' · ');
+
+            // Project pill
+            let pillHtml = projectName ? `<span class="pl-inbox-project-pill">${projectName}</span>` : '';
+
+            // Artifact preview
+            const artifact = ARTIFACTS[task.id];
+            let previewHtml = '';
+            if (artifact) {
+              const cls = typeClass[artifact.container] || 'type-doc';
+              const label = fileIcons[artifact.container] || 'FILE';
+              previewHtml = `<div class="pl-inbox-artifact ${cls}">${label}</div>`;
+            }
+
+            return `<div class="pl-inbox-item" data-task-id="${task.id}">
+              <div class="pl-inbox-item-icon">${icon}</div>
+              <div class="pl-inbox-item-body">
+                <div class="pl-inbox-item-name">${task.name}</div>
+                <div class="pl-inbox-item-meta">${meta}${meta && pillHtml ? ' ' : ''}${pillHtml}</div>
+              </div>
+              <div class="pl-inbox-item-preview">${previewHtml}</div>
+            </div>`;
+          }).join('');
+        }
+        inboxHtml += '</div>';
+
+        // Replace task list content with inbox
+        tasksEl.innerHTML = '';
+        // Insert inbox after header
+        let inboxEl = document.getElementById('pl-inbox-container');
+        if (!inboxEl) {
+          inboxEl = document.createElement('div');
+          inboxEl.id = 'pl-inbox-container';
+          document.querySelector('.project-landing-inner').appendChild(inboxEl);
+        }
+        inboxEl.innerHTML = inboxHtml;
+        inboxEl.style.padding = '0';
+
+        // Click handlers
+        inboxEl.onclick = (e) => {
+          // Filter click
+          const filterBtn = e.target.closest('.pl-inbox-filter');
+          if (filterBtn) {
+            inboxEl.querySelectorAll('.pl-inbox-filter').forEach(b => b.classList.remove('active'));
+            filterBtn.classList.add('active');
+            const filter = filterBtn.textContent.trim().toLowerCase();
+            inboxEl.querySelectorAll('.pl-inbox-item').forEach(item => {
+              if (filter === 'all') {
+                item.style.display = '';
+              } else {
+                const taskId = item.dataset.taskId;
+                const task = findTask(taskId);
+                const match = task && (
+                  (filter === 'running' && task.status === 'running') ||
+                  (filter === 'completed' && task.status === 'completed') ||
+                  (filter === 'queued' && (task.status === 'queued' || task.status === 'new'))
+                );
+                item.style.display = match ? '' : 'none';
+              }
+            });
+            return;
+          }
+
+          // Task click
+          const item = e.target.closest('.pl-inbox-item');
+          if (!item) return;
+          const taskId = item.dataset.taskId;
+          activeTabId = taskId;
+          setViewMode('workspace');
+          renderSidebar();
+          renderTabs();
+          renderConversation();
+        };
+        return;
+      }
+
+      // Project mode: show columns layout
+      if (colsEl) colsEl.style.display = '';
+      const inboxEl = document.getElementById('pl-inbox-container');
+      if (inboxEl) inboxEl.innerHTML = '';
+
+      if (tasksToShow.length === 0) {
+        tasksEl.innerHTML = '<div class="pl-empty">No tasks yet — type below to create one</div>';
+      } else {
+        tasksEl.innerHTML = tasksToShow.map(({ task, projectName }) => {
+          let icon = '';
+          if (task.status === 'running') icon = '<span class="spinner-char">\u280B</span>';
+          else if (task.status === 'completed') icon = '<span class="check-icon">\u2713</span>';
+          else if (task.status === 'new') icon = '<span class="new-dot"></span>';
+          else icon = '<span class="queued-dot"></span>';
+
+          let metaParts = [];
+          if (task.status === 'running' && task.startTime) {
+            metaParts.push(formatTime(Date.now() - task.startTime));
+          } else if (task.status === 'completed') {
+            const srcCount = task.messages.filter(m => m.type === 'sources').reduce((s, m) => s + m.items.length, 0);
+            if (srcCount > 0) metaParts.push(srcCount + ' sources');
+          } else if (task.status === 'queued') {
+            metaParts.push('Queued');
+          }
+          const meta = metaParts.join(' · ');
+
+          return `<div class="pl-task" data-task-id="${task.id}">
+            <div class="pl-task-icon">${icon}</div>
+            <div class="pl-task-body">
+              <div class="pl-task-name">${task.name}</div>
+              ${meta ? '<div class="pl-task-meta">' + meta + '</div>' : ''}
+            </div>
+          </div>`;
+        }).join('');
+      }
+
+      // Render widgets
+      renderProjectWidgets(project);
+
+      // Render files
+      const fileIcons = {
+        pdf: '📄', spreadsheet: '📊', doc: '📝', slides: '📑', website: '🌐', archive: '📦',
+      };
+
+      const uploads = project.uploads || [];
+      const outputs = project.outputs || [];
+
+      document.getElementById('pl-uploads').innerHTML = uploads.length === 0
+        ? '<div class="pl-files-empty">No files uploaded</div>'
+        : uploads.map(f => `<div class="pl-file">
+            <div class="pl-file-icon ${f.type}">${fileIcons[f.type] || '📎'}</div>
+            <div class="pl-file-body">
+              <div class="pl-file-name">${f.name}</div>
+              <div class="pl-file-size">${f.size}</div>
+            </div>
+          </div>`).join('');
+
+      document.getElementById('pl-outputs').innerHTML = outputs.length === 0
+        ? '<div class="pl-files-empty">No files created yet</div>'
+        : outputs.map(f => `<div class="pl-file">
+            <div class="pl-file-icon ${f.type}">${fileIcons[f.type] || '📎'}</div>
+            <div class="pl-file-body">
+              <div class="pl-file-name">${f.name}</div>
+              <div class="pl-file-size">${f.size}</div>
+            </div>
+          </div>`).join('');
+
+      // Render suggestions
+      const PROJECT_SUGGESTIONS = {
+        'market-research': [
+          'Compare BYD vs Tesla unit economics',
+          'What are the fastest growing EV markets in Africa?',
+          'Analyze Chinese EV export tariff impact on EU',
+          'Battery swapping vs fast charging market analysis',
+        ],
+        'policy-regulation': [
+          'How does the EU AI Act affect open source models?',
+          'Compare AI liability frameworks across jurisdictions',
+          'Track NIST AI RMF adoption by federal agencies',
+          'What AI regulations are pending in the US Senate?',
+        ],
+        'earnings': [
+          'Compare cloud revenue growth: AWS vs Azure vs GCP',
+          'Which FAANG company has the best free cash flow yield?',
+          'Analyze impact of AI capex on operating margins',
+          'Track insider selling patterns across Mag 7',
+        ],
+        'energy-climate': [
+          'Which states gained the most solar capacity in 2024?',
+          'Compare LCOE of solar vs onshore wind by region',
+          'Analyze impact of IRA on battery manufacturing',
+          'Map all announced green hydrogen projects in the US',
+        ],
+        'startup-landscape': [
+          'Which AI agent startups raised Series B in 2024?',
+          'Compare valuation multiples: vertical AI vs horizontal',
+          'Map the AI infrastructure stack by layer',
+          'What are the top acquirers of AI startups?',
+        ],
+      };
+      const suggestions = PROJECT_SUGGESTIONS[project.id] || [];
+      document.getElementById('pl-suggestions').innerHTML = suggestions.map(s =>
+        `<button class="pl-suggestion" data-prompt="${s.replace(/"/g, '&quot;')}">${s}</button>`
+      ).join('');
+    }
+
+    // =============================================
+    // RENDER: PROJECT WIDGETS
+    // =============================================
+    const PROJECT_WIDGETS = {
+      'market-research': [
+        {
+          type: 'donut',
+          taskId: 'ev-market',
+          title: 'Market Share by Region',
+          badge: 'live', badgeText: 'Live',
+          center: '14.2M',
+          segments: [
+            { label: 'China', value: '60%', pct: 60, color: '#e74c3c' },
+            { label: 'Europe', value: '24%', pct: 24, color: '#3498db' },
+            { label: 'North America', value: '9%', pct: 9, color: '#2ecc71' },
+            { label: 'SE Asia', value: '4%', pct: 4, color: '#f39c12' },
+            { label: 'Other', value: '3%', pct: 3, color: '#95a5a6' },
+          ],
+        },
+        {
+          type: 'area',
+          taskId: 'ev-market',
+          title: 'Global EV Sales (Millions)',
+          badge: 'scheduled', badgeText: 'Monthly',
+          points: [3.2, 3.8, 4.5, 5.1, 5.6, 6.2, 6.9, 7.8, 8.5, 9.4, 10.5, 11.2, 12.1, 13.0, 14.2],
+          labels: ['Q1\'21','','','','Q1\'22','','','','Q1\'23','','','','Q1\'24','','Q4\'24'],
+          color: 'var(--green)',
+          current: '14.2M',
+          change: '+35% YoY',
+          changeDir: 'up',
+        },
+        {
+          type: 'stacked-bar',
+          taskId: 'cloud',
+          title: 'Revenue by Quarter',
+          badge: 'scheduled', badgeText: 'Quarterly',
+          bars: [
+            { label: 'Q1', segments: [{ pct: 55, color: '#e74c3c' }, { pct: 22, color: '#3498db' }, { pct: 15, color: '#2ecc71' }, { pct: 8, color: '#f39c12' }], total: '$82B' },
+            { label: 'Q2', segments: [{ pct: 58, color: '#e74c3c' }, { pct: 21, color: '#3498db' }, { pct: 14, color: '#2ecc71' }, { pct: 7, color: '#f39c12' }], total: '$91B' },
+            { label: 'Q3', segments: [{ pct: 60, color: '#e74c3c' }, { pct: 20, color: '#3498db' }, { pct: 13, color: '#2ecc71' }, { pct: 7, color: '#f39c12' }], total: '$98B' },
+            { label: 'Q4', segments: [{ pct: 62, color: '#e74c3c' }, { pct: 19, color: '#3498db' }, { pct: 13, color: '#2ecc71' }, { pct: 6, color: '#f39c12' }], total: '$108B' },
+          ],
+        },
+      ],
+      'policy-regulation': [
+        {
+          type: 'heatmap',
+          taskId: 'ai-regs',
+          title: 'Regulatory Activity by Month',
+          badge: 'live', badgeText: 'Live',
+          // 12 months, intensity 0-1
+          cells: [0.2, 0.3, 0.5, 0.8, 0.4, 0.3, 0.9, 0.6, 0.4, 1.0, 0.7, 0.5],
+          labels: ['J','F','M','A','M','J','J','A','S','O','N','D'],
+          color: 'var(--accent)',
+          sub: '142 regulatory actions in 2024',
+        },
+        {
+          type: 'activity',
+          taskId: 'ai-regs',
+          title: 'Regulatory Alerts',
+          badge: 'scheduled', badgeText: 'Daily',
+          items: [
+            { time: '09:15', color: 'var(--red)', text: 'EU AI Act — new enforcement guidance published' },
+            { time: '09:15', color: 'var(--yellow)', text: 'Brazil — AI Bill advanced to committee vote' },
+            { time: 'Yesterday', color: 'var(--green)', text: 'UK — DSIT releases AI Safety Institute report' },
+            { time: 'Mar 20', color: 'var(--blue)', text: 'Japan — draft AI governance framework released' },
+          ],
+        },
+        {
+          type: 'donut',
+          taskId: 'us-state-ai',
+          title: 'Regulation by Type',
+          badge: 'scheduled', badgeText: 'Weekly',
+          center: '42',
+          segments: [
+            { label: 'Binding law', value: '14', pct: 33, color: 'var(--green)' },
+            { label: 'Executive order', value: '10', pct: 24, color: 'var(--blue)' },
+            { label: 'Guidelines', value: '12', pct: 29, color: 'var(--yellow)' },
+            { label: 'Draft', value: '6', pct: 14, color: 'var(--text-muted)' },
+          ],
+        },
+      ],
+      'earnings': [
+        {
+          type: 'area',
+          taskId: 'faang',
+          title: 'Combined Revenue ($B)',
+          badge: 'scheduled', badgeText: 'Quarterly',
+          points: [310, 318, 325, 338, 342, 355, 362, 378, 385, 398, 410, 420, 430, 440],
+          labels: ['Q1\'22','','Q3','','Q1\'23','','Q3','','Q1\'24','','Q3','','','Q4\'24'],
+          color: 'var(--blue)',
+          current: '$440B',
+          change: '+14% YoY',
+          changeDir: 'up',
+        },
+        {
+          type: 'stacked-bar',
+          taskId: 'ai-capex-tracker',
+          title: 'AI Capex by Company ($B)',
+          badge: 'live', badgeText: 'Updated',
+          bars: [
+            { label: 'AMZN', segments: [{ pct: 100, color: 'var(--blue)' }], total: '$100B' },
+            { label: 'GOOG', segments: [{ pct: 75, color: 'var(--green)' }], total: '$75B' },
+            { label: 'META', segments: [{ pct: 40, color: 'var(--accent)' }], total: '$40B' },
+            { label: 'NFLX', segments: [{ pct: 2, color: 'var(--red)' }], total: '$1.2B' },
+          ],
+        },
+        {
+          type: 'ticker',
+          taskId: 'mag7-margins',
+          title: 'Operating Margin',
+          badge: 'scheduled', badgeText: 'Quarterly',
+          items: [
+            { name: 'NVDA', value: '62%', pct: 100, color: 'var(--green)' },
+            { name: 'META', value: '41%', pct: 66, color: 'var(--blue)' },
+            { name: 'GOOG', value: '32%', pct: 52, color: 'var(--accent)' },
+            { name: 'AAPL', value: '31%', pct: 50, color: 'var(--text-secondary)' },
+            { name: 'TSLA', value: '8.2%', pct: 13, color: 'var(--red)' },
+          ],
+        },
+      ],
+      'energy-climate': [
+        {
+          type: 'donut',
+          taskId: 'energy',
+          title: 'US Generation Mix',
+          badge: 'live', badgeText: 'Live',
+          center: '28%',
+          segments: [
+            { label: 'Natural Gas', value: '40%', pct: 40, color: '#95a5a6' },
+            { label: 'Renewables', value: '28%', pct: 28, color: '#2ecc71' },
+            { label: 'Nuclear', value: '19%', pct: 19, color: '#3498db' },
+            { label: 'Coal', value: '10%', pct: 10, color: '#7f8c8d' },
+            { label: 'Other', value: '3%', pct: 3, color: '#bdc3c7' },
+          ],
+        },
+        {
+          type: 'area',
+          taskId: 'carbon',
+          title: 'EU ETS Carbon Price (€/tCO₂)',
+          badge: 'live', badgeText: 'Live',
+          points: [55, 58, 62, 68, 75, 82, 90, 95, 100, 92, 85, 78, 72, 68, 68],
+          labels: ['Jan\'23','','','','May','','','','Sep','','','','Jan\'24','','Now'],
+          color: 'var(--accent)',
+          current: '€68.40',
+          change: '-32% from peak',
+          changeDir: 'down',
+        },
+        {
+          type: 'stacked-bar',
+          taskId: 'utility-solar',
+          title: 'Capacity Added (GW)',
+          badge: 'scheduled', badgeText: 'Monthly',
+          bars: [
+            { label: '2021', segments: [{ pct: 55, color: '#f39c12' }, { pct: 45, color: '#2ecc71' }], total: '28 GW' },
+            { label: '2022', segments: [{ pct: 48, color: '#f39c12' }, { pct: 52, color: '#2ecc71' }], total: '35 GW' },
+            { label: '2023', segments: [{ pct: 40, color: '#f39c12' }, { pct: 60, color: '#2ecc71' }], total: '42 GW' },
+            { label: '2024', segments: [{ pct: 35, color: '#f39c12' }, { pct: 65, color: '#2ecc71' }], total: '51 GW' },
+          ],
+        },
+      ],
+    };
+
+    function renderProjectWidgets(project) {
+      const el = document.getElementById('pl-widgets');
+      const widgets = PROJECT_WIDGETS[project.id];
+      if (!widgets || widgets.length === 0) {
         el.innerHTML = '';
         el.style.display = 'none';
         return;
       }
-      el.style.display = 'flex';
-      el.innerHTML = openTabs.map(id => {
-        const task = findTask(id);
-        if (!task) return '';
-        const isActive = id === activeTabId;
-        return `<div class="tab-item${isActive ? ' active' : ''}" data-tab-id="${id}">
-          <span class="tab-dot ${task.status}"></span>
-          <span>${task.name}</span>
-          <span class="tab-close" data-tab-close="${id}">&times;</span>
+      el.style.display = '';
+
+      el.innerHTML = widgets.map(w => {
+        let body = '';
+        const badgeClass = w.badge || 'scheduled';
+
+        if (w.type === 'donut') {
+          const circ = 2 * Math.PI * 30;
+          let offset = 0;
+          const circles = w.segments.map(seg => {
+            const len = (seg.pct / 100) * circ;
+            const html = `<circle stroke="${seg.color}" stroke-dasharray="${len} ${circ - len}" stroke-dashoffset="${-offset}" opacity="0.85"/>`;
+            offset += len;
+            return html;
+          }).join('');
+          const legend = w.segments.map(seg =>
+            `<div class="pl-donut-legend-item"><span class="pl-donut-legend-dot" style="background:${seg.color};"></span>${seg.label}<span class="pl-donut-legend-val">${seg.value}</span></div>`
+          ).join('');
+          body = `<div class="pl-donut-wrap">
+            <div class="pl-donut">
+              <svg viewBox="0 0 72 72"><circle stroke="var(--border)" opacity="0.3"/>${circles}</svg>
+              <div class="pl-donut-center">${w.center}</div>
+            </div>
+            <div class="pl-donut-legend">${legend}</div>
+          </div>`;
+        }
+
+        else if (w.type === 'area') {
+          const pts = w.points;
+          const max = Math.max(...pts);
+          const min = Math.min(...pts) * 0.8;
+          const range = max - min || 1;
+          const h = 48;
+          const stepX = 100 / (pts.length - 1);
+          const linePoints = pts.map((v, i) => `${i * stepX},${h - ((v - min) / range) * h}`).join(' ');
+          const areaPoints = linePoints + ` 100,${h} 0,${h}`;
+          body = `<div style="display:flex;align-items:baseline;gap:0.5rem;"><div class="pl-widget-value" style="font-size:1.1rem;">${w.current}</div><span class="pl-widget-change ${w.changeDir}" style="font-size:0.6rem;">${w.change}</span></div>
+            <div class="pl-area-chart"><svg viewBox="0 0 100 ${h}" preserveAspectRatio="none">
+              <polygon points="${areaPoints}" fill="${w.color}" opacity="0.12"/>
+              <polyline points="${linePoints}" fill="none" stroke="${w.color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            </svg></div>`;
+        }
+
+        else if (w.type === 'stacked-bar') {
+          body = '<div class="pl-mini-bars">' + w.bars.map(bar => {
+            const segs = bar.segments.map(s => `<div class="pl-mini-bar-seg" style="width:${s.pct}%;background:${s.color};"></div>`).join('');
+            return `<div class="pl-mini-bar-row">
+              <span class="pl-mini-bar-label">${bar.label}</span>
+              <div class="pl-mini-bar-track">${segs}</div>
+              <span class="pl-mini-bar-val">${bar.total}</span>
+            </div>`;
+          }).join('') + '</div>';
+        }
+
+        else if (w.type === 'heatmap') {
+          const cells = w.cells.map((v, i) =>
+            `<div class="pl-heatmap-cell" style="background:${w.color};opacity:${0.15 + v * 0.75};" data-label="${w.labels[i]}"></div>`
+          ).join('');
+          body = `<div class="pl-heatmap">${cells}</div>
+            <div class="pl-widget-sub" style="margin-top:0.4rem;">${w.sub}</div>`;
+        }
+
+        else if (w.type === 'activity') {
+          body = '<div class="pl-widget-log">' + w.items.map(item =>
+            `<div class="pl-log-item">
+              <span class="pl-log-time">${item.time}</span>
+              <span class="pl-log-dot" style="background:${item.color};"></span>
+              <span class="pl-log-text">${item.text}</span>
+            </div>`
+          ).join('') + '</div>';
+        }
+
+        else if (w.type === 'ticker') {
+          body = '<div class="pl-ticker-list">' + w.items.map(item =>
+            `<div class="pl-ticker-row">
+              <span class="pl-ticker-name">${item.name}</span>
+              <div class="pl-ticker-bar-wrap"><div class="pl-ticker-bar" style="width:${item.pct}%;background:${item.color};"></div></div>
+              <span class="pl-ticker-val">${item.value}</span>
+            </div>`
+          ).join('') + '</div>';
+        }
+
+        return `<div class="pl-widget" ${w.taskId ? 'data-task-id="' + w.taskId + '"' : ''}>
+          <div class="pl-widget-header">
+            <span class="pl-widget-title">${w.title}</span>
+            <span class="pl-widget-badge ${badgeClass}">${w.badgeText || ''}</span>
+          </div>
+          ${body}
         </div>`;
       }).join('');
     }
+
+    function renderTabs() {} // no-op, tabs removed
 
     // =============================================
     // RENDER: CONVERSATION
@@ -3372,20 +4595,48 @@
 
       if (task.messages.length === 0 && task.status === 'new') {
         el.innerHTML = `<div class="conv-empty-start">
-          <div class="conv-empty-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
-          <div class="conv-empty-heading">New Task</div>
-          <div class="conv-empty-sub">Describe what you want to research. The agent will search, analyze, and synthesize findings.</div>
+          <div class="conv-empty-heading">What do you want to work on?</div>
+          <div class="conv-empty-sub">Describe a task below or pick a starting point</div>
+          <div class="new-task-suggestions">
+            <div class="new-task-suggestion" data-prompt="Research and compare the top competitors in my market, including pricing, features, and market positioning">
+              <div class="new-task-suggestion-icon">🔍</div>
+              <div class="new-task-suggestion-body">
+                <div class="new-task-suggestion-title">Competitive analysis</div>
+                <div class="new-task-suggestion-desc">Research competitors, pricing, and positioning</div>
+              </div>
+            </div>
+            <div class="new-task-suggestion" data-prompt="Analyze the latest quarterly earnings data and create a summary report with key takeaways and trends">
+              <div class="new-task-suggestion-icon">📊</div>
+              <div class="new-task-suggestion-body">
+                <div class="new-task-suggestion-title">Earnings analysis</div>
+                <div class="new-task-suggestion-desc">Break down financials and surface key insights</div>
+              </div>
+            </div>
+            <div class="new-task-suggestion" data-prompt="Survey the current regulatory landscape for AI in the US and EU, including upcoming legislation and compliance requirements">
+              <div class="new-task-suggestion-icon">📜</div>
+              <div class="new-task-suggestion-body">
+                <div class="new-task-suggestion-title">Regulatory overview</div>
+                <div class="new-task-suggestion-desc">Map regulations, compliance, and policy trends</div>
+              </div>
+            </div>
+            <div class="new-task-suggestion" data-prompt="Create a comprehensive market sizing report for the vertical SaaS space, including TAM, growth rates, and key players by segment">
+              <div class="new-task-suggestion-icon">📈</div>
+              <div class="new-task-suggestion-body">
+                <div class="new-task-suggestion-title">Market sizing</div>
+                <div class="new-task-suggestion-desc">TAM analysis, growth projections, and segmentation</div>
+              </div>
+            </div>
+          </div>
         </div>`;
         setTimeout(() => {
           const input = document.getElementById('chat-input');
-          if (input) { input.placeholder = 'Describe your research task...'; input.focus(); }
+          if (input) { input.placeholder = 'Describe your task...'; input.focus(); }
         }, 50);
         return;
       }
 
       if (task.messages.length === 0) {
         el.innerHTML = `<div class="conv-empty-start">
-          <div class="conv-empty-icon" style="background: var(--muted-bg);"><svg viewBox="0 0 24 24" style="stroke: var(--text-muted);"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
           <div class="conv-empty-heading">Queued</div>
           <div class="conv-empty-sub">This task is waiting for capacity. It will start automatically when a slot opens up.</div>
         </div>`;
@@ -3479,24 +4730,40 @@
     // INTERACTIONS
     // =============================================
 
-    // Artifact open button → switch to artifact view
+    // Conversation click handlers
     document.getElementById('conversation').addEventListener('click', (e) => {
+      // Artifact open button
       const btn = e.target.closest('.artifact-open-btn');
       if (btn) {
         e.preventDefault();
         setViewMode('canvas');
         return;
       }
+
+      // Suggestion card click → start task with that prompt
+      const suggestion = e.target.closest('.new-task-suggestion');
+      if (suggestion) {
+        const prompt = suggestion.dataset.prompt;
+        if (prompt) {
+          const input = document.getElementById('chat-input');
+          if (input) {
+            input.value = prompt;
+            submitChat();
+          }
+        }
+        return;
+      }
     });
 
-    // Sidebar: project collapse/expand (Files panel)
+    // Sidebar: project click → open project landing
     document.getElementById('sidebar-list').addEventListener('click', (e) => {
       const header = e.target.closest('.project-header');
       if (header) {
         const group = header.closest('.project-group');
         const project = PROJECTS.find(p => p.id === group.dataset.projectId);
         if (project) {
-          project.collapsed = !project.collapsed;
+          activeProjectId = project.id;
+          setViewMode('project');
           renderSidebar();
         }
         return;
@@ -3508,41 +4775,95 @@
         const taskId = row.dataset.taskId;
         if (!openTabs.includes(taskId)) openTabs.push(taskId);
         activeTabId = taskId;
+        setViewMode('workspace');
         renderSidebar();
-  
         renderTabs();
         renderConversation();
-        if (viewMode === 'canvas') renderArtifact();
       }
     });
 
-    // Tab click / close
-    document.getElementById('tab-items-wrap').addEventListener('click', (e) => {
-      const closeBtn = e.target.closest('.tab-close');
-      if (closeBtn) {
-        const id = closeBtn.dataset.tabClose;
-        openTabs = openTabs.filter(t => t !== id);
-        if (activeTabId === id) {
-          activeTabId = openTabs[openTabs.length - 1] || null;
-        }
-        renderTabs();
-        renderSidebar();
-  
-        renderConversation();
-        if (viewMode === 'canvas') renderArtifact();
-        return;
-      }
+    // Project landing: task click → open in workspace
+    document.getElementById('project-landing-tasks').addEventListener('click', (e) => {
+      const task = e.target.closest('.pl-task');
+      if (!task) return;
+      const taskId = task.dataset.taskId;
+      if (!openTabs.includes(taskId)) openTabs.push(taskId);
+      activeTabId = taskId;
+      setViewMode('workspace');
+      renderSidebar();
+      renderTabs();
+      renderConversation();
+    });
 
-      const tab = e.target.closest('.tab-item');
-      if (tab) {
-        activeTabId = tab.dataset.tabId;
-        renderTabs();
-        renderSidebar();
-  
-        renderConversation();
-        if (viewMode === 'canvas') renderArtifact();
+    // Widget click → open linked task, switch to artifact if available
+    document.getElementById('pl-widgets').addEventListener('click', (e) => {
+      const widget = e.target.closest('.pl-widget');
+      if (!widget) return;
+      const taskId = widget.dataset.taskId;
+      if (!taskId) return;
+
+      activeTabId = taskId;
+
+      // If this task has an artifact, go straight to artifact view
+      if (ARTIFACTS[taskId]) {
+        setViewMode('canvas');
+      } else {
+        setViewMode('workspace');
+      }
+      renderSidebar();
+      renderTabs();
+      renderConversation();
+    });
+
+    // Suggestion chip click → fill input and submit as new task
+    document.getElementById('pl-suggestions').addEventListener('click', (e) => {
+      const chip = e.target.closest('.pl-suggestion');
+      if (!chip) return;
+      const prompt = chip.dataset.prompt;
+      if (!prompt) return;
+      const input = document.getElementById('project-landing-input');
+      if (input) {
+        input.value = prompt;
+        submitProjectTask();
       }
     });
+
+    // Project landing: create task from input
+    function submitProjectTask() {
+      const input = document.getElementById('project-landing-input');
+      const text = input.value.trim();
+      if (!text || !activeProjectId) return;
+      input.value = '';
+
+      const project = PROJECTS.find(p => p.id === activeProjectId);
+      if (!project) return;
+
+      const taskId = 'user-' + Date.now();
+      const newTask = {
+        id: taskId,
+        name: text.length > 50 ? text.slice(0, 47) + '...' : text,
+        status: 'running',
+        startTime: Date.now(),
+        messages: [
+          { type: 'user', text: text },
+          { type: 'thinking', label: 'Research', task: 'Initializing research pipeline', lines: ['Initializing research pipeline', 'Identifying relevant data sources'], collapsed: false, done: false, streaming: true },
+        ],
+      };
+      project.tasks.push(newTask);
+
+      // Open it
+      openTabs.push(taskId);
+      activeTabId = taskId;
+      setViewMode('workspace');
+      renderSidebar();
+      renderTabs();
+      renderConversation();
+    }
+
+    document.getElementById('project-landing-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); submitProjectTask(); }
+    });
+    document.getElementById('project-landing-send').addEventListener('click', submitProjectTask);
 
     // Thinking toggle (agent-group expand/collapse)
     function toggleThinking(headerEl, msgIdx) {
@@ -3640,10 +4961,68 @@
     // =============================================
     // NEW TASK / NEW PROJECT
     // =============================================
+    function getTasksInbox() {
+      let inbox = PROJECTS.find(p => p.id === '__tasks_inbox');
+      if (!inbox) {
+        inbox = {
+          id: '__tasks_inbox',
+          name: 'Tasks',
+          collapsed: false,
+          uploads: [],
+          outputs: [],
+          tasks: [
+            { id: 'inbox-1', name: 'Summarize the latest IPCC AR6 synthesis report', status: 'completed', startTime: now - 720000, messages: [
+              { type: 'user', text: 'Summarize the latest IPCC AR6 synthesis report, focusing on updated warming projections and policy recommendations.' },
+              { type: 'thinking', label: 'Research', task: 'Processed 85-page synthesis report', lines: ['Downloading IPCC AR6 Synthesis Report PDF', 'Extracting key findings from Summary for Policymakers'], collapsed: true, done: true },
+              { type: 'assistant', html: '<p>The AR6 synthesis confirms warming of <strong>1.1°C above pre-industrial</strong> and projects 1.5°C will be exceeded in the early 2030s under all scenarios. Key policy rec: global GHG emissions must peak before 2025 and decline 43% by 2030 to limit warming to 1.5°C.</p>' },
+            ]},
+            { id: 'inbox-2', name: 'Find the top 10 YC W24 companies by valuation', status: 'completed', startTime: now - 550000, messages: [
+              { type: 'user', text: 'Find the top 10 Y Combinator Winter 2024 batch companies ranked by current valuation.' },
+              { type: 'thinking', label: 'Database Query', task: 'Queried Crunchbase and PitchBook', lines: ['Filtering YC W24 batch companies', 'Pulling latest valuation data from secondary market signals'], collapsed: true, done: true },
+              { type: 'assistant', html: '<p>Top YC W24 companies by estimated valuation: <strong>1. Cognition ($2B)</strong> — AI coding agent Devin. <strong>2. Lumona ($680M)</strong> — AI video understanding. <strong>3. Baseten ($400M)</strong> — ML inference infrastructure.</p>' },
+            ]},
+            { id: 'inbox-3', name: 'Compare React Server Components vs Next.js App Router', status: 'running', startTime: now - 180000, messages: [
+              { type: 'user', text: 'Compare React Server Components with Next.js App Router — architecture differences, performance tradeoffs, and when to use each.' },
+              { type: 'thinking', label: 'Research', task: 'Analyzing framework documentation and benchmarks', lines: ['Reading React RFC for Server Components', 'Comparing Next.js App Router vs Pages Router patterns', 'Pulling Vercel benchmark data for streaming SSR'], collapsed: false, done: false, streaming: true },
+            ]},
+            { id: 'inbox-4', name: 'Draft a cold outreach email for enterprise sales', status: 'completed', startTime: now - 400000, messages: [
+              { type: 'user', text: 'Draft a cold outreach email targeting VP of Engineering at mid-market SaaS companies for an AI code review tool.' },
+              { type: 'thinking', label: 'Writing', task: 'Drafting email with personalization hooks', lines: ['Analyzing successful cold email patterns', 'Structuring problem-agitate-solve framework'], collapsed: true, done: true },
+              { type: 'assistant', html: '<p><strong>Subject: Your team is shipping 3x more code — is review keeping up?</strong></p><p>Hi [Name], I noticed [Company] recently shipped [feature]. As engineering velocity increases, code review often becomes the bottleneck...</p>' },
+            ]},
+            { id: 'inbox-5', name: 'What are the best databases for vector search in 2024?', status: 'completed', startTime: now - 380000, messages: [
+              { type: 'user', text: 'Compare the top vector databases for production use in 2024: Pinecone, Weaviate, Qdrant, Milvus, pgvector.' },
+              { type: 'thinking', label: 'Analysis', task: 'Benchmarked 5 vector databases', lines: ['Comparing query latency at 1M and 10M vector scale', 'Evaluating managed vs self-hosted pricing'], collapsed: true, done: true },
+              { type: 'assistant', html: '<p><strong>For most teams: pgvector</strong> if you\'re already on Postgres (good enough for &lt;5M vectors). <strong>Pinecone</strong> for fully managed with zero ops. <strong>Qdrant</strong> for best performance/cost on self-hosted. <strong>Weaviate</strong> for hybrid search with BM25 + vectors.</p>' },
+            ]},
+            { id: 'inbox-6', name: 'Explain the Federal Reserve\'s dot plot from last FOMC', status: 'running', startTime: now - 95000, messages: [
+              { type: 'user', text: 'Break down the Federal Reserve\'s latest dot plot from the March 2025 FOMC meeting and what it signals for rate cuts.' },
+              { type: 'thinking', label: 'Financial Analysis', task: 'Parsing FOMC statement and SEP projections', lines: ['Downloading FOMC statement and press conference transcript', 'Extracting individual dot plot projections from SEP', 'Comparing median dots vs market-implied Fed funds rate'], collapsed: false, done: false, streaming: true },
+            ]},
+            { id: 'inbox-7', name: 'Generate a meal plan for marathon training', status: 'completed', startTime: now - 300000, messages: [
+              { type: 'user', text: 'Create a weekly meal plan optimized for marathon training, targeting 3000 cal/day with 55% carbs, 25% protein, 20% fat.' },
+              { type: 'thinking', label: 'Planning', task: 'Designed 7-day macro-balanced meal plan', lines: ['Calculating macro targets per meal', 'Selecting high-glycogen-loading food options'], collapsed: true, done: true },
+              { type: 'assistant', html: '<p><strong>Monday:</strong> Breakfast: Overnight oats with banana and almond butter (620 cal). Lunch: Grilled chicken quinoa bowl with roasted sweet potato (780 cal). Dinner: Salmon with brown rice and steamed broccoli (820 cal). Snacks: Trail mix + protein shake (780 cal).</p>' },
+            ]},
+            { id: 'inbox-8', name: 'Scrape and summarize HN front page trends this week', status: 'running', startTime: now - 25000, messages: [
+              { type: 'user', text: 'Scrape the Hacker News front page from the past 7 days and identify the top trending topics and most discussed posts.' },
+              { type: 'thinking', label: 'Web Crawl', task: 'Scraping HN API for 7-day history', lines: ['Querying HN Algolia API for top stories', 'Clustering titles by topic using embeddings'], collapsed: false, done: false, streaming: true },
+            ]},
+            { id: 'inbox-9', name: 'Best practices for SOC 2 Type II compliance', status: 'queued', startTime: null, messages: [] },
+            { id: 'inbox-10', name: 'Compare Anthropic vs OpenAI pricing for batch inference', status: 'queued', startTime: null, messages: [] },
+          ],
+        };
+        PROJECTS.unshift(inbox);
+      }
+      return inbox;
+    }
+
     function createNewTask() {
       const taskId = 'user-' + Date.now();
-      // Add to the first project by default
-      const project = PROJECTS[0];
+      // If viewing a project, add there; otherwise add to Tasks inbox
+      const project = (activeProjectId && viewMode === 'project')
+        ? PROJECTS.find(p => p.id === activeProjectId) || getTasksInbox()
+        : getTasksInbox();
 
       const newTask = {
         id: taskId,
@@ -3665,27 +5044,23 @@
       renderConversation();
     }
 
-    document.getElementById('new-task-btn').addEventListener('click', createNewTask);
+    document.getElementById('new-task-btn')?.addEventListener('click', createNewTask);
     document.getElementById('nav-new-task').addEventListener('click', () => {
       if (viewMode !== 'workspace') setViewMode('workspace');
       createNewTask();
     });
+    document.getElementById('nav-tasks-inbox').addEventListener('click', () => {
+      const inbox = getTasksInbox();
+      activeProjectId = inbox.id;
+      setViewMode('project');
+      renderSidebar();
+    });
     // New Project modal
     const projectModal = document.getElementById('project-modal');
-    // Sidebar nav tab switching
-    document.getElementById('sidebar-nav').addEventListener('click', (e) => {
-      const btn = e.target.closest('.sidebar-nav-item');
-      if (!btn) return;
-      if (btn.id === 'nav-new-task') return; // handled separately
-      const panelId = btn.dataset.panel;
-      document.querySelectorAll('.sidebar-nav-item').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.querySelectorAll('.sidebar-panel').forEach(p => p.classList.remove('visible'));
-      const panel = document.getElementById('panel-' + panelId);
-      if (panel) panel.classList.add('visible');
-    });
+    // TODO: Connectors and Skills would open their content in the main pane
+    // For now they're placeholder nav items
 
-    document.getElementById('new-project-btn').addEventListener('click', () => {
+    document.getElementById('new-project-btn')?.addEventListener('click', () => {
       projectModal.classList.add('open');
       setTimeout(() => document.getElementById('modal-project-name').focus(), 100);
     });
@@ -3722,6 +5097,10 @@
     // =============================================
     // VIEW TOGGLE
     // =============================================
+    document.getElementById('back-to-project').addEventListener('click', () => {
+      if (activeProjectId) setViewMode('project');
+    });
+
     document.getElementById('view-toggle-bar').addEventListener('click', (e) => {
       const btn = e.target.closest('.view-toggle-btn');
       if (!btn) return;
@@ -3737,16 +5116,41 @@
       });
       const conv = document.getElementById('conversation');
       const canvas = document.getElementById('canvas-view');
+      const projectLanding = document.getElementById('project-landing');
       const chatBar = document.querySelector('.chat-input-bar');
+      const toggleBar = document.getElementById('view-toggle-bar');
+
+      const backBtn = document.getElementById('back-to-project');
+
+      // Hide all
+      conv.style.display = 'none';
+      canvas.classList.remove('visible');
+      projectLanding.style.display = 'none';
+      if (chatBar) chatBar.style.display = 'none';
+      if (toggleBar) toggleBar.style.display = '';
+      backBtn.style.display = 'none';
+
+      if (mode === 'workspace' || mode === 'canvas') {
+        // Show back button if we came from a project
+        if (activeProjectId) {
+          const proj = PROJECTS.find(p => p.id === activeProjectId);
+          if (proj) {
+            backBtn.style.display = 'flex';
+            document.getElementById('back-to-project-name').textContent = proj.name;
+          }
+        }
+      }
+
       if (mode === 'workspace') {
         conv.style.display = '';
-        canvas.classList.remove('visible');
         if (chatBar) chatBar.style.display = '';
-      } else {
-        conv.style.display = 'none';
+      } else if (mode === 'canvas') {
         canvas.classList.add('visible');
-        if (chatBar) chatBar.style.display = 'none';
         renderArtifact();
+      } else if (mode === 'project') {
+        projectLanding.style.display = 'flex';
+        if (toggleBar) toggleBar.style.display = 'none';
+        renderProjectLanding();
       }
       renderTabs();
     }
@@ -3938,6 +5342,7 @@
       input.value = '';
 
       const selectedCount = contextSelections.length;
+      const selectedIds = contextSelections.map(s => s.id);
 
       // Clear selections
       contextSelections.forEach(s => { if (s.el) s.el.classList.remove('selected'); });
@@ -4044,6 +5449,9 @@
                 updateVersionUI(artifact);
               }
               overlay.classList.remove('active');
+
+              // Highlight the elements the user selected (or random if none)
+              highlightArtifactChanges(selectedIds);
             }, 500);
           }, stepDelay);
         }
@@ -4051,6 +5459,52 @@
 
       // Kick off after a short delay
       setTimeout(showNextStep, 300);
+    }
+
+    function highlightArtifactChanges(selectedIds) {
+      const docEl = document.getElementById('artifact-doc');
+      if (!docEl) return;
+
+      // Clear any existing highlights
+      docEl.querySelectorAll('.artifact-changed').forEach(el => el.classList.remove('artifact-changed'));
+
+      let targets = [];
+
+      // If user had selected specific elements, highlight those
+      if (selectedIds && selectedIds.length > 0) {
+        selectedIds.forEach(id => {
+          const el = docEl.querySelector(`[data-select-id="${id}"]`);
+          if (el) targets.push(el);
+        });
+      }
+
+      // Fallback: pick random elements if nothing was selected
+      if (targets.length === 0) {
+        const candidates = Array.from(docEl.querySelectorAll(
+          'p, li, h2, h3, td, .doc-stat, .doc-callout, .slide-col, .sheet-row, .site-feature, .site-tl-item, .site-enforcement-card'
+        ));
+        if (candidates.length === 0) return;
+        const count = Math.min(candidates.length, 3 + Math.floor(Math.random() * 4));
+        const indices = new Set();
+        while (indices.size < count) {
+          indices.add(Math.floor(Math.random() * candidates.length));
+        }
+        indices.forEach(idx => targets.push(candidates[idx]));
+      }
+
+      // Stagger the highlights
+      let delay = 0;
+      targets.forEach(el => {
+        setTimeout(() => {
+          el.classList.add('artifact-changed');
+        }, delay);
+        delay += 120;
+      });
+
+      // Auto-remove after animation completes
+      setTimeout(() => {
+        docEl.querySelectorAll('.artifact-changed').forEach(el => el.classList.remove('artifact-changed'));
+      }, 3500);
     }
 
     document.getElementById('canvas-prompt-input').addEventListener('keydown', (e) => {
@@ -4222,8 +5676,8 @@
     // =============================================
     // INIT
     // =============================================
+    getTasksInbox(); // ensure inbox is prefilled
     renderSidebar();
-    renderTaskInbox();
     renderTabs();
     renderConversation();
     if (typeof startAllSpinners === 'function') startAllSpinners();
