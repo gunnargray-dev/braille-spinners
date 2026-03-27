@@ -1,27 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ASI — Async Agents</title>
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/theme.css">
   <style>
-    :root {
-      --bg: #0c0c0f;
-      --surface: #151518;
-      --surface-raised: #1c1c21;
-      --border: #2a2a32;
-      --border-subtle: #222228;
-      --text: #e0e0e6;
-      --text-secondary: #a4a4b0;
-      --text-muted: #6e6e80;
-      --green: #3dba72;
-      --green-text: #6dcea0;
-      --accent: #b8b8c0;
-      --font-body: 'PPLX Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-mono: 'PPLX Mono', 'SF Mono', monospace;
-    }
-
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
@@ -38,7 +23,7 @@
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
       display: flex; align-items: center; justify-content: center;
       padding: 0.85rem 1.25rem;
-      background: rgba(12, 12, 15, 0.85);
+      background: color-mix(in srgb, var(--bg) 85%, transparent);
       backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border-subtle);
     }
@@ -726,33 +711,9 @@
     function schedule(delay, fn) { timers.push(setTimeout(fn, delay)); }
     function clearAll() { timers.forEach(t => clearTimeout(t)); timers.length = 0; }
 
-    // --- Smooth auto-scroll ---
+    // --- Auto-scroll (disabled) ---
     let autoScroll = true;
-    let scrollRaf = null;
-    window.addEventListener('wheel', () => { autoScroll = false; if (scrollRaf) { cancelAnimationFrame(scrollRaf); scrollRaf = null; } }, { passive: true });
-    window.addEventListener('touchmove', () => { autoScroll = false; if (scrollRaf) { cancelAnimationFrame(scrollRaf); scrollRaf = null; } }, { passive: true });
-
-    function scrollIntoView(el) {
-      if (!autoScroll || !el) return;
-      const rect = el.getBoundingClientRect();
-      const targetY = window.scrollY + rect.top - window.innerHeight * 0.45;
-      const startY = window.scrollY;
-      const diff = targetY - startY;
-      if (Math.abs(diff) < 2) return;
-      const duration = Math.min(1200, Math.max(600, Math.abs(diff) * 0.8));
-      const startTime = performance.now();
-      function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
-      function step(now) {
-        if (!autoScroll) return;
-        const elapsed = now - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        window.scrollTo(0, startY + diff * ease(progress));
-        if (progress < 1) { scrollRaf = requestAnimationFrame(step); }
-        else { scrollRaf = null; }
-      }
-      if (scrollRaf) cancelAnimationFrame(scrollRaf);
-      scrollRaf = requestAnimationFrame(step);
-    }
+    function scrollIntoView(el) { }
 
     function show(id) {
       const el = document.getElementById(id);

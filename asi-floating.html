@@ -1,27 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ASI — Floating Agents</title>
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/theme.css">
   <style>
-    :root {
-      --bg: #0c0c0f;
-      --surface: #151518;
-      --surface-raised: #1c1c21;
-      --border: #2a2a32;
-      --border-subtle: #222228;
-      --text: #e0e0e6;
-      --text-secondary: #a4a4b0;
-      --text-muted: #6e6e80;
-      --green: #3dba72;
-      --green-text: #6dcea0;
-      --accent: #b8b8c0;
-      --font-body: 'PPLX Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-mono: 'PPLX Mono', 'SF Mono', monospace;
-    }
-
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
@@ -42,7 +27,7 @@
       align-items: center;
       justify-content: center;
       padding: 0.85rem 1.25rem;
-      background: rgba(12, 12, 15, 0.85);
+      background: color-mix(in srgb, var(--bg) 85%, transparent);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border-subtle);
@@ -251,8 +236,8 @@
     .answer-text hr { border: none; border-top: 1px solid var(--border-subtle); margin: 1.25rem 0; }
     .answer-text blockquote {
       margin: 1rem 0; padding: 0.75rem 1rem;
-      border-left: 3px solid var(--accent);
-      background: color-mix(in srgb, var(--accent) 5%, transparent);
+      border-left: 3px solid var(--text-muted);
+      background: var(--surface-raised);
       border-radius: 0 8px 8px 0; font-size: 0.85rem;
     }
     .answer-text blockquote p { margin: 0; }
@@ -865,14 +850,9 @@ auth.prod.internal → A 10.0.1.88 (us-east-1a) TTL 60
     function schedule(delay, fn) { timers.push(setTimeout(fn, delay)); }
     function clearAll() { timers.forEach(t => clearTimeout(t)); timers.length = 0; }
 
-    // --- Auto-scroll ---
+    // --- Auto-scroll (disabled) ---
     let autoScroll = true;
-    window.addEventListener('wheel', () => { autoScroll = false; }, { passive: true });
-    window.addEventListener('touchmove', () => { autoScroll = false; }, { passive: true });
-    function scrollIntoView(el) {
-      if (!autoScroll || !el) return;
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+    function scrollIntoView(el) { }
 
     function show(id) {
       const el = document.getElementById(id);
