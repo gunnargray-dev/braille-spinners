@@ -649,15 +649,50 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 0.85rem 1rem;
+      padding: 0.85rem 1rem 0.6rem;
       overflow: hidden;
       position: relative;
       cursor: pointer;
       transition: border-color 0.15s ease, background 0.15s ease;
     }
+    .pl-widget::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 50%;
+      background: var(--widget-glow, var(--accent));
+      opacity: 0.04;
+      pointer-events: none;
+      mask-image: linear-gradient(to bottom, black, transparent);
+      -webkit-mask-image: linear-gradient(to bottom, black, transparent);
+    }
     .pl-widget:hover {
       border-color: var(--text-muted);
-      background: var(--surface-raised);
+    }
+    .pl-widget:hover::before {
+      opacity: 0.07;
+    }
+    .pl-widget-footer {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-top: 0.55rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--border-subtle);
+      font-size: 0.55rem;
+      color: var(--text-muted);
+    }
+    .pl-widget-footer svg {
+      width: 11px; height: 11px;
+      stroke: currentColor; fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      flex-shrink: 0;
+      opacity: 0.6;
+    }
+    .pl-widget-footer-text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .pl-widget-header {
       display: flex;
@@ -983,7 +1018,7 @@
       display: flex;
       align-items: center;
       gap: 0.6rem;
-      background: var(--surface);
+      background: var(--surface-raised);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 0.55rem 0.65rem 0.55rem 1rem;
@@ -2756,7 +2791,7 @@
       display: flex;
       align-items: center;
       gap: 0.6rem;
-      background: var(--surface);
+      background: var(--surface-raised);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 0.55rem 0.65rem 0.55rem 1rem;
@@ -2824,9 +2859,146 @@
       padding: 0.08rem 0.3rem;
       color: var(--text-muted);
     }
+    /* =============================================
+       LIGHT MODE OVERRIDES
+       ============================================= */
+    [data-theme="light"] .main-pane {
+      background: #fff;
+      border-color: rgba(0,0,0,0.08);
+    }
+    [data-theme="light"] .chat-input-inner,
+    [data-theme="light"] .project-landing-input-inner {
+      background: #fff;
+      border-color: rgba(0,0,0,0.12);
+    }
+    [data-theme="light"] .chat-input-bar {
+      background: linear-gradient(to bottom, transparent, #fff 40%);
+    }
+    [data-theme="light"] .project-landing-input {
+      background: linear-gradient(to bottom, transparent, #fff 40%);
+    }
+    [data-theme="light"] .view-toggle-bar {
+      background: #fff;
+      border-color: rgba(0,0,0,0.06);
+    }
+    [data-theme="light"] .view-toggle-btn.active {
+      background: rgba(0,0,0,0.06);
+    }
+    [data-theme="light"] .pl-widget {
+      background: #fff;
+      border-color: rgba(0,0,0,0.08);
+    }
+    [data-theme="light"] .pl-widget:hover {
+      border-color: rgba(0,0,0,0.18);
+    }
+    [data-theme="light"] .artifact-doc,
+    [data-theme="light"] .artifact-slides .slide,
+    [data-theme="light"] .artifact-spreadsheet {
+      background: #fff;
+      border-color: rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.06);
+    }
+    [data-theme="light"] .artifact-workspace {
+      background: var(--bg);
+      background-image: radial-gradient(circle at 50% 0%, rgba(0,0,0,0.02) 0%, transparent 50%);
+    }
+    [data-theme="light"] .canvas-prompt {
+      background: linear-gradient(to bottom, transparent, var(--bg) 70%);
+    }
+    [data-theme="light"] .artifact-updating {
+      background: rgba(255,255,255,0.7);
+    }
+    [data-theme="light"] .new-task-suggestion {
+      background: #fff;
+      border-color: rgba(0,0,0,0.08);
+    }
+    [data-theme="light"] .source-card {
+      background: #fff;
+    }
+    [data-theme="light"] .artifact-card {
+      background: #fff;
+    }
+    [data-theme="light"] .pl-inbox-item:hover,
+    [data-theme="light"] .pl-task:hover {
+      background: rgba(0,0,0,0.03);
+    }
+    [data-theme="light"] .sidebar-nav-item:hover,
+    [data-theme="light"] .sidebar-nav-item.active {
+      background: rgba(0,0,0,0.04);
+    }
+    [data-theme="light"] .project-header:hover {
+      background: rgba(0,0,0,0.03);
+    }
+    [data-theme="light"] .pl-suggestion {
+      background: #fff;
+      border-color: rgba(0,0,0,0.1);
+    }
+    [data-theme="light"] .chat-send,
+    [data-theme="light"] .project-landing-send,
+    [data-theme="light"] .canvas-prompt-send {
+      background: var(--fg-primary);
+    }
+
+    /* Website artifact light mode */
+    [data-theme="light"] .artifact-website {
+      background: #fff;
+    }
+    [data-theme="light"] .site-nav { background: #fff; border-color: rgba(0,0,0,0.06); }
+    [data-theme="light"] .site-hero { background: linear-gradient(135deg, #f0f7f8, #fff); }
+    [data-theme="light"] .site-hero h1, [data-theme="light"] .site-feature h3,
+    [data-theme="light"] .site-section h2, [data-theme="light"] .site-nav-brand,
+    [data-theme="light"] .site-enforcement-card h4, [data-theme="light"] .site-tl-body strong,
+    [data-theme="light"] .site-table td strong { color: #1a1a1a; }
+    [data-theme="light"] .site-hero p, [data-theme="light"] .site-feature p,
+    [data-theme="light"] .site-tl-body, [data-theme="light"] .site-table td,
+    [data-theme="light"] .site-enforcement-card p, [data-theme="light"] .site-section-sub { color: #555; }
+    [data-theme="light"] .site-nav-links a, [data-theme="light"] .site-enforcement-date { color: #888; }
+    [data-theme="light"] .site-section { background: #fff; }
+    [data-theme="light"] .site-section[style*="background"] { background: #f9fafb !important; }
+    [data-theme="light"] .site-timeline { border-color: #e5e7eb; }
+    [data-theme="light"] .site-tl-item::before { border-color: #fff; }
+    [data-theme="light"] .site-table { border-color: #e5e7eb; }
+    [data-theme="light"] .site-table th { background: #f9fafb; border-color: #e5e7eb; color: #1a1a1a; }
+    [data-theme="light"] .site-table td { border-color: #f3f4f6; }
+    [data-theme="light"] .site-table tbody tr:hover td { background: #f9fafb; }
+    [data-theme="light"] .site-enforcement-card { border-color: #e5e7eb; background: #fff; }
+    [data-theme="light"] .site-footer { background: #f9fafb; border-color: #e5e7eb; }
+    [data-theme="light"] .site-feature-icon { background: #f0f7f8; }
+    [data-theme="light"] .canvas-view:has(.artifact-website) .canvas-prompt {
+      background: linear-gradient(to bottom, transparent, #fff 70%);
+    }
+
+    /* Theme toggle */
+    .theme-toggle {
+      position: fixed;
+      bottom: 1rem;
+      left: 1rem;
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 200;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .theme-toggle:hover {
+      border-color: var(--text-muted);
+    }
+    .theme-toggle svg {
+      width: 16px; height: 16px;
+      stroke: var(--text-muted); fill: none;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
   </style>
 </head>
 <body>
+
+  <!-- Theme toggle -->
+  <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">
+    <svg id="theme-icon-sun" viewBox="0 0 24 24" style="display:none;"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    <svg id="theme-icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
 
   <div class="workspace">
     <!-- LEFT SIDEBAR -->
@@ -4326,6 +4498,8 @@
           taskId: 'ev-market',
           title: 'Market Share by Region',
           badge: 'live', badgeText: 'Live',
+          glow: '#e74c3c',
+          cron: 'Scrape OEM delivery reports every 6h',
           center: '14.2M',
           segments: [
             { label: 'China', value: '60%', pct: 60, color: '#e74c3c' },
@@ -4340,6 +4514,7 @@
           taskId: 'ev-market',
           title: 'Global EV Sales (Millions)',
           badge: 'scheduled', badgeText: 'Monthly',
+          cron: 'Pull IEA sales data monthly',
           points: [3.2, 3.8, 4.5, 5.1, 5.6, 6.2, 6.9, 7.8, 8.5, 9.4, 10.5, 11.2, 12.1, 13.0, 14.2],
           labels: ['Q1\'21','','','','Q1\'22','','','','Q1\'23','','','','Q1\'24','','Q4\'24'],
           color: 'var(--green)',
@@ -4352,6 +4527,8 @@
           taskId: 'cloud',
           title: 'Revenue by Quarter',
           badge: 'scheduled', badgeText: 'Quarterly',
+          glow: '#e74c3c',
+          cron: 'Update on earnings release',
           bars: [
             { label: 'Q1', segments: [{ pct: 55, color: '#e74c3c' }, { pct: 22, color: '#3498db' }, { pct: 15, color: '#2ecc71' }, { pct: 8, color: '#f39c12' }], total: '$82B' },
             { label: 'Q2', segments: [{ pct: 58, color: '#e74c3c' }, { pct: 21, color: '#3498db' }, { pct: 14, color: '#2ecc71' }, { pct: 7, color: '#f39c12' }], total: '$91B' },
@@ -4366,6 +4543,7 @@
           taskId: 'ai-regs',
           title: 'Regulatory Activity by Month',
           badge: 'live', badgeText: 'Live',
+          cron: 'Scan government gazettes daily',
           // 12 months, intensity 0-1
           cells: [0.2, 0.3, 0.5, 0.8, 0.4, 0.3, 0.9, 0.6, 0.4, 1.0, 0.7, 0.5],
           labels: ['J','F','M','A','M','J','J','A','S','O','N','D'],
@@ -4377,6 +4555,7 @@
           taskId: 'ai-regs',
           title: 'Regulatory Alerts',
           badge: 'scheduled', badgeText: 'Daily',
+          cron: 'Check EUR-Lex and CAC feeds daily',
           items: [
             { time: '09:15', color: 'var(--red)', text: 'EU AI Act — new enforcement guidance published' },
             { time: '09:15', color: 'var(--yellow)', text: 'Brazil — AI Bill advanced to committee vote' },
@@ -4389,6 +4568,8 @@
           taskId: 'us-state-ai',
           title: 'Regulation by Type',
           badge: 'scheduled', badgeText: 'Weekly',
+          glow: 'var(--green)',
+          cron: 'Classify new regulations weekly',
           center: '42',
           segments: [
             { label: 'Binding law', value: '14', pct: 33, color: 'var(--green)' },
@@ -4404,6 +4585,7 @@
           taskId: 'faang',
           title: 'Combined Revenue ($B)',
           badge: 'scheduled', badgeText: 'Quarterly',
+          cron: 'Process 10-Q filings on release',
           points: [310, 318, 325, 338, 342, 355, 362, 378, 385, 398, 410, 420, 430, 440],
           labels: ['Q1\'22','','Q3','','Q1\'23','','Q3','','Q1\'24','','Q3','','','Q4\'24'],
           color: 'var(--blue)',
@@ -4416,6 +4598,8 @@
           taskId: 'ai-capex-tracker',
           title: 'AI Capex by Company ($B)',
           badge: 'live', badgeText: 'Updated',
+          glow: 'var(--blue)',
+          cron: 'Track capex announcements in real-time',
           bars: [
             { label: 'AMZN', segments: [{ pct: 100, color: 'var(--blue)' }], total: '$100B' },
             { label: 'GOOG', segments: [{ pct: 75, color: 'var(--green)' }], total: '$75B' },
@@ -4428,6 +4612,7 @@
           taskId: 'mag7-margins',
           title: 'Operating Margin',
           badge: 'scheduled', badgeText: 'Quarterly',
+          cron: 'Recalculate after each 10-Q filing',
           items: [
             { name: 'NVDA', value: '62%', pct: 100, color: 'var(--green)' },
             { name: 'META', value: '41%', pct: 66, color: 'var(--blue)' },
@@ -4443,6 +4628,8 @@
           taskId: 'energy',
           title: 'US Generation Mix',
           badge: 'live', badgeText: 'Live',
+          glow: '#2ecc71',
+          cron: 'Refresh EIA generation data every 12h',
           center: '28%',
           segments: [
             { label: 'Natural Gas', value: '40%', pct: 40, color: '#95a5a6' },
@@ -4457,6 +4644,7 @@
           taskId: 'carbon',
           title: 'EU ETS Carbon Price (€/tCO₂)',
           badge: 'live', badgeText: 'Live',
+          cron: 'Fetch ICE futures pricing hourly',
           points: [55, 58, 62, 68, 75, 82, 90, 95, 100, 92, 85, 78, 72, 68, 68],
           labels: ['Jan\'23','','','','May','','','','Sep','','','','Jan\'24','','Now'],
           color: 'var(--accent)',
@@ -4469,6 +4657,8 @@
           taskId: 'utility-solar',
           title: 'Capacity Added (GW)',
           badge: 'scheduled', badgeText: 'Monthly',
+          glow: '#2ecc71',
+          cron: 'Pull NREL capacity data monthly',
           bars: [
             { label: '2021', segments: [{ pct: 55, color: '#f39c12' }, { pct: 45, color: '#2ecc71' }], total: '28 GW' },
             { label: '2022', segments: [{ pct: 48, color: '#f39c12' }, { pct: 52, color: '#2ecc71' }], total: '35 GW' },
@@ -4569,12 +4759,19 @@
           ).join('') + '</div>';
         }
 
-        return `<div class="pl-widget" ${w.taskId ? 'data-task-id="' + w.taskId + '"' : ''}>
+        const glowColor = w.glow || w.color || 'var(--accent)';
+        const cronFooter = w.cron ? `<div class="pl-widget-footer">
+          <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.96 7.96 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6"/><polyline points="17.65 6.35 23 6.35 23 1"/></svg>
+          <span class="pl-widget-footer-text">${w.cron}</span>
+        </div>` : '';
+
+        return `<div class="pl-widget" style="--widget-glow:${glowColor};" ${w.taskId ? 'data-task-id="' + w.taskId + '"' : ''}>
           <div class="pl-widget-header">
             <span class="pl-widget-title">${w.title}</span>
             <span class="pl-widget-badge ${badgeClass}">${w.badgeText || ''}</span>
           </div>
           ${body}
+          ${cronFooter}
         </div>`;
       }).join('');
     }
@@ -5008,8 +5205,17 @@
               { type: 'user', text: 'Scrape the Hacker News front page from the past 7 days and identify the top trending topics and most discussed posts.' },
               { type: 'thinking', label: 'Web Crawl', task: 'Scraping HN API for 7-day history', lines: ['Querying HN Algolia API for top stories', 'Clustering titles by topic using embeddings'], collapsed: false, done: false, streaming: true },
             ]},
-            { id: 'inbox-9', name: 'Best practices for SOC 2 Type II compliance', status: 'queued', startTime: null, messages: [] },
-            { id: 'inbox-10', name: 'Compare Anthropic vs OpenAI pricing for batch inference', status: 'queued', startTime: null, messages: [] },
+            { id: 'inbox-9', name: 'Summarize the top AI news this week', status: 'completed', startTime: now - 260000, messages: [
+              { type: 'user', text: 'Summarize the most important AI news from the past week. Cover product launches, funding rounds, research papers, and regulatory developments.' },
+              { type: 'thinking', label: 'Web Crawl', task: 'Scanned 140+ sources across AI news outlets', lines: ['Crawling TechCrunch, The Verge, and Ars Technica AI sections', 'Scanning arXiv for trending ML papers by citation velocity', 'Pulling Crunchbase for AI funding rounds closed this week', 'Checking government sources for new AI policy announcements', 'Ranking stories by cross-source mention frequency'], collapsed: true, done: true },
+              { type: 'assistant', html: '<p><strong>Top AI news this week:</strong></p><ul><li><strong>Anthropic launched Claude 4.5 Opus</strong> with 1M token context window, setting a new benchmark for long-context reasoning. The model scores 92.4% on GPQA Diamond.</li><li><strong>Google DeepMind published AlphaFold 3</strong>, extending protein structure prediction to nucleic acids, ligands, and post-translational modifications.</li><li><strong>EU AI Act enforcement begins</strong> — prohibited practices (social scoring, emotion recognition in workplaces) are now enforceable with fines up to 7% of global revenue.</li><li><strong>Cohere raised $500M Series D</strong> at a $5.5B valuation, led by PSP Investments, to scale enterprise AI deployment.</li><li><strong>OpenAI released GPT-4o mini</strong> at $0.15/1M input tokens, making multimodal AI accessible for high-volume production use cases.</li></ul><p>The week\'s theme: the gap between frontier model capabilities and enterprise deployment is narrowing fast, driven by both cost reductions and regulatory clarity.</p>' },
+              { type: 'sources', items: [
+                { title: 'TechCrunch AI', url: 'techcrunch.com/category/artificial-intelligence', snippet: 'Comprehensive coverage of AI product launches, funding, and industry moves.' },
+                { title: 'arXiv Trending', url: 'arxiv.org/list/cs.AI/recent', snippet: 'Latest AI research papers sorted by community engagement and citations.' },
+              ]},
+            ]},
+            { id: 'inbox-10', name: 'Best practices for SOC 2 Type II compliance', status: 'queued', startTime: null, messages: [] },
+            { id: 'inbox-11', name: 'Compare Anthropic vs OpenAI pricing for batch inference', status: 'queued', startTime: null, messages: [] },
           ],
         };
         PROJECTS.unshift(inbox);
@@ -5672,6 +5878,23 @@
         }, 4000);
       }
     }
+
+    // =============================================
+    // =============================================
+    // THEME TOGGLE
+    // =============================================
+    function updateThemeIcons() {
+      const isDark = document.documentElement.dataset.theme === 'dark';
+      document.getElementById('theme-icon-sun').style.display = isDark ? 'none' : 'block';
+      document.getElementById('theme-icon-moon').style.display = isDark ? 'block' : 'none';
+    }
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const html = document.documentElement;
+      const isDark = html.dataset.theme === 'dark';
+      html.dataset.theme = isDark ? 'light' : 'dark';
+      updateThemeIcons();
+    });
+    updateThemeIcons();
 
     // =============================================
     // INIT

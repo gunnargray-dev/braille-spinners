@@ -111,32 +111,26 @@
   --warning-bg-subtle: rgba(151, 67, 26, 0.055);
 
   /* ---- Project variable aliases (light) ---- */
-  --c-bg: var(--bg-base);
-  --c-surface-0: var(--bg-soft);
-  --c-surface: var(--bg-raised);
-  --c-surface-raised: var(--bg-raised);
-  --c-surface-overlay: var(--bg-raised);
-  --c-border: var(--border-base);
-  --c-border-subtle: var(--border-soft);
-  --c-text: var(--fg-primary);
-  --c-text-secondary: var(--fg-secondary);
-  --c-text-muted: var(--fg-tertiary);
-  --c-accent: var(--accent-fg-primary);
-  --c-accent-hover: var(--accent-fg-secondary);
-  --c-green: var(--positive-fg-primary);
-  --c-green-bg: var(--positive-bg-subtle);
-  --c-green-text: var(--garuda-light-600);
-  --c-red: var(--negative-fg-primary);
-  --c-red-bg: var(--negative-bg-subtle);
-  --c-red-text: var(--ifrit-light-600);
-  --c-yellow: var(--titan-light-300);
-  --c-panel-inset: var(--bg-soft);
-  --c-code-bg: var(--bg-soft);
-  --c-shimmer-base: var(--fg-tertiary);
-  --c-shimmer-peak: var(--fg-primary);
-  --c-spinner: var(--fg-secondary);
-  --c-btn-primary: var(--bg-inverse);
-  --c-btn-primary-hover: var(--fg-secondary);
+  --bg: var(--bg-base);
+  --surface: var(--bg-raised);
+  --surface-raised: var(--bg-soft);
+  --text: var(--fg-primary);
+  --text-secondary: var(--fg-secondary);
+  --text-muted: var(--fg-tertiary);
+  --border: var(--border-base);
+  --border-subtle: var(--border-soft);
+  --green: var(--positive-fg-primary);
+  --green-text: rgba(1, 107, 29, 1);
+  --green-bg: var(--positive-bg-subtle);
+  --red: var(--negative-fg-primary);
+  --accent: var(--accent-fg-primary);
+  --blue: rgba(37, 99, 235, 1);
+  --blue-bg: rgba(37, 99, 235, 0.08);
+  --yellow: rgba(161, 98, 7, 1);
+  --yellow-bg: rgba(161, 98, 7, 0.08);
+  --purple: rgba(124, 58, 237, 1);
+  --purple-bg: rgba(124, 58, 237, 0.08);
+  --muted-bg: var(--bg-soft);
 
   /* Shadows (light) */
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.025);
