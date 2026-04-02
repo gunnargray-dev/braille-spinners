@@ -359,38 +359,7 @@
     }
 
     /* ==========================================
-       7. Streaming Text (blur reveal)
-       ========================================== */
-    .stream-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px; padding: 1.5rem;
-      box-shadow: var(--shadow-sm);
-    }
-    .stream-output {
-      font-size: 0.88rem; line-height: 1.75;
-      color: var(--text-secondary);
-    }
-    .stream-output .word {
-      display: inline;
-      animation: wordReveal 0.25s ease-out forwards;
-    }
-    @keyframes wordReveal {
-      from { opacity: 0; filter: blur(4px); }
-      to   { opacity: 1; filter: blur(0); }
-    }
-    .stream-cursor {
-      display: inline-block; width: 2px; height: 1em;
-      background: var(--accent); vertical-align: text-bottom;
-      animation: cursorBlink 1s step-end infinite;
-    }
-    @keyframes cursorBlink {
-      0%, 50% { opacity: 1; }
-      51%, 100% { opacity: 0; }
-    }
-
-    /* ==========================================
-       8. Document Artifact
+       7. Document Artifact
        ========================================== */
     .doc-artifact {
       background: var(--surface); border: 1px solid var(--border);
@@ -1705,16 +1674,7 @@ JAL JL009  Economy $1,185  Premium $1,820<span class="stream-cursor"></span></pr
       </div>
     </section>
 
-    <!-- ==================== 10. STREAMING TEXT ==================== -->
-    <section class="section">
-      <div class="section-label">Streaming Text</div>
-      <p class="section-desc">Word-by-word blur reveal animation. Each word fades in from blur(4px) to sharp with a 0.25s ease-out.</p>
-      <div class="stream-card">
-        <div class="stream-output" id="stream-demo"></div>
-      </div>
-    </section>
-
-    <!-- ==================== 11. DOCUMENT ARTIFACT ==================== -->
+    <!-- ==================== 10. DOCUMENT ARTIFACT ==================== -->
     <section class="section">
       <div class="section-label">Document Artifact</div>
       <p class="section-desc">Generated document card that appears after synthesis. Clickable with hover state.</p>
@@ -2691,42 +2651,6 @@ JAL JL009  Economy $1,185  Premium $1,820<span class="stream-cursor"></span></pr
       menuDropdown.classList.toggle('open');
     });
     document.addEventListener('click', () => menuDropdown.classList.remove('open'));
-
-    // --- Streaming text demo ---
-    (function() {
-      const text = 'After researching flights, hotels, and attractions across Tokyo, here is your complete travel plan for 7 nights during early cherry blossom season. ANA NH11 departs 11:30 AM from ORD and arrives 3:15 PM at NRT the next day. Hotel Gracery Shinjuku at $165 per night puts you steps from Shinjuku Station with the iconic Godzilla terrace. Your first full day covers Asakusa and Senso-ji, then Ueno Park for early sakura scouting.';
-      const words = text.split(' ');
-      const el = document.getElementById('stream-demo');
-      let i = 0;
-
-      function reset() {
-        i = 0;
-        el.innerHTML = '<span class="stream-cursor"></span>';
-        setTimeout(tick, 600);
-      }
-
-      function tick() {
-        if (i < words.length) {
-          const cursor = el.querySelector('.stream-cursor');
-          const span = document.createElement('span');
-          span.className = 'word';
-          span.style.opacity = '0';
-          span.textContent = (i > 0 ? ' ' : '') + words[i];
-          el.insertBefore(span, cursor);
-          // Trigger animation
-          requestAnimationFrame(() => {
-            span.style.opacity = '';
-            span.style.animation = 'wordReveal 0.25s ease-out forwards';
-          });
-          i++;
-          setTimeout(tick, 25);
-        } else {
-          setTimeout(reset, 4000);
-        }
-      }
-
-      reset();
-    })();
 
     // ==============================================
     // PARALLEL PATTERN ANIMATIONS
